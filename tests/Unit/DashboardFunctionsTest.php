@@ -91,6 +91,11 @@ describe('topx_short_label', function (): void {
 	it('returns the whole name when there is nothing to split', function (): void {
 		expect(topx_short_label('single'))->toBe('single');
 	});
+
+	it('returns the input when it has no usable segments', function (): void {
+		expect(topx_short_label(''))->toBe('');
+		expect(topx_short_label('  -   - '))->toBe('  -   - ');
+	});
 });
 
 describe('topx_compute_ranking', function (): void {
