@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-05 13:53-0500\n"
+"POT-Creation-Date: 2026-11-05 15:11-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -191,7 +191,7 @@ msgid "No data sources are available yet."
 msgstr ""
 
 #: includes/dashboard.php
-msgid "< 1 day"
+msgid "Up to 1 day"
 msgstr ""
 
 #: includes/dashboard.php
@@ -207,7 +207,7 @@ msgid "1 – 6 months"
 msgstr ""
 
 #: includes/dashboard.php
-msgid "> 6 months"
+msgid "Over 6 months"
 msgstr ""
 
 #: includes/dashboard.php

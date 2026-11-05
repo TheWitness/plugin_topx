@@ -602,12 +602,14 @@ function topx_overview_card_body(string $key): string {
 		case 'uptime':
 			$buckets = topx_uptime_bucket_days(topx_uptime_host_days());
 
+			// Avoid '<'/'>' in labels: billboard injects the tooltip title as
+			// HTML, so a literal angle bracket leaks markup (e.g. "</th>").
 			$labels = [
-				__('< 1 day', 'topx'),
+				__('Up to 1 day', 'topx'),
 				__('1 day – 1 week', 'topx'),
 				__('1 week – 1 month', 'topx'),
 				__('1 – 6 months', 'topx'),
-				__('> 6 months', 'topx'),
+				__('Over 6 months', 'topx'),
 			];
 
 			$values = [
@@ -624,9 +626,9 @@ function topx_overview_card_body(string $key): string {
 				break;
 			}
 
-			// Red (just rebooted) through green (long uptime), matching the
-			// theme severity anchors: down -> recovering -> amber -> up.
-			$uptime_colors = ['#cc0000', '#d9830f', '#c9b03a', '#7cae4a', '#3c9a5f'];
+			// A distinct multi-hue "colour wheel" across the ranges (warm ->
+			// cool, short uptime -> long) so the chart is not monotone.
+			$uptime_colors = ['#e63946', '#f3722c', '#f9c74f', '#90be6d', '#2a9d8f'];
 
 			print topx_dashboard_chart($labels, $values, __('Hosts', 'topx'), false, 0.0, $uptime_colors);
 

@@ -311,6 +311,15 @@ function topxFormatNumber(value) {
 	return n.toLocaleString(undefined, {maximumFractionDigits: 2});
 }
 
+/** Escape HTML special characters. billboard injects the tooltip title as HTML,
+ *  so a label or data source name containing '<', '>' or '&' would otherwise
+ *  leak markup (e.g. a stray "</th>") or break the tooltip. */
+function topxEscapeHtml(value) {
+	return String(value).replace(/[&<>"']/g, function(ch) {
+		return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch];
+	});
+}
+
 /** Render every billboard chart placeholder under a root from its data-chart
  *  JSON. Skips placeholders already rendered, so it is safe to call again after a
  *  card is added or refreshed. billboard.js is loaded globally by general_header(). */
@@ -389,10 +398,10 @@ function topxDashRenderCharts(root) {
 					// a locale-formatted value instead of a long raw float.
 					title: function(index) {
 						if (cfg.fullLabels && cfg.fullLabels.length && typeof cfg.fullLabels[index] !== 'undefined') {
-							return cfg.fullLabels[index];
+							return topxEscapeHtml(cfg.fullLabels[index]);
 						}
 
-						return (cfg.labels && typeof cfg.labels[index] !== 'undefined') ? cfg.labels[index] : index;
+						return topxEscapeHtml((cfg.labels && typeof cfg.labels[index] !== 'undefined') ? cfg.labels[index] : index);
 					},
 					value: function(value) {
 						return topxFormatNumber(value);

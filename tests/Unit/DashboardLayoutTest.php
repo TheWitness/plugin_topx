@@ -70,7 +70,7 @@ describe('topx_overview_card_body uptime', function (): void {
 		$body = topx_overview_card_body('uptime');
 
 		expect($body)->toContain('topx-bb-chart');
-		expect($body)->toContain('#3c9a5f');
+		expect($body)->toContain('#e63946');
 
 		unset($GLOBALS['__test_db_fetch_assoc']);
 	});
