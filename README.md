@@ -1,57 +1,58 @@
 # plugin_topx for Cacti
 
 ## TopX
-Displays hights and lows (example: most utilization CPU, interface traffic, ..)
-~~Topx allows you to add an arithmetic operation or combine data source (example: discard and error traffic together, ..)~~
+
+Displays the highest and lowest values across your data sources (for example the
+most-utilized CPUs or the busiest interfaces), driven entirely by Cacti's native
+dsstats rollup tables. Supported data source definitions can combine or scale
+metrics (for example errors + discards, or traffic in + out converted to bits).
+
+This release modernizes the plugin to current Cacti 1.2.32 standards: prepared
+statements with allowlisted identifiers, request validation and output escaping,
+a strongly typed, PHPDoc-documented `includes/` API, theme-neutral CSS, organized
+JavaScript, full `gettext` internationalization, a shipped-file `manifest.json`
+with upgrade-time pruning, and a Pest test suite. See [CHANGELOG.md](CHANGELOG.md)
+for details.
+
+## Requirements
+
+- Cacti 1.2.32 or later
+- DS Stats enabled and configured (Console → Settings → Data)
 
 ## Author
-Petr Macek (petr.macek@kostax.cz)
+
+Originally written by Petr Macek (petr.macek@kostax.cz). Maintained by the
+Cacti Group.
 
 ## Screenshot
-![topx_0 4](https://user-images.githubusercontent.com/26485719/33798513-1a7a4dba-dd1a-11e7-8ffe-f7f76c5124ba.png)
+
+![TopX](screenshots/cacti_topx.png)
 
 ## Installation
-Copy directory topx to plugins directory  
-Check file permission (Linux/unix - readable for www server)  
-Enable plugin (Console -> Plugin management)   
-    
-## Upgrade    
-Copy and rewrite files  
-Check file permission (Linux/unix - readable for www server)  
-Disable and deinstall old version (Console -> Plugin management)   
-Install and enable new version (Console -> Plugin management)   
-    
-## Possible Bugs or any ideas?
-If you find a problem, let me know via github or https://forums.cacti.net/viewtopic.php?f=5&t=56129
-   
+
+1. Copy the `topx` directory into Cacti's `plugins/` directory.
+2. Ensure the files are readable by the web server user.
+3. Enable the plugin (Console → Plugin Management).
+4. Enable DS Stats if it is not already active.
+
+## Upgrade
+
+1. Copy the new files over the existing `plugins/topx` directory.
+2. Ensure the files are readable by the web server user.
+3. Load any Cacti console page; the plugin's upgrade hook refreshes its
+   registration, re-applies its (idempotent) schema, and prunes files that are
+   no longer shipped (recorded in `manifest.json`).
+
+## Adding your own data sources
+
+See [HOW_TO_ADD_YOUR_DATA.txt](HOW_TO_ADD_YOUR_DATA.txt) for the format of the
+`plugin_topx_source` definitions.
+
+## Possible bugs or ideas?
+
+Please open an issue on GitHub, or post to
+https://forums.cacti.net/viewtopic.php?f=5&t=56129
 
 ## Changelog
-	--- 0.7
-		Limit display graph for more than 50 records
-		Add sort by peak
-		
-	--- 0.6
-		Add arithmetical operation again
-		Bug fix
-		Graph display optimalization
-		
-	--- 0.5
-		Add theme support
-		Remove my data source poller code, using native dsstats
-		Remove arithmetical operation (dsstats doesn't support this)
-		 
- 	--- 0.4
-		Add chartJS graphs
-		Add human readable values 
-		Fix empty source
 
-	--- 0.3
-		rewrite for cacti 1.x
-
-	--- 0.2
-		Fixed error - logging too much
-	
-	--- 0.1
-		Beginning
-
-
+See [CHANGELOG.md](CHANGELOG.md).

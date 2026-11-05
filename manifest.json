@@ -1,0 +1,24 @@
+{
+    "tombstones": [
+        "themes/"
+    ],
+    "expected": [
+        "CHANGELOG.md",
+        "HOW_TO_ADD_YOUR_DATA.txt",
+        "INFO",
+        "LICENSE",
+        "README.md",
+        "TODO",
+        "css/",
+        "images/",
+        "includes/",
+        "index.php",
+        "js/",
+        "locales/",
+        "manifest.json",
+        "screenshots/",
+        "setup.php",
+        "topx.php"
+    ],
+    "whitelist": []
+}

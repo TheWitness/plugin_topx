@@ -1,7 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
- | Copyright (C) 2015-2019 Petr Macek                                      |
+ | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
  | modify it under the terms of the GNU General Public License             |
@@ -18,114 +18,379 @@
  | This code is designed, written, and maintained by the Cacti Group. See  |
  | about.php and/or the AUTHORS file for specific developer information.   |
  +-------------------------------------------------------------------------+
- | https://github.com/xmacan/                                              |
+ | https://github.com/xmacan/plugin_topx                                   |
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */
 
-function plugin_topx_install ()	{
-//	api_plugin_register_hook('topx', 'poller_output', 'topx_poller_output', 'setup.php');
-//	api_plugin_register_hook('topx', 'poller_bottom', 'topx_poller_bottom', 'setup.php');
-	api_plugin_register_hook('topx', 'top_header_tabs', 'topx_show_tab', 'setup.php');
-	api_plugin_register_hook('topx', 'top_graph_header_tabs', 'topx_show_tab', 'setup.php');
-	api_plugin_register_realm('topx', 'topx.php,', 'Plugin topx - view', 1);
+include_once(__DIR__ . '/includes/functions.php');
+include_once(__DIR__ . '/includes/arrays.php');
+
+/**
+ * Plugin install hook. Registers this plugin's hooks and realm with Cacti and
+ * provisions its database schema. Called by Cacti's plugin architecture when
+ * the plugin is installed.
+ *
+ * @return void
+ */
+function plugin_topx_install(): void {
+	api_plugin_register_hook('topx', 'config_arrays',          'topx_config_arrays', 'setup.php');
+	api_plugin_register_hook('topx', 'top_header_tabs',        'topx_show_tab',      'setup.php');
+	api_plugin_register_hook('topx', 'top_graph_header_tabs',  'topx_show_tab',      'setup.php');
+
+	api_plugin_register_realm('topx', 'topx.php', 'Plugin TopX - View', 1);
 
 	topx_setup_database();
 }
 
-function topx_setup_database()	{
+/**
+ * Creates (idempotently) the plugin's database tables and seeds the default
+ * set of data source definitions. Safe to call from both the install and
+ * upgrade paths. Called by plugin_topx_install() and plugin_topx_upgrade().
+ *
+ * @return void
+ */
+function topx_setup_database(): void {
+	$data = [
+		'columns' => [
+			['name' => 'sorting',         'type' => "enum('asc','desc')", 'default' => 'asc',   'NULL' => false],
+			['name' => 'dt_name',         'type' => 'varchar(200)',       'default' => '',      'NULL' => false],
+			['name' => 'hash',            'type' => 'varchar(32)',        'default' => '',      'NULL' => false],
+			['name' => 'operation',       'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
+			['name' => 'unit',            'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
+			['name' => 'final_operation', 'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
+			['name' => 'final_unit',      'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
+			['name' => 'final_number',    'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
+			['name' => 'system',          'type' => 'varchar(20)',        'default' => 'bits',  'NULL' => false],
+		],
+		'type'    => 'InnoDB',
+		'comment' => 'sources',
+	];
 
-	$data = array();
-	$data['columns'][] = array('name' => 'sorting', 'type' => "enum('asc','desc')", 'default' => 'asc', 'NULL' => false);
-	$data['columns'][] = array('name' => 'dt_name', 'type' => 'varchar(200)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'hash', 'type' => 'varchar(32)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'operation', 'type' => 'varchar(100)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'unit', 'type' => 'varchar(100)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'final_operation', 'type' => 'varchar(100)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'final_unit', 'type' => 'varchar(100)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'final_number', 'type' => 'varchar(100)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'system', 'type' => 'varchar(20)', 'NULL' => false, 'default' => 'bits');  
-	// decimal=1000, bits=1024
+	api_plugin_db_table_create('topx', 'plugin_topx_source', $data);
 
-//	$data['primary'] = 'hash';
-	$data['type'] = 'InnoDB';
-	$data['comment'] = 'sources';
-	api_plugin_db_table_create ('topx', 'plugin_topx_source', $data);
+	$data = [
+		'columns' => [
+			['name' => 'age',              'type' => "enum('quarter','hour','day','week','month')", 'default' => 'quarter', 'NULL' => false],
+			['name' => 'value1',           'type' => 'decimal(20,6)', 'default' => '0',  'NULL' => false],
+			['name' => 'value2',           'type' => 'decimal(20,6)', 'default' => '0',  'NULL' => false],
+			['name' => 'value1_dsname',    'type' => 'varchar(50)',   'default' => '',   'NULL' => false],
+			['name' => 'value2_dsname',    'type' => 'varchar(50)',   'default' => '',   'NULL' => false],
+			['name' => 'result_value',     'type' => 'decimal(20,6)', 'default' => '0',  'NULL' => false],
+			['name' => 'local_data_id',    'type' => 'int(11)',       'default' => null, 'NULL' => true],
+			['name' => 'data_template_id', 'type' => 'int(11)',       'default' => null, 'NULL' => true],
+			['name' => 'number_of_cycles', 'type' => 'int(11)',       'default' => '0',  'NULL' => false],
+		],
+		'keys' => [
+			['name' => 'local_data_id',    'columns' => 'local_data_id'],
+			['name' => 'data_template_id', 'columns' => 'data_template_id'],
+			['name' => 'value1_dsname',    'columns' => 'value1_dsname'],
+			['name' => 'value2_dsname',    'columns' => 'value2_dsname'],
+		],
+		'type'    => 'InnoDB',
+		'comment' => 'average',
+	];
 
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','ucd/net - Load Average - 1 Minute','9b82d44eb563027659683765f92c9757','load_1min=load_1min','Load','strip','load','2','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','Host MIB - CPU Utilization','f6e7d21c19434666bbdac00ccef9932f','cpu=cpu','Utilization','strip','%','1','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','Host MIB - Hard Drive Space','d814fa3b79bd0f8933b6e0834d3f16d0','hdd_total%hdd_used','Used','strip','%','1','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','Interface - Errors_in + Discards_in','36335cd98633963a575b70639cd2fdad','discards_in+errors_in','Errors+Discard','/','errors/Kerrors/Merrors','1/1000/1000000','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','Interface - Errors_out + Discards_out','36335cd98633963a575b70639cd2fdad','discards_out+errors_out','Errors+Discard','/','errors/Kerrors/Merrors','1/1000/1000000','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','Mikrotik - System - Uptime','0d8804fbc44a6ab9db89f8d83d050627','uptime/100','Uptime in seconds','/','sec/min/hour/days','1/60/3600/86400','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','APC load','be63bc4946561a274ace2c982548f255','load=load','Load','strip','%','0','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','MultiCPU AVG','9561518147a2423734394410bcd241b4','load=load','Utilization','strip','%','0','decimal')");
-	db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number,system) values 
-		('desc','Interface - Traffic_in+Traffic_out','6632e1e0b58a565c135d7ff90440c335','traffic_in+traffic_out','Bits','/','bit/Kbit/Mbit/Gbit/Tbit','1/1024/1048576/1073741824/1099511627776','bits')");
-	// MARK1
+	api_plugin_db_table_create('topx', 'plugin_topx_average', $data);
 
-
-	$data = array();
-	$data['columns'][] = array('name' => 'age', 'type' => "enum('quarter','hour','day','week','month')", 'default' => 'quarter', 'NULL' => false);
-	$data['columns'][] = array('name' => 'value1', 'type' => 'decimal(20,6)', 'NULL' => false, 'default' => '0');
-	$data['columns'][] = array('name' => 'value2', 'type' => 'decimal(20,6)', 'NULL' => false, 'default' => '0');
-	$data['columns'][] = array('name' => 'value1_dsname', 'type' => 'varchar(50)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'value2_dsname', 'type' => 'varchar(50)', 'NULL' => false, 'default' => '');
-	$data['columns'][] = array('name' => 'result_value', 'type' => 'decimal(20,6)', 'NULL' => false, 'default' => '0');
-	$data['columns'][] = array('name' => 'local_data_id', 'type' => 'int(11)', 'NULL' => true, 'default' => NULL);
-	$data['columns'][] = array('name' => 'data_template_id', 'type' => 'int(11)', 'NULL' => true, 'default' => NULL);
-	$data['columns'][] = array('name' => 'number_of_cycles', 'type' => 'int(11)', 'NULL' => false, 'default' => '0');
-	$data['type'] = 'InnoDB';
-	$data['comment'] = 'average';
-	api_plugin_db_table_create ('topx', 'plugin_topx_average', $data);
-
-	db_execute ("ALTER TABLE plugin_topx_average add index (local_data_id)");
-	db_execute ("ALTER TABLE plugin_topx_average add index (data_template_id)");
-	db_execute ("ALTER TABLE plugin_topx_average add index (value1_dsname)");
-	db_execute ("ALTER TABLE plugin_topx_average add index (value2_dsname)");
+	topx_seed_sources();
 }
 
-
-function plugin_topx_uninstall ()	{
-
-	if (sizeof(db_fetch_assoc("SHOW TABLES LIKE 'plugin_topx_source'")) > 0 )	{
-		db_execute("DROP TABLE `plugin_topx_source`");
+/**
+ * Seeds the default data source definitions, but only when the source table is
+ * empty, so re-running install/upgrade never duplicates rows or clobbers the
+ * administrator's own definitions.
+ *
+ * @return void
+ */
+function topx_seed_sources(): void {
+	if (db_fetch_cell('SELECT COUNT(*) FROM plugin_topx_source') > 0) {
+		return;
 	}
-	if (sizeof(db_fetch_assoc("SHOW TABLES LIKE 'plugin_topx_average'")) >0 )	{
-		db_execute("DROP TABLE `plugin_topx_average`");
+
+	$defaults = [
+		['desc', 'ucd/net - Load Average - 1 Minute', '9b82d44eb563027659683765f92c9757', 'load_1min=load_1min', 'Load', 'strip', 'load', '2', 'decimal'],
+		['desc', 'Host MIB - CPU Utilization', 'f6e7d21c19434666bbdac00ccef9932f', 'cpu=cpu', 'Utilization', 'strip', '%', '1', 'decimal'],
+		['desc', 'Host MIB - Hard Drive Space', 'd814fa3b79bd0f8933b6e0834d3f16d0', 'hdd_total%hdd_used', 'Used', 'strip', '%', '1', 'decimal'],
+		['desc', 'Interface - Errors_in + Discards_in', '36335cd98633963a575b70639cd2fdad', 'discards_in+errors_in', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal'],
+		['desc', 'Interface - Errors_out + Discards_out', '36335cd98633963a575b70639cd2fdad', 'discards_out+errors_out', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal'],
+		['desc', 'Mikrotik - System - Uptime', '0d8804fbc44a6ab9db89f8d83d050627', 'uptime/100', 'Uptime in seconds', '/', 'sec/min/hour/days', '1/60/3600/86400', 'decimal'],
+		['desc', 'APC load', 'be63bc4946561a274ace2c982548f255', 'load=load', 'Load', 'strip', '%', '0', 'decimal'],
+		['desc', 'MultiCPU AVG', '9561518147a2423734394410bcd241b4', 'load=load', 'Utilization', 'strip', '%', '0', 'decimal'],
+		['desc', 'Interface - Traffic_in+Traffic_out', '6632e1e0b58a565c135d7ff90440c335', 'traffic_in+traffic_out', 'Bits', '/', 'bit/Kbit/Mbit/Gbit/Tbit', '1/1024/1048576/1073741824/1099511627776', 'bits'],
+	];
+
+	foreach ($defaults as $row) {
+		db_execute_prepared('INSERT INTO plugin_topx_source
+			(sorting, dt_name, hash, operation, unit, final_operation, final_unit, final_number, system)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			$row);
 	}
 }
 
+/**
+ * Plugin uninstall hook. Clears the recorded version and drops the plugin's
+ * tables. Called by Cacti's plugin architecture when the plugin is removed.
+ *
+ * @return void
+ */
+function plugin_topx_uninstall(): void {
+	set_config_option('topx_version', '');
 
-function plugin_topx_version()	{
+	db_execute('DROP TABLE IF EXISTS plugin_topx_source');
+	db_execute('DROP TABLE IF EXISTS plugin_topx_average');
+}
+
+/**
+ * Reads and returns this plugin's metadata from its INFO file.
+ *
+ * @return array The plugin's info array parsed from the INFO '[info]' section.
+ *
+ * @global array $config Cacti global configuration array; used to locate the
+ *                       plugin's INFO file.
+ */
+function plugin_topx_version(): array {
 	global $config;
-	$info = parse_ini_file($config['base_path'] . '/plugins/topx/INFO', true);
-	return $info['info'];
+
+	$info = parse_ini_file($config['base_path'] . '/plugins/topx/INFO', true) ?: [];
+
+	return $info['info'] ?? [];
 }
 
+/**
+ * Plugin config-check hook. Ensures the plugin schema and registration are up
+ * to date by delegating to plugin_topx_upgrade(). Called by Cacti's plugin
+ * architecture on relevant page loads.
+ *
+ * @return bool Always true.
+ */
+function plugin_topx_check_config(): bool {
+	plugin_topx_upgrade();
 
-function plugin_topx_check_config () {
 	return true;
 }
 
+/**
+ * Plugin upgrade hook. When the recorded database version differs from the
+ * INFO version, refreshes the plugin_config and plugin_realms records, prunes
+ * files tombstoned in manifest.json, and re-runs the idempotent schema setup.
+ * Only acts on index.php/plugins.php or topx.php page loads.
+ *
+ * @return bool|null Null when this is not a relevant page; otherwise false
+ *                   after completing the upgrade checks.
+ */
+function plugin_topx_upgrade() {
+	$files = ['index.php', 'plugins.php'];
 
-function topx_show_tab () {
+	if (!in_array(get_current_page(), $files, true) && strpos(get_current_page(), 'topx.php') === false) {
+		return null;
+	}
+
+	$info    = plugin_topx_version();
+	$current = $info['version'] ?? '';
+	$old     = db_fetch_cell("SELECT version FROM plugin_config WHERE directory = 'topx'");
+
+	if ($current != $old) {
+		db_execute_prepared('UPDATE plugin_realms
+			SET display = ? WHERE file = ?',
+			['Plugin TopX - View', 'topx.php']);
+
+		$id = db_fetch_cell("SELECT id FROM plugin_config WHERE directory = 'topx'");
+
+		db_execute_prepared('UPDATE plugin_config
+			SET name = ?, author = ?, webpage = ?, version = ?
+			WHERE id = ?',
+			[
+				$info['longname'] ?? 'TopX',
+				$info['author']   ?? '',
+				$info['homepage'] ?? '',
+				$current,
+				$id,
+			]);
+
+		topx_setup_database();
+
+		topx_prune_files();
+	}
+
+	return false;
+}
+
+/**
+ * Renders the TopX console tab. Only shown to users with the plugin's realm
+ * permission. Called by Cacti via the 'top_header_tabs' and
+ * 'top_graph_header_tabs' hooks.
+ *
+ * @return void
+ *
+ * @global array $config Cacti global configuration array; used for URL paths.
+ */
+function topx_show_tab(): void {
 	global $config;
-	if (api_user_realm_auth('topx.php')) {
-		$cp = false;
-		if (basename($_SERVER['PHP_SELF']) == 'topx.php')
-		    $cp = true;
-		print '<a href="' . $config['url_path'] . 'plugins/topx/topx.php"><img src="' . $config['url_path'] . 'plugins/topx/images/tab_topx' . ($cp ? '_down': '') . '.gif" alt="topx" align="absmiddle" border="0"></a>';
+
+	if (!is_realm_allowed(1) && !api_user_realm_auth('topx.php')) {
+		return;
+	}
+
+	$current = (basename($_SERVER['PHP_SELF']) === 'topx.php');
+
+	print '<a href="' . html_escape($config['url_path']) . 'plugins/topx/topx.php">' .
+		'<img src="' . html_escape($config['url_path']) . 'plugins/topx/images/tab_topx' . ($current ? '_down' : '') . '.gif" ' .
+		'alt="' . __esc('TopX', 'topx') . '" style="vertical-align:middle;" border="0"></a>';
+}
+
+/**
+ * Removes paths tombstoned in manifest.json plus the dev-only tests/ tree and
+ * phpunit.xml during an upgrade, leaving whitelisted (user-data), .git* and
+ * .md* paths alone. Refuses any tombstone that resolves outside the plugin
+ * directory (a tampered manifest.json) and logs anything it cannot remove.
+ * Called from plugin_topx_upgrade().
+ *
+ * @return void
+ *
+ * @global array $config Cacti global configuration array; used to locate the
+ *                       plugin directory.
+ */
+function topx_prune_files(): void {
+	global $config;
+
+	$plugin_dir    = $config['base_path'] . '/plugins/topx';
+	$manifest_path = $plugin_dir . '/manifest.json';
+
+	if (!is_readable($manifest_path)) {
+		return;
+	}
+
+	$manifest = json_decode((string) file_get_contents($manifest_path), true);
+
+	if (!is_array($manifest)) {
+		cacti_log('WARNING: topx manifest.json could not be parsed; skipping file prune', false, 'TOPX');
+
+		return;
+	}
+
+	$tombstones = isset($manifest['tombstones']) && is_array($manifest['tombstones']) ? $manifest['tombstones'] : [];
+	$expected   = isset($manifest['expected'])   && is_array($manifest['expected'])   ? $manifest['expected']   : [];
+	$whitelist  = isset($manifest['whitelist'])  && is_array($manifest['whitelist'])  ? $manifest['whitelist']  : [];
+
+	$protected = function (string $rel) use ($whitelist): bool {
+		if (strncmp($rel, '.git', 4) === 0 || strncmp($rel, '.md', 3) === 0) {
+			return true;
+		}
+
+		foreach ($whitelist as $entry) {
+			$entry = trim((string) $entry, '/');
+
+			if ($entry !== '' && ($rel === $entry
+				|| strncmp($rel, $entry . '/', strlen($entry) + 1) === 0
+				|| strncmp($entry, $rel . '/', strlen($rel) + 1) === 0)) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	$plugin_real = realpath($plugin_dir);
+
+	$remove   = $tombstones;
+	$remove[] = 'tests/';
+	$remove[] = 'phpunit.xml';
+
+	foreach ($remove as $rel) {
+		$rel = trim((string) $rel, '/');
+
+		if ($rel === '' || $protected($rel)) {
+			continue;
+		}
+
+		$segments = explode('/', $rel);
+
+		if (in_array('.', $segments, true) || in_array('..', $segments, true)) {
+			cacti_log(sprintf('WARNING: topx prune refused to remove %s: path contains a traversal segment (tampered manifest.json?)', $rel), false, 'TOPX');
+
+			continue;
+		}
+
+		$path = $plugin_dir . '/' . $rel;
+
+		if (!is_link($path) && !file_exists($path)) {
+			continue;
+		}
+
+		$anchor = is_link($path) ? dirname($path) : $path;
+		$real   = realpath($anchor);
+
+		if ($real === false || ($real !== $plugin_real && strncmp($real, $plugin_real . DIRECTORY_SEPARATOR, strlen((string) $plugin_real) + 1) !== 0)) {
+			cacti_log(sprintf('WARNING: topx prune refused to remove %s: path resolves outside the plugin directory (tampered manifest.json?)', $rel), false, 'TOPX');
+
+			continue;
+		}
+
+		if (is_dir($path) && !is_link($path)) {
+			$removed = topx_rmtree($path);
+		} else {
+			$removed = @unlink($path);
+		}
+
+		if (!$removed) {
+			cacti_log(sprintf('WARNING: topx upgrade could not remove %s (check file/directory permissions)', $rel), false, 'TOPX');
+		}
+	}
+
+	$known = [];
+
+	foreach (array_merge($expected, $tombstones) as $entry) {
+		$top = explode('/', trim((string) $entry, '/'))[0];
+
+		if ($top !== '') {
+			$known[$top] = true;
+		}
+	}
+
+	$entries = scandir($plugin_dir);
+
+	foreach (($entries !== false ? $entries : []) as $entry) {
+		if ($entry === '.' || $entry === '..' || $entry === 'tests' || $entry === 'phpunit.xml' || $protected($entry) || isset($known[$entry])) {
+			continue;
+		}
+
+		cacti_log(sprintf('WARNING: topx upgrade found a file/directory not described in manifest.json: %s (left in place)', $entry), false, 'TOPX');
 	}
 }
 
+/**
+ * Recursively deletes a directory and its contents. Symlinks are removed
+ * without being followed. Helper for topx_prune_files().
+ *
+ * @param string $dir Absolute path to the directory to remove.
+ *
+ * @return bool True if everything under the directory was removed, false if
+ *              any entry could not be deleted.
+ */
+function topx_rmtree(string $dir): bool {
+	$entries = scandir($dir);
+	$ok      = true;
 
-?>
+	foreach (($entries !== false ? $entries : []) as $entry) {
+		if ($entry === '.' || $entry === '..') {
+			continue;
+		}
+
+		$path = $dir . '/' . $entry;
+
+		if (is_dir($path) && !is_link($path)) {
+			if (!topx_rmtree($path)) {
+				$ok = false;
+			}
+		} elseif (!@unlink($path)) {
+			$ok = false;
+		}
+	}
+
+	if (!@rmdir($dir)) {
+		$ok = false;
+	}
+
+	return $ok;
+}

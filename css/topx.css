@@ -1,0 +1,47 @@
+/*
+ +-------------------------------------------------------------------------+
+ | Copyright (C) 2015-2026 Petr Macek                                      |
+ |                                                                         |
+ | This program is free software; you can redistribute it and/or           |
+ | modify it under the terms of the GNU General Public License             |
+ | as published by the Free Software Foundation; either version 2          |
+ | of the License, or (at your option) any later version.                  |
+ +-------------------------------------------------------------------------+
+ | Cacti: The Complete RRDtool-based Graphing Solution                     |
+ +-------------------------------------------------------------------------+
+ | TopX styling. Theme neutral: colours are inherited from the active      |
+ | Cacti theme through CSS custom properties and currentColor rather than  |
+ | being hard coded per theme, so a single stylesheet works everywhere.    |
+ +-------------------------------------------------------------------------+
+*/
+
+.topx_table {
+	margin-right: 30px;
+	border-collapse: collapse;
+}
+
+.topx_table th,
+.topx_table td {
+	padding-right: 10px;
+	padding-left: 3px;
+	border-bottom: 1px solid var(--panel-border-color, #cccccc);
+}
+
+.topx_table th {
+	text-align: left;
+	background-color: var(--panel-header-background-color, rgba(128, 128, 128, 0.15));
+	color: inherit;
+}
+
+.topx_graph {
+	background-color: var(--panel-background-color, transparent);
+}
+
+.topx_h3 {
+	color: inherit;
+}
+
+#ds {
+	overflow-y: auto;
+	max-height: 150px;
+}

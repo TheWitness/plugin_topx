@@ -1,0 +1,159 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR The Cacti Group
+# This file is distributed under the same license as the Cacti package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Cacti \n"
+"Report-Msgid-Bugs-To: developers@cacti.net\n"
+"POT-Creation-Date: 2026-11-05 13:16-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Cacti Developers <developers@cacti.net>>\n"
+"Language-Team: Cacti Developers <developers@cacti.net>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: includes/arrays.php
+msgid "Last Hour"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Last Day"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Last Week"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Last Month"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Last Year"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 5"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 10"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 20"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 50"
+msgstr ""
+
+#: includes/arrays.php
+msgid "All"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Normal"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Reverse"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Average"
+msgstr ""
+
+#: includes/arrays.php topx.php
+msgid "Peak"
+msgstr ""
+
+#: setup.php topx.php
+msgid "TopX"
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "Please enable and configure %sDS Stats%s"
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "Avg. value [%s]"
+msgstr ""
+
+#: topx.php
+msgid "Data Source"
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "Peak [%s]"
+msgstr ""
+
+#: topx.php
+msgid "Average all"
+msgstr ""
+
+#: topx.php
+msgid "Average all DS"
+msgstr ""
+
+#: topx.php
+msgid "Unsupported: plain data without units, only with decimal unit conversion"
+msgstr ""
+
+#: topx.php
+msgid "Avg. value"
+msgstr ""
+
+#: topx.php
+msgid "Displaying all records, the chart will not be displayed. It is only shown for 50 or fewer records."
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "DS Stats last major run time: %s"
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "DS Stats last daily run time: %s"
+msgstr ""
+
+#: topx.php
+msgid "Age"
+msgstr ""
+
+#: topx.php
+msgid "Records"
+msgstr ""
+
+#: topx.php
+msgid "Order"
+msgstr ""
+
+#: topx.php
+msgid "What"
+msgstr ""
+
+#: topx.php
+msgid "Go"
+msgstr ""
+
+#: topx.php
+msgid "Set/Refresh Filters"
+msgstr ""
+
+#: topx.php
+msgid "Clear"
+msgstr ""
+
+#: topx.php
+msgid "Clear Filters"
+msgstr ""

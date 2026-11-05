@@ -1,0 +1,165 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: developers@cacti.net\n"
+"POT-Creation-Date: 2026-11-05 13:16-0500\n"
+"PO-Revision-Date: 2024-07-21 16:38-0400\n"
+"Last-Translator: Ede Willians dos Santos Cavalcante <edewillians10@gmail.com>\n"
+"Language-Team: Portuguese (Brazil) <http://translate.cacti.net/projects/cacti/audit/pt_BR/>\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Poedit 3.4.4\n"
+
+#: includes/arrays.php
+msgid "All"
+msgstr "Todos"
+
+#: includes/arrays.php
+msgid "Average"
+msgstr ""
+
+#: includes/arrays.php
+#, fuzzy
+msgid "Last Day"
+msgstr "Última Duração"
+
+#: includes/arrays.php
+#, fuzzy
+msgid "Last Hour"
+msgstr "Última Duração"
+
+#: includes/arrays.php
+#, fuzzy
+msgid "Last Month"
+msgstr "Último tempo de execução"
+
+#: includes/arrays.php
+msgid "Last Week"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Last Year"
+msgstr ""
+
+#: includes/arrays.php
+#, fuzzy
+msgid "Normal"
+msgstr "Usuário normal"
+
+#: includes/arrays.php topx.php
+msgid "Peak"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Reverse"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 10"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 20"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 5"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Top 50"
+msgstr ""
+
+#: setup.php topx.php
+msgid "TopX"
+msgstr ""
+
+#: topx.php
+msgid "Age"
+msgstr ""
+
+#: topx.php
+msgid "Average all"
+msgstr ""
+
+#: topx.php
+msgid "Average all DS"
+msgstr ""
+
+#: topx.php
+msgid "Avg. value"
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "Avg. value [%s]"
+msgstr ""
+
+#: topx.php
+msgid "Clear"
+msgstr "Limpar"
+
+#: topx.php
+msgid "Clear Filters"
+msgstr "Limpar Filtros"
+
+#: topx.php
+#, php-format
+msgid "DS Stats last daily run time: %s"
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "DS Stats last major run time: %s"
+msgstr ""
+
+#: topx.php
+#, fuzzy
+msgid "Data Source"
+msgstr "Fonte(s) de dados"
+
+#: topx.php
+msgid "Displaying all records, the chart will not be displayed. It is only shown for 50 or fewer records."
+msgstr ""
+
+#: topx.php
+msgid "Go"
+msgstr "Ir"
+
+#: topx.php
+msgid "Order"
+msgstr "Pedido"
+
+#: topx.php
+#, php-format
+msgid "Peak [%s]"
+msgstr ""
+
+#: topx.php
+#, php-format
+msgid "Please enable and configure %sDS Stats%s"
+msgstr ""
+
+#: topx.php
+msgid "Records"
+msgstr ""
+
+#: topx.php
+msgid "Set/Refresh Filters"
+msgstr "Definir/atualizar filtros"
+
+#: topx.php
+msgid "Unsupported: plain data without units, only with decimal unit conversion"
+msgstr ""
+
+#: topx.php
+msgid "What"
+msgstr ""
