@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-05 15:11-0500\n"
+"POT-Creation-Date: 2026-11-05 15:53-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -259,7 +259,8 @@ msgid "Average and Peak"
 msgstr ""
 
 #: includes/dashboard.php
-msgid "Value Distribution"
+#, php-format
+msgid "Values by % of Peak"
 msgstr ""
 
 #: includes/dashboard.php
@@ -280,6 +281,10 @@ msgstr ""
 
 #: includes/dashboard.php
 msgid "75–100%"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
 msgstr ""
 
 #: includes/dashboard.php
