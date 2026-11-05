@@ -2,6 +2,26 @@
 
 All notable changes to the TopX plugin are documented in this file.
 
+## 1.1
+
+- Reworked the UI into draggable card dashboards using the shared Cacti plugin
+  card engine (as in apcupsd/monitor/syslog): per-card tools (expand, maximize,
+  refresh, remove), an "Add card" catalogue, drag/keyboard reorder, a Cacti
+  timespan selector, an auto-refresh interval on the right and server-side
+  layout persistence per user.
+- Two dashboards: an all-data-source **Overview** (catalogue summary, source
+  distribution, an Uptime-by-Host bucketed bar chart and a sortable Data Sources
+  table with drilldown links) and a per-data-source **Drilldown** (rankings
+  table, billboard ranking chart, summary tiles, average/peak gauges and a value
+  distribution bar).
+- Replaced the fixed "age" filter with Cacti's standard timespan selector; kept
+  the data source, records, order and "what" filters.
+- Added `includes/dashboard.php` (card engine + cards), `js/topx_dashboard.js`
+  and `css/topx_dashboard.css`, all CSP-nonced and CSRF-protected; charts render
+  from JSON data islands via billboard.js so they survive in-place AJAX refresh.
+- Extracted the ranking computation into `topx_compute_ranking()` and added
+  timespan-to-bucket and uptime-bucketing helpers, with unit coverage.
+
 ## 1.0
 
 Modernization for Cacti 1.2.32 standards:

@@ -1,0 +1,620 @@
+/*
+ +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group                                 |
+ |                                                                         |
+ | This program is free software; you can redistribute it and/or           |
+ | modify it under the terms of the GNU General Public License             |
+ | as published by the Free Software Foundation; either version 2          |
+ | of the License, or (at your option) any later version.                  |
+ +-------------------------------------------------------------------------+
+ | Cacti: The Complete RRDtool-based Graphing Solution                     |
+ +-------------------------------------------------------------------------+
+*/
+
+/*
+ * UPS Dashboard (per-UPS drilldown). The card grid, bullet charts, tables and
+ * graph panels are theme-adaptive: colours are derived from the surrounding
+ * text colour via color-mix(currentColor ...) so the same rules read correctly
+ * on every Cacti theme, with the per-theme css/<theme>.css files tuning accents.
+ * Severity accents (up/recovering/down) use fixed, theme-independent colours.
+ */
+
+.topxDashboard {
+	color: #1b6ca8;
+}
+
+/* UPS + timespan + add-card + refresh toolbar above the grid. */
+.topxDashToolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 10px 4px 0;
+}
+
+.topxDashToolbarLabel {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.topxDashUps,
+.topxDashTimespan,
+.topxDashAdd,
+.topxDashRefreshInterval {
+	box-sizing: border-box;
+	padding: 4px 8px;
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: 7px;
+	background: color-mix(in srgb, currentColor 4%, transparent);
+	color: inherit;
+	font-size: 12px;
+}
+
+.topxDashAdd {
+	min-width: 180px;
+}
+
+.topxDashRefresh {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+}
+
+.topxDashSaveStatus {
+	flex: 0 1 100%;
+	font-size: 12px;
+}
+
+/* The 8-column card grid; each card spans a number of columns via a span class. */
+.topxDashGrid {
+	display: grid;
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+	align-items: start;
+	gap: 14px;
+	margin: 10px 4px;
+	font-variant-numeric: tabular-nums;
+}
+
+.topxDashSpan2 { grid-column: span 2; }
+.topxDashSpan3 { grid-column: span 3; }
+.topxDashSpan4 { grid-column: span 4; }
+.topxDashSpan6 { grid-column: span 6; }
+.topxDashSpan8 { grid-column: span 8; }
+
+.topxDashCard {
+	box-sizing: border-box;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+	background: color-mix(in srgb, currentColor 4%, transparent);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	overflow: hidden;
+}
+
+.topxDashCardHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	box-sizing: border-box;
+	padding: 7px 10px;
+	min-height: 34px;
+	border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+	background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+/* Header severity accents: a translucent colour wash keeps strength consistent
+   across light and dark surfaces. */
+.topxDashCardHeader--up         { background: color-mix(in srgb, #94b36b 30%, transparent); }
+.topxDashCardHeader--recovering { background: color-mix(in srgb, #ff8f1e 30%, transparent); }
+.topxDashCardHeader--down       { background: color-mix(in srgb, #cc0000 30%, transparent); }
+
+.topxDashCardDrag {
+	flex: 0 0 auto;
+	box-sizing: border-box;
+	padding: 2px 5px;
+	/* reserve a transparent border so an inherited button:hover border cannot reflow the header */
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: transparent;
+	color: color-mix(in srgb, currentColor 50%, transparent);
+	font-size: 13px;
+	line-height: 1;
+	cursor: grab;
+}
+
+.topxDashCardDrag:hover,
+.topxDashCardDrag:focus-visible {
+	color: currentColor;
+	border-color: transparent;
+	background: color-mix(in srgb, currentColor 12%, transparent);
+	outline: none;
+}
+
+.topxDashCardDrag:active { cursor: grabbing; }
+
+.topxDashCardTitle {
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.3;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.topxDashCardDragging { opacity: 0.5; }
+
+.topxDashCardTools {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 1px;
+}
+
+.topxDashCardTool {
+	box-sizing: border-box;
+	padding: 2px 5px;
+	/* reserve a transparent border so an inherited button:hover border cannot reflow the header */
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: transparent;
+	color: color-mix(in srgb, currentColor 50%, transparent);
+	font-size: 12px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.topxDashCardTool:hover,
+.topxDashCardTool:focus-visible {
+	color: currentColor;
+	border-color: transparent;
+	background: color-mix(in srgb, currentColor 12%, transparent);
+	outline: none;
+}
+
+.topxDashRefreshNow { font-size: 14px; }
+
+.topxDashCard:not(.topxDashCardExpanded) .topxDashCardTool[data-tool="collapse"],
+.topxDashCardExpanded .topxDashCardTool[data-tool="expand"] {
+	display: none;
+}
+
+.topxDashCardExpandable:not(.topxDashCardExpanded) .topxDashCardBody {
+	position: relative;
+	max-height: 230px;
+	overflow: hidden;
+}
+
+.topxDashCardExpandable:not(.topxDashCardExpanded) .topxDashCardBody::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 30px;
+	pointer-events: none;
+	background: linear-gradient(transparent, color-mix(in srgb, currentColor 4%, transparent));
+}
+
+.topxDashCardBody {
+	padding: 10px 12px;
+	overflow-x: auto;
+}
+
+/* Key/value and data tables inside cards. */
+.topxDashTable {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px;
+}
+
+.topxDashTable th,
+.topxDashTable td {
+	padding: 6px 8px;
+	text-align: left;
+	vertical-align: middle;
+	overflow-wrap: anywhere;
+}
+
+.topxDashTable tbody tr + tr > th,
+.topxDashTable tbody tr + tr > td {
+	border-top: 1px solid color-mix(in srgb, currentColor 9%, transparent);
+}
+
+.topxDashKv th {
+	width: 44%;
+	font-weight: normal;
+	color: color-mix(in srgb, currentColor 72%, transparent);
+}
+
+.topxDashKv td { font-weight: 600; }
+
+/* Status line + pill. */
+.topxDashStatus {
+	margin-bottom: 8px;
+}
+
+.topxDashPill {
+	display: inline-block;
+	min-width: 72px;
+	padding: 2px 12px;
+	border-radius: 10px;
+	color: #fff;
+	font-size: 0.85em;
+	font-weight: 600;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.topxDashPill--up      { background-color: #2e7d32; }
+.topxDashPill--warn    { background-color: #8a6d12; }
+.topxDashPill--down    { background-color: #a12820; }
+.topxDashPill--unknown { background-color: #5f5f57; }
+
+.topxDashEmpty {
+	color: color-mix(in srgb, currentColor 65%, transparent);
+	font-style: italic;
+}
+
+/* Graph cards: a Cacti graph image sized to the card. */
+.topxDashGraph {
+	display: flex;
+	justify-content: center;
+}
+
+.topxDashGraphImg {
+	max-width: 100%;
+	height: auto;
+}
+
+/*
+ * Min / avg / max bullet chart. The track is 0..scale; a translucent band spans
+ * min..max; a strong marker sits at the current value. Matches the thold /
+ * mactrack / hmib bullet visuals.
+ */
+.topxBullet {
+	margin: 10px 0;
+}
+
+.topxBulletHead {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+.topxBulletLabel {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.topxBulletAvg {
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+.topxBulletTrack {
+	position: relative;
+	height: 16px;
+	border-radius: 8px;
+	background: color-mix(in srgb, currentColor 12%, transparent);
+	overflow: hidden;
+}
+
+.topxBulletRange {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-radius: 8px;
+}
+
+.topxBulletRange--up         { background: color-mix(in srgb, #3c9a5f 55%, transparent); }
+.topxBulletRange--recovering { background: color-mix(in srgb, #d9830f 55%, transparent); }
+.topxBulletRange--down       { background: color-mix(in srgb, #cc0000 55%, transparent); }
+.topxBulletRange--none       { background: color-mix(in srgb, currentColor 32%, transparent); }
+
+.topxBulletMarker {
+	position: absolute;
+	top: -2px;
+	bottom: -2px;
+	width: 3px;
+	transform: translateX(-1px);
+	background: currentColor;
+	border-radius: 2px;
+}
+
+.topxBulletAvgMarker {
+	position: absolute;
+	top: 1px;
+	bottom: 1px;
+	width: 0;
+	border-left: 2px dashed color-mix(in srgb, currentColor 70%, transparent);
+	transform: translateX(-1px);
+}
+
+.topxBulletScale {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 2px;
+	font-size: 10px;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+/*
+ * Semicircular SVG gauge, one per card, mirroring the hmib CPU/memory/swap
+ * gauges: a 0..scale track, a current-value sweep tinted by severity, faint
+ * min/max ticks over the selected timespan, and the value centred in the dial.
+ */
+.topxGaugeGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 10px;
+	align-items: start;
+}
+
+.topxGaugeCell {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.topxGaugeCellLabel {
+	font-size: 12px;
+	font-weight: 600;
+	text-align: center;
+}
+
+.topxGauge {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 2px 0 4px;
+}
+
+.topxGaugeSvg {
+	width: 100%;
+	max-width: 190px;
+	height: auto;
+	overflow: visible;
+}
+
+.topxGaugeTrack {
+	fill: none;
+	stroke: color-mix(in srgb, currentColor 16%, transparent);
+	stroke-width: 11;
+	stroke-linecap: round;
+}
+
+.topxGaugeValue {
+	fill: none;
+	stroke-width: 11;
+	stroke-linecap: round;
+	stroke: color-mix(in srgb, currentColor 45%, transparent);
+	transition: stroke-dasharray 0.4s ease;
+}
+
+.topxGaugeValue--up         { stroke: #3c9a5f; }
+.topxGaugeValue--recovering { stroke: #d9830f; }
+.topxGaugeValue--down       { stroke: #cc0000; }
+
+.topxGaugeTick {
+	stroke: color-mix(in srgb, currentColor 55%, transparent);
+	stroke-width: 2;
+}
+
+.topxGaugeText {
+	margin-top: -22px;
+	text-align: center;
+	line-height: 1.2;
+}
+
+.topxGaugeValueText {
+	display: block;
+	font-size: 20px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.topxGaugeSub {
+	display: block;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, currentColor 65%, transparent);
+}
+
+/* Per-UPS drilldown action glyph in the UPSes list and the fleet table. */
+.topxDashGlyph {
+	color: #3c9a5f;
+	text-decoration: none;
+}
+
+.topxDashGlyph:hover,
+.topxDashGlyph:focus-visible {
+	color: #2e7d32;
+}
+
+/* The maximize dialog body. */
+.topxDashDialogBody {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Fleet (high-level) Dashboard: stat tiles and the status stacked bar. */
+.topxFleetTiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+	gap: 8px;
+}
+
+.topxFleetTile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	padding: 8px 6px;
+	border-radius: 7px;
+	border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+	background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.topxFleetTileValue {
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+
+.topxFleetTileLabel {
+	font-size: 11px;
+	text-align: center;
+	color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+.topxFleetTile--up   { border-color: color-mix(in srgb, #3c9a5f 55%, transparent); }
+.topxFleetTile--rec  { border-color: color-mix(in srgb, #d9830f 55%, transparent); }
+.topxFleetTile--down { border-color: color-mix(in srgb, #cc0000 55%, transparent); }
+.topxFleetTile--up .topxFleetTileValue   { color: #3c9a5f; }
+.topxFleetTile--rec .topxFleetTileValue  { color: #d9830f; }
+.topxFleetTile--down .topxFleetTileValue { color: #cc0000; }
+
+.topxStackBar {
+	display: flex;
+	height: 20px;
+	border-radius: 6px;
+	overflow: hidden;
+	background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.topxStackSeg { height: 100%; }
+.topxStackSeg--up   { background: #3c9a5f; }
+.topxStackSeg--down { background: #cc0000; }
+.topxStackSeg--rec  { background: #d9830f; }
+.topxStackSeg--dis  { background: color-mix(in srgb, currentColor 35%, transparent); }
+
+.topxStackLegend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 8px;
+	font-size: 11px;
+}
+
+.topxStackLegend span {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.topxStackChip {
+	width: 10px;
+	height: 10px;
+	border-radius: 2px;
+	display: inline-block;
+}
+
+.topxDashNum {
+	text-align: right;
+	white-space: nowrap;
+}
+
+.topxDashTable td.topxDashNum,
+.topxDashTable th.topxDashNum {
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* Centred columns, such as the status pill. Must outrank
+   ".topxDashTable th, .topxDashTable td { text-align: left }". */
+.topxDashTable td.topxDashCenter,
+.topxDashTable th.topxDashCenter {
+	text-align: center;
+}
+
+/* Sortable column headers (same behaviour as the HMIB dashboards): click or
+   press Enter/Space to sort; the arrow shows the active direction. */
+.topxDashTable th.topxDashSortable {
+	cursor: pointer;
+	user-select: none;
+}
+
+.topxDashTable th.topxDashSortable:hover {
+	background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.topxDashTable th.topxDashSortable::after {
+	content: '\2195';
+	margin-left: 5px;
+	opacity: 0.4;
+	font-size: 10px;
+}
+
+.topxDashTable th.topxDashSortAsc::after  { content: '\2191'; opacity: 0.9; }
+.topxDashTable th.topxDashSortDesc::after { content: '\2193'; opacity: 0.9; }
+
+/* Fleet total row under the UPSes table. */
+.topxDashTotalRow > td {
+	border-top: 2px solid color-mix(in srgb, currentColor 22%, transparent);
+	font-weight: 600;
+}
+
+.topxDashNote {
+	margin: 8px 0 0;
+	text-align: center;
+	font-size: 11px;
+	color: color-mix(in srgb, currentColor 65%, transparent);
+}
+
+/* Narrow the grid before cards get cramped. */
+@media (max-width: 1200px) {
+	.topxDashGrid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	.topxDashSpan4,
+	.topxDashSpan6,
+	.topxDashSpan8 {
+		grid-column: 1 / -1;
+	}
+}
+
+@media (max-width: 760px) {
+	.topxDashGrid {
+		grid-template-columns: 1fr;
+		gap: 10px;
+	}
+
+	.topxDashSpan2,
+	.topxDashSpan3,
+	.topxDashSpan4,
+	.topxDashSpan6,
+	.topxDashSpan8 {
+		grid-column: 1 / -1;
+	}
+}
+
+/* billboard.js chart cards (drilldown Ranking Chart, overview Uptime by Host) */
+.topx-bb-chart {
+	width: 100%;
+	min-height: 240px;
+}
+
+.topx-bb-chart svg {
+	width: 100%;
+}
+
+.bb line.topx-avg-line,
+.topx-avg-line line {
+	stroke: #cc0000;
+	stroke-dasharray: 4 3;
+}
+
+.topx-avg-line text {
+	fill: #cc0000;
+}

@@ -34,9 +34,10 @@ include_once(__DIR__ . '/includes/arrays.php');
  * @return void
  */
 function plugin_topx_install(): void {
-	api_plugin_register_hook('topx', 'config_arrays',          'topx_config_arrays', 'setup.php');
-	api_plugin_register_hook('topx', 'top_header_tabs',        'topx_show_tab',      'setup.php');
-	api_plugin_register_hook('topx', 'top_graph_header_tabs',  'topx_show_tab',      'setup.php');
+	api_plugin_register_hook('topx', 'config_arrays',          'topx_config_arrays',           'setup.php');
+	api_plugin_register_hook('topx', 'top_header_tabs',        'topx_show_tab',                'setup.php');
+	api_plugin_register_hook('topx', 'top_graph_header_tabs',  'topx_show_tab',                'setup.php');
+	api_plugin_register_hook('topx', 'draw_navigation_text',   'topx_draw_navigation_text',    'setup.php');
 
 	api_plugin_register_realm('topx', 'topx.php', 'Plugin TopX - View', 1);
 
@@ -213,6 +214,11 @@ function plugin_topx_upgrade() {
 		topx_prune_files();
 	}
 
+	// Register the navigation hook for installations that predate it.
+	if (!db_fetch_cell("SELECT id FROM plugin_hooks WHERE name = 'topx' AND hook = 'draw_navigation_text' AND `function` = 'topx_draw_navigation_text'")) {
+		api_plugin_register_hook('topx', 'draw_navigation_text', 'topx_draw_navigation_text', 'setup.php', true);
+	}
+
 	return false;
 }
 
@@ -234,9 +240,36 @@ function topx_show_tab(): void {
 
 	$current = (basename($_SERVER['PHP_SELF']) === 'topx.php');
 
-	print '<a href="' . html_escape($config['url_path']) . 'plugins/topx/topx.php">' .
+	print '<a href="' . html_escape($config['url_path']) . 'plugins/topx/topx.php?action=dashboard">' .
 		'<img src="' . html_escape($config['url_path']) . 'plugins/topx/images/tab_topx' . ($current ? '_down' : '') . '.gif" ' .
 		'alt="' . __esc('TopX', 'topx') . '" style="vertical-align:middle;" border="0"></a>';
+}
+
+/**
+ * Draw_navigation_text hook: registers the TopX dashboard pages so Cacti renders
+ * a correct breadcrumb for them. Called by Cacti core via the
+ * 'draw_navigation_text' filter.
+ *
+ * @param array $nav The accumulating navigation map.
+ *
+ * @return array The navigation map with the TopX pages added.
+ */
+function topx_draw_navigation_text($nav) {
+	$nav['topx.php:dashboard'] = [
+		'title'   => __('TopX Overview', 'topx'),
+		'mapping' => '',
+		'url'     => 'topx.php?action=dashboard',
+		'level'   => 0,
+	];
+
+	$nav['topx.php:view'] = [
+		'title'   => __('TopX Data Source', 'topx'),
+		'mapping' => 'topx.php:dashboard',
+		'url'     => 'topx.php?action=view',
+		'level'   => 1,
+	];
+
+	return $nav;
 }
 
 /**

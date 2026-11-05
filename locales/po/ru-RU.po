@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-05 13:16-0500\n"
+"POT-Creation-Date: 2026-11-05 13:53-0500\n"
 "PO-Revision-Date: 2024-07-21 16:39-0400\n"
 "Last-Translator: Coool (github.com/Coool) <coool@mail.lv>\n"
 "Language-Team: Russian <http://translate.cacti.net/projects/cacti/audit/ru/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 msgid "All"
 msgstr "Все"
 
-#: includes/arrays.php
+#: includes/arrays.php includes/dashboard.php
 msgid "Average"
 msgstr ""
 
@@ -54,7 +54,7 @@ msgstr ""
 msgid "Normal"
 msgstr "Обычный пользователь"
 
-#: includes/arrays.php topx.php
+#: includes/arrays.php includes/dashboard.php
 msgid "Peak"
 msgstr ""
 
@@ -78,88 +78,246 @@ msgstr ""
 msgid "Top 50"
 msgstr ""
 
-#: setup.php topx.php
-msgid "TopX"
+#: includes/dashboard.php
+msgid "0–25%"
 msgstr ""
 
-#: topx.php
-msgid "Age"
+#: includes/dashboard.php
+msgid "1 Minute"
 msgstr ""
 
-#: topx.php
-msgid "Average all"
+#: includes/dashboard.php
+msgid "1 day – 1 week"
 msgstr ""
 
-#: topx.php
-msgid "Average all DS"
+#: includes/dashboard.php
+msgid "1 week – 1 month"
 msgstr ""
 
-#: topx.php
-msgid "Avg. value"
+#: includes/dashboard.php
+msgid "1 – 6 months"
 msgstr ""
 
-#: topx.php
-#, php-format
-msgid "Avg. value [%s]"
+#: includes/dashboard.php
+msgid "25–50%"
 msgstr ""
 
-#: topx.php
-msgid "Clear"
-msgstr "Очистить"
-
-#: topx.php
-msgid "Clear Filters"
-msgstr "Очистить фильтры"
-
-#: topx.php
-#, php-format
-msgid "DS Stats last daily run time: %s"
+#: includes/dashboard.php
+msgid "30 Seconds"
 msgstr ""
 
-#: topx.php
-#, php-format
-msgid "DS Stats last major run time: %s"
+#: includes/dashboard.php
+msgid "5 Minutes"
 msgstr ""
 
-#: topx.php
+#: includes/dashboard.php
+msgid "50–75%"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "75–100%"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "< 1 day"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "> 6 months"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Add a card…"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Add card"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Average and Peak"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Catalogue Summary"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Count"
+msgstr ""
+
+#: includes/dashboard.php
 #, fuzzy
 msgid "Data Source"
 msgstr "Источник(и) данных"
 
-#: topx.php
-msgid "Displaying all records, the chart will not be displayed. It is only shown for 50 or fewer records."
+#: includes/dashboard.php
+#, fuzzy
+msgid "Data Sources"
+msgstr "Источник(и) данных"
+
+#: includes/dashboard.php
+msgid "Drag to reorder card"
 msgstr ""
 
-#: topx.php
-msgid "Go"
-msgstr "Перейти"
+#: includes/dashboard.php
+msgid "Drilldown"
+msgstr ""
 
-#: topx.php
+#: includes/dashboard.php
+msgid "Hosts"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Invalid refresh interval."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Invalid request. Please try again."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No Refresh"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No data for this source over the selected timespan."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No data source selected."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No data sources are available yet."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No data to chart yet."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "No host uptime data sources were found."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Open drilldown"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Open in a dialog"
+msgstr ""
+
+#: includes/dashboard.php
 msgid "Order"
 msgstr "Заказ"
 
-#: topx.php
-#, php-format
-msgid "Peak [%s]"
+#: includes/dashboard.php
+msgid "Overview"
 msgstr ""
 
-#: topx.php
+#: includes/dashboard.php
 #, php-format
-msgid "Please enable and configure %sDS Stats%s"
+msgid "Please enable and configure %sDS Stats%s to use TopX."
 msgstr ""
 
-#: topx.php
+#: includes/dashboard.php
+msgid "Ranking Chart"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Rankings"
+msgstr ""
+
+#: includes/dashboard.php
 msgid "Records"
 msgstr ""
 
-#: topx.php
-msgid "Set/Refresh Filters"
-msgstr "Выбрать/Обновить фильтры"
-
-#: topx.php
-msgid "Unsupported: plain data without units, only with decimal unit conversion"
+#: includes/dashboard.php
+msgid "Refresh"
 msgstr ""
 
-#: topx.php
+#: includes/dashboard.php
+msgid "Remove from page"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Show less"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Show more"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Source Distribution"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Source Types"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Summary"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Supported"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "This dashboard has too many cards to save its layout."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Timespan"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Unknown card."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Unsupported"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Uptime by Host"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Value"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Value Distribution"
+msgstr ""
+
+#: includes/dashboard.php
 msgid "What"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Yes"
+msgstr ""
+
+#: setup.php
+msgid "TopX"
+msgstr ""
+
+#: setup.php
+#, fuzzy
+msgid "TopX Data Source"
+msgstr "Источник(и) данных"
+
+#: setup.php
+msgid "TopX Overview"
 msgstr ""

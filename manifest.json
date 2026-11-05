@@ -1,7 +1,8 @@
 {
     "tombstones": [
         "themes/",
-        "js/chartjs-plugin-annotation.min.js"
+        "js/chartjs-plugin-annotation.min.js",
+        "js/topx.js"
     ],
     "expected": [
         "CHANGELOG.md",

@@ -304,3 +304,224 @@ function topx_combined_result(string $table, int $id, string $base_rrd, string $
 		ORDER BY $order_col $dir$limit_clause",
 		array($base_rrd, $base_rrd, $id, $where_rrd));
 }
+
+/**
+ * Maps a timespan length (in seconds) to the whitelisted dsstats rollup table
+ * whose resolution best matches it. Lets the Cacti timespan selector drive which
+ * dsstats bucket the dashboard reads, replacing the legacy fixed "age" filter.
+ * Kept free of database access so it can be unit tested directly.
+ *
+ * @param int $seconds The selected timespan length in seconds.
+ *
+ * @return string The matching data_source_stats_* table name.
+ */
+function topx_timespan_bucket(int $seconds): string {
+	if ($seconds <= 7200) {
+		return 'data_source_stats_hourly';
+	} elseif ($seconds <= 172800) {
+		return 'data_source_stats_daily';
+	} elseif ($seconds <= 1209600) {
+		return 'data_source_stats_weekly';
+	} elseif ($seconds <= 5270400) {
+		return 'data_source_stats_monthly';
+	}
+
+	return 'data_source_stats_yearly';
+}
+
+/**
+ * Buckets a list of per-host uptime values (in days) into the five fixed ranges
+ * shown on the Uptime by Host card. Kept free of database access so it can be
+ * unit tested directly.
+ *
+ * @param array $days_list A list of uptime values expressed in days.
+ *
+ * @return array Counts keyed by bucket: lt_day, day_week, week_month,
+ *               month_six and gt_six.
+ */
+function topx_uptime_bucket_days(array $days_list): array {
+	$buckets = [
+		'lt_day'     => 0,
+		'day_week'   => 0,
+		'week_month' => 0,
+		'month_six'  => 0,
+		'gt_six'     => 0,
+	];
+
+	foreach ($days_list as $value) {
+		$days = (float) $value;
+
+		if ($days < 1) {
+			$buckets['lt_day']++;
+		} elseif ($days < 7) {
+			$buckets['day_week']++;
+		} elseif ($days < 30) {
+			$buckets['week_month']++;
+		} elseif ($days < 182) {
+			$buckets['month_six']++;
+		} else {
+			$buckets['gt_six']++;
+		}
+	}
+
+	return $buckets;
+}
+
+/**
+ * Fetches the latest uptime reading per host from the hourly dsstats table and
+ * returns each as a number of days. SNMP sysUpTime style counters are reported
+ * in hundredths of a second (timeticks), so the raw value is divided by 100 and
+ * then by 86400. Thin database wrapper around topx_uptime_bucket_days().
+ *
+ * @return array A list of per-host uptime values in days.
+ */
+function topx_uptime_host_days(): array {
+	$rows = db_fetch_assoc("SELECT MAX(s.average) AS val
+		FROM data_source_stats_hourly AS s
+		INNER JOIN data_local AS dl ON s.local_data_id = dl.id
+		INNER JOIN host AS h ON dl.host_id = h.id
+		WHERE s.rrd_name LIKE '%uptime%' AND s.average > 0
+		GROUP BY h.id");
+
+	$days = [];
+
+	foreach ($rows as $row) {
+		$days[] = ((float) $row['val'] / 100) / 86400;
+	}
+
+	return $days;
+}
+
+/**
+ * Computes high-level counts across the TopX data source catalogue for the
+ * overview dashboard tiles and distribution card.
+ *
+ * @return array Counts keyed by supported_types, unsupported_types,
+ *               total_types and total_sources.
+ */
+function topx_overview_stats(): array {
+	$list = topx_get_ds_list();
+
+	$supported   = 0;
+	$unsupported = 0;
+	$sources     = 0;
+
+	foreach ($list as $entry) {
+		if ($entry['supported'] === 'true') {
+			$supported++;
+		} else {
+			$unsupported++;
+		}
+
+		$sources += (int) $entry['count'];
+	}
+
+	return [
+		'supported_types'   => $supported,
+		'unsupported_types' => $unsupported,
+		'total_types'       => $supported + $unsupported,
+		'total_sources'     => $sources,
+	];
+}
+
+/**
+ * Computes the ranked rows and overall average for a single data source over a
+ * whitelisted dsstats table, reproducing every per-operation branch of the
+ * classic TopX view (single value, value/number, hdd percentage and the
+ * combined errors/discards/traffic sources). Shared by the drilldown dashboard
+ * cards so the ranking logic lives in one tested place.
+ *
+ * @param int    $ds_key         The signed data source key (negative when the
+ *                              source is a supported, plugin-defined source).
+ * @param bool   $supported      Whether $ds_key is a supported source.
+ * @param string $table          Whitelisted dsstats table (see topx_age_table
+ *                              or topx_timespan_bucket).
+ * @param string $order          Whitelisted stat column for the direct branches.
+ * @param string $dir            Whitelisted sort direction (ASC or DESC).
+ * @param int    $limit          Record limit (0 for unlimited).
+ * @param string $computed_order Whitelisted order column (xvalue or xpeak) for
+ *                              the computed branches.
+ *
+ * @return array{source: array, rows: array, avg: float} The source definition
+ *               (empty for unsupported sources), the ranked rows and the overall
+ *               average.
+ */
+function topx_compute_ranking(int $ds_key, bool $supported, string $table, string $order, string $dir, int $limit, string $computed_order): array {
+	$id           = $supported ? -1 * $ds_key : $ds_key;
+	$limit_clause = $limit > 0 ? " LIMIT $limit" : '';
+	$source       = [];
+	$result       = [];
+	$avg          = 0;
+
+	if (!$supported) {
+		$from = " FROM data_template_data AS t1
+			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
+			WHERE t1.data_template_id = ?";
+
+		$avg = db_fetch_cell_prepared("SELECT AVG(average)$from", array($id));
+
+		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak
+			$from ORDER BY $computed_order $dir$limit_clause", array($id));
+
+		return ['source' => $source, 'rows' => $result, 'avg' => (float) $avg];
+	}
+
+	$source = db_fetch_row_prepared('SELECT plugin_topx_source.*
+		FROM plugin_topx_source
+		INNER JOIN data_template ON plugin_topx_source.hash = data_template.hash
+		WHERE data_template.id = ?',
+		array($id));
+
+	if (!is_array($source)) {
+		$source = [];
+	}
+
+	$operation = $source['operation'] ?? '';
+
+	if (strpos($operation, '=') !== false) {
+		$from = " FROM data_template_data AS t1
+			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
+			WHERE t1.data_template_id = ?";
+
+		$avg    = db_fetch_cell_prepared("SELECT AVG(average)$from", array($id));
+		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak
+			$from ORDER BY t2.$order $dir$limit_clause", array($id));
+	}
+
+	if (strpos($operation, '/') !== false) {
+		$from = " FROM data_template_data AS t1
+			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
+			WHERE t1.data_template_id = ?";
+
+		$avg    = db_fetch_cell_prepared("SELECT AVG(average)$from", array($id));
+		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak
+			$from ORDER BY t2.$order $dir$limit_clause", array($id));
+	} elseif (strpos($operation, '%') !== false) {
+		$columns = "name_cache AS name, t2.local_data_id AS ldid,
+			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xvalue,
+			100 * peak / (SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xpeak";
+
+		$from = " FROM data_template_data AS t1
+			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
+			WHERE t1.data_template_id = ? AND rrd_name = 'hdd_used'";
+
+		$result = db_fetch_assoc_prepared("SELECT $columns $from ORDER BY $computed_order $dir$limit_clause", array($id));
+
+		$xavg = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid,
+			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xvalue
+			$from", array($id));
+
+		$avg = topx_average_rows($xavg);
+	} elseif ($operation === 'discards_in+errors_in') {
+		$avg    = topx_combined_sum_average($table, $id, 'discards_in', 'errors_in');
+		$result = topx_combined_result($table, $id, 'discards_in', 'errors_in', 1, $computed_order, $dir, $limit_clause);
+	} elseif ($operation === 'discards_out+errors_out') {
+		$avg    = topx_combined_sum_average($table, $id, 'discards_out', 'errors_out');
+		$result = topx_combined_result($table, $id, 'discards_out', 'errors_out', 1, $computed_order, $dir, $limit_clause);
+	} elseif ($operation === 'traffic_in+traffic_out') {
+		$avg    = 8 * topx_combined_sum_average($table, $id, 'traffic_in', 'traffic_out');
+		$result = topx_combined_result($table, $id, 'traffic_in', 'traffic_out', 8, $computed_order, $dir, $limit_clause);
+	}
+
+	return ['source' => $source, 'rows' => $result, 'avg' => (float) $avg];
+}

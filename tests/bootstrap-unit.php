@@ -193,8 +193,26 @@ if (!function_exists('isset_request_var')) {
 }
 
 if (!function_exists('read_user_setting')) {
-	function read_user_setting($n, $d = false) {
-		return $d;
+	function read_user_setting($n, $d = false, $force = false, $user = 0) {
+		return $GLOBALS['__test_user_settings'][$n] ?? $d;
+	}
+}
+
+if (!function_exists('set_user_setting')) {
+	function set_user_setting($n, $v, $user = 0) {
+		$GLOBALS['__test_user_settings'][$n] = $v;
+	}
+}
+
+if (!function_exists('number_format_i18n')) {
+	function number_format_i18n($n, $d = 0) {
+		return number_format((float) $n, (int) $d);
+	}
+}
+
+if (!function_exists('csrf_check')) {
+	function csrf_check($die = true) {
+		return $GLOBALS['__test_csrf_ok'] ?? true;
 	}
 }
 
