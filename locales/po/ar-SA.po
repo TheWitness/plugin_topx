@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
 "POT-Creation-Date: 2026-11-05 15:53-0500\n"
-"PO-Revision-Date: 2024-07-21 16:24-0400\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2026-11-05 15:58-0500\n"
+"Last-Translator: CIQ Inc <support@ciq.com>\n"
 "Language-Team: \n"
 "Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.10\n"
 
 #: includes/arrays.php
 msgid "All"
@@ -24,193 +24,187 @@ msgstr "الكل"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Average"
-msgstr ""
+msgstr "عادي"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Day"
-msgstr "المدة الأخيرة"
+msgstr "اليوم الأخير"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Hour"
-msgstr "المدة الأخيرة"
+msgstr "الساعة الأخيرة"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Month"
-msgstr "آخر وقت التشغيل"
+msgstr "الشهر الماضي"
 
 #: includes/arrays.php
 msgid "Last Week"
-msgstr ""
+msgstr "أخر أسبوع"
 
 #: includes/arrays.php
 msgid "Last Year"
-msgstr ""
+msgstr "العام الماضي"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Normal"
-msgstr "المستخدم العادي"
+msgstr "عادي"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
-msgstr ""
+msgstr "قمة"
 
 #: includes/arrays.php
 msgid "Reverse"
-msgstr ""
+msgstr "يعكس"
 
 #: includes/arrays.php
 msgid "Top 10"
-msgstr ""
+msgstr "أعلى 10"
 
 #: includes/arrays.php
 msgid "Top 20"
-msgstr ""
+msgstr "أفضل 20"
 
 #: includes/arrays.php
 msgid "Top 5"
-msgstr ""
+msgstr "أفضل 5"
 
 #: includes/arrays.php
 msgid "Top 50"
-msgstr ""
+msgstr "أفضل 50"
 
 #: includes/dashboard.php
 msgid "0–25%"
-msgstr ""
+msgstr "0-25%"
 
 #: includes/dashboard.php
 msgid "1 Minute"
-msgstr ""
+msgstr "دقيقة واحدة"
 
 #: includes/dashboard.php
 msgid "1 day – 1 week"
-msgstr ""
+msgstr "من يوم واحد إلى أسبوع واحد"
 
 #: includes/dashboard.php
 msgid "1 week – 1 month"
-msgstr ""
+msgstr "أسبوع واحد - شهر واحد"
 
 #: includes/dashboard.php
 msgid "1 – 6 months"
-msgstr ""
+msgstr "من شهر إلى ستة أشهر"
 
 #: includes/dashboard.php
 msgid "25–50%"
-msgstr ""
+msgstr "25-50%"
 
 #: includes/dashboard.php
 msgid "30 Seconds"
-msgstr ""
+msgstr "30 ثانية"
 
 #: includes/dashboard.php
 msgid "5 Minutes"
-msgstr ""
+msgstr "5 دقائق"
 
 #: includes/dashboard.php
 msgid "50–75%"
-msgstr ""
+msgstr "50-75%"
 
 #: includes/dashboard.php
 msgid "75–100%"
-msgstr ""
+msgstr "75-100%"
 
 #: includes/dashboard.php
 msgid "Add a card…"
-msgstr ""
+msgstr "أضف بطاقة…"
 
 #: includes/dashboard.php
 msgid "Add card"
-msgstr ""
+msgstr "أضف البطاقة"
 
 #: includes/dashboard.php
 msgid "Average and Peak"
-msgstr ""
+msgstr "المتوسط والذروة"
 
 #: includes/dashboard.php
 msgid "Catalogue Summary"
-msgstr ""
+msgstr "ملخص الكتالوج"
 
 #: includes/dashboard.php
 msgid "Count"
-msgstr ""
+msgstr "عدد"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Source"
-msgstr "مصدر (مصادر) البيانات التالي قيد الاستخدام بواسطة Graph (s) هذه."
+msgstr "مصدر البيانات"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Sources"
-msgstr "مصدر (مصادر) البيانات التالي قيد الاستخدام بواسطة Graph (s) هذه."
+msgstr "مصادر البيانات"
 
 #: includes/dashboard.php
 msgid "Drag to reorder card"
-msgstr ""
+msgstr "اسحب لإعادة ترتيب البطاقة"
 
 #: includes/dashboard.php
 msgid "Drilldown"
-msgstr ""
+msgstr "تحليل تفصيلي"
 
 #: includes/dashboard.php
 msgid "Hosts"
-msgstr ""
+msgstr "المضيفون"
 
 #: includes/dashboard.php
 msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
-msgstr ""
+msgstr "كيف تنتشر مصادر البيانات المختارة عبر نطاقات القيمة، قياساً على أعلى قيمة (100٪ = الذروة)."
 
 #: includes/dashboard.php
 msgid "Invalid refresh interval."
-msgstr ""
+msgstr "فاصل التحديث غير صالح."
 
 #: includes/dashboard.php
 msgid "Invalid request. Please try again."
-msgstr ""
+msgstr "طلب غير صالح. يرجى المحاولة مرة أخرى."
 
 #: includes/dashboard.php
 msgid "No"
-msgstr ""
+msgstr "لا"
 
 #: includes/dashboard.php
 msgid "No Refresh"
-msgstr ""
+msgstr "لا يوجد تحديث"
 
 #: includes/dashboard.php
 msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
-msgstr ""
+msgstr "لا تتوفر مصادر بيانات TopX حتى الآن. فعّل إحصائيات DS واستطلع بعض البيانات أولاً."
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
-msgstr ""
+msgstr "لا توجد بيانات لهذا المصدر خلال الفترة الزمنية المحددة."
 
 #: includes/dashboard.php
 msgid "No data source selected."
-msgstr ""
+msgstr "لم يتم تحديد مصدر بيانات."
 
 #: includes/dashboard.php
 msgid "No data sources are available yet."
-msgstr ""
+msgstr "لا تتوفر مصادر البيانات حتى الآن."
 
 #: includes/dashboard.php
 msgid "No data to chart yet."
-msgstr ""
+msgstr "لا توجد بيانات لرسمها بيانيًا حتى الآن."
 
 #: includes/dashboard.php
 msgid "No host uptime data sources were found."
-msgstr ""
+msgstr "لم يتم العثور على أي مصادر لبيانات وقت تشغيل المضيف."
 
 #: includes/dashboard.php
 msgid "Open drilldown"
-msgstr ""
+msgstr "افتح قسم التحليل التفصيلي"
 
 #: includes/dashboard.php
 msgid "Open in a dialog"
-msgstr ""
+msgstr "افتح في نافذة حوار"
 
 #: includes/dashboard.php
 msgid "Order"
@@ -218,111 +212,110 @@ msgstr "طلب"
 
 #: includes/dashboard.php
 msgid "Over 6 months"
-msgstr ""
+msgstr "أكثر من 6 أشهر"
 
 #: includes/dashboard.php
 msgid "Overview"
-msgstr ""
+msgstr "نظرة عامة"
 
 #: includes/dashboard.php
 #, php-format
 msgid "Please enable and configure %sDS Stats%s to use TopX."
-msgstr ""
+msgstr "يرجى تفعيل وتكوين %sDS Stats%s لاستخدام TopX."
 
 #: includes/dashboard.php
 msgid "Ranking Chart"
-msgstr ""
+msgstr "مخطط الترتيب"
 
 #: includes/dashboard.php
 msgid "Rankings"
-msgstr ""
+msgstr "التصنيفات"
 
 #: includes/dashboard.php
 msgid "Records"
-msgstr ""
+msgstr "المواد"
 
 #: includes/dashboard.php
 msgid "Refresh"
-msgstr ""
+msgstr "تحديث"
 
 #: includes/dashboard.php
 msgid "Remove from page"
-msgstr ""
+msgstr "إزالة من الصفحة"
 
 #: includes/dashboard.php
 msgid "Show less"
-msgstr ""
+msgstr "إظهار أقل"
 
 #: includes/dashboard.php
 msgid "Show more"
-msgstr ""
+msgstr "اظهار المزيد"
 
 #: includes/dashboard.php
 msgid "Source Distribution"
-msgstr ""
+msgstr "توزيع المصادر"
 
 #: includes/dashboard.php
 msgid "Source Types"
-msgstr ""
+msgstr "أنواع المصادر"
 
 #: includes/dashboard.php
 msgid "Summary"
-msgstr ""
+msgstr "ملخص"
 
 #: includes/dashboard.php
 msgid "Supported"
-msgstr ""
+msgstr "مدعوم"
 
 #: includes/dashboard.php
 msgid "This dashboard has too many cards to save its layout."
-msgstr ""
+msgstr "تحتوي لوحة التحكم هذه على عدد كبير جدًا من البطاقات بحيث لا يمكن حفظ تخطيطها."
 
 #: includes/dashboard.php
 msgid "Timespan"
-msgstr ""
+msgstr "الفترة الزمنية"
 
 #: includes/dashboard.php
 msgid "Unknown card."
-msgstr ""
+msgstr "بطاقة مجهولة."
 
 #: includes/dashboard.php
 msgid "Unsupported"
-msgstr ""
+msgstr "غير مدعوم"
 
 #: includes/dashboard.php
 msgid "Up to 1 day"
-msgstr ""
+msgstr "حتى يوم واحد"
 
 #: includes/dashboard.php
 msgid "Uptime by Host"
-msgstr ""
+msgstr "وقت التشغيل حسب المضيف"
 
 #: includes/dashboard.php
 msgid "Value"
-msgstr ""
+msgstr "القيمة"
 
 #: includes/dashboard.php
-#, php-format
+#, no-php-format
 msgid "Values by % of Peak"
-msgstr ""
+msgstr "القيم حسب ذروة % of"
 
 #: includes/dashboard.php
 msgid "What"
-msgstr ""
+msgstr "ماذا"
 
 #: includes/dashboard.php
 msgid "Yes"
-msgstr ""
+msgstr "نعم"
 
 #: setup.php
 msgid "TopX"
-msgstr ""
+msgstr "توب إكس"
 
 #: setup.php
-#, fuzzy
 msgid "TopX Data Source"
-msgstr "مصدر (مصادر) البيانات التالي قيد الاستخدام بواسطة Graph (s) هذه."
+msgstr "مصدر بيانات TopX"
 
 #: setup.php
 msgid "TopX Overview"
-msgstr ""
+msgstr "نظرة عامة على TopX"

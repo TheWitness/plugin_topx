@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
 "POT-Creation-Date: 2026-11-05 15:53-0500\n"
-"PO-Revision-Date: 2024-07-21 16:35-0400\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2026-11-05 16:00-0500\n"
+"Last-Translator: CIQ Inc <support@ciq.com>\n"
 "Language-Team: \n"
 "Language: ko_KR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.10\n"
 
 #: includes/arrays.php
 msgid "All"
@@ -24,193 +24,187 @@ msgstr "모두"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Average"
-msgstr ""
+msgstr "평균"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Day"
-msgstr "마지막 기간"
+msgstr "Last Day"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Hour"
-msgstr "마지막 기간"
+msgstr "최근"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Month"
-msgstr "마지막 런타임"
+msgstr "지난 달"
 
 #: includes/arrays.php
 msgid "Last Week"
-msgstr ""
+msgstr "지난 주"
 
 #: includes/arrays.php
 msgid "Last Year"
-msgstr ""
+msgstr "작년"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Normal"
-msgstr "일반 사용자"
+msgstr "정상"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
-msgstr ""
+msgstr "최고점"
 
 #: includes/arrays.php
 msgid "Reverse"
-msgstr ""
+msgstr "뒤집기"
 
 #: includes/arrays.php
 msgid "Top 10"
-msgstr ""
+msgstr "탑 10"
 
 #: includes/arrays.php
 msgid "Top 20"
-msgstr ""
+msgstr "상위 20개"
 
 #: includes/arrays.php
 msgid "Top 5"
-msgstr ""
+msgstr "상위 5개"
 
 #: includes/arrays.php
 msgid "Top 50"
-msgstr ""
+msgstr "상위 50개"
 
 #: includes/dashboard.php
 msgid "0–25%"
-msgstr ""
+msgstr "0~25%"
 
 #: includes/dashboard.php
 msgid "1 Minute"
-msgstr ""
+msgstr "1분"
 
 #: includes/dashboard.php
 msgid "1 day – 1 week"
-msgstr ""
+msgstr "1일 ~ 1주일"
 
 #: includes/dashboard.php
 msgid "1 week – 1 month"
-msgstr ""
+msgstr "1주 ~ 1개월"
 
 #: includes/dashboard.php
 msgid "1 – 6 months"
-msgstr ""
+msgstr "1~6개월"
 
 #: includes/dashboard.php
 msgid "25–50%"
-msgstr ""
+msgstr "25~50%"
 
 #: includes/dashboard.php
 msgid "30 Seconds"
-msgstr ""
+msgstr "30초"
 
 #: includes/dashboard.php
 msgid "5 Minutes"
-msgstr ""
+msgstr "5분"
 
 #: includes/dashboard.php
 msgid "50–75%"
-msgstr ""
+msgstr "50~75%"
 
 #: includes/dashboard.php
 msgid "75–100%"
-msgstr ""
+msgstr "75~100%"
 
 #: includes/dashboard.php
 msgid "Add a card…"
-msgstr ""
+msgstr "카드를 추가하세요…"
 
 #: includes/dashboard.php
 msgid "Add card"
-msgstr ""
+msgstr "카드 추가"
 
 #: includes/dashboard.php
 msgid "Average and Peak"
-msgstr ""
+msgstr "평균 및 최고"
 
 #: includes/dashboard.php
 msgid "Catalogue Summary"
-msgstr ""
+msgstr "카탈로그 요약"
 
 #: includes/dashboard.php
 msgid "Count"
-msgstr ""
+msgstr "카운트"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Source"
 msgstr "데이터 소스"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Sources"
 msgstr "데이터 소스"
 
 #: includes/dashboard.php
 msgid "Drag to reorder card"
-msgstr ""
+msgstr "드래그하여 카드 순서를 변경하세요"
 
 #: includes/dashboard.php
 msgid "Drilldown"
-msgstr ""
+msgstr "드릴다운"
 
 #: includes/dashboard.php
 msgid "Hosts"
-msgstr ""
+msgstr "호스트"
 
 #: includes/dashboard.php
 msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
-msgstr ""
+msgstr "선택된 데이터 소스가 최고값(100% = 피크)을 기준으로 값 범위에 걸쳐 어떻게 분포하는지."
 
 #: includes/dashboard.php
 msgid "Invalid refresh interval."
-msgstr ""
+msgstr "잘못된 새로 고침 간격입니다."
 
 #: includes/dashboard.php
 msgid "Invalid request. Please try again."
-msgstr ""
+msgstr "잘못된 요청입니다. 다시 시도해 주세요."
 
 #: includes/dashboard.php
 msgid "No"
-msgstr ""
+msgstr "아니요"
 
 #: includes/dashboard.php
 msgid "No Refresh"
-msgstr ""
+msgstr "새로 고침 없음"
 
 #: includes/dashboard.php
 msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
-msgstr ""
+msgstr "아직 TopX 데이터 소스를 사용할 수 없습니다. DS 통계를 활성화하고 먼저 데이터를 폴링하세요."
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
-msgstr ""
+msgstr "선택한 기간 동안 해당 출처에 대한 데이터가 없습니다."
 
 #: includes/dashboard.php
 msgid "No data source selected."
-msgstr ""
+msgstr "선택된 데이터 소스가 없습니다."
 
 #: includes/dashboard.php
 msgid "No data sources are available yet."
-msgstr ""
+msgstr "아직 사용 가능한 데이터 소스가 없습니다."
 
 #: includes/dashboard.php
 msgid "No data to chart yet."
-msgstr ""
+msgstr "아직 차트로 표시할 데이터가 없습니다."
 
 #: includes/dashboard.php
 msgid "No host uptime data sources were found."
-msgstr ""
+msgstr "호스트 가동 시간 데이터 소스를 찾을 수 없습니다."
 
 #: includes/dashboard.php
 msgid "Open drilldown"
-msgstr ""
+msgstr "드릴다운 열기"
 
 #: includes/dashboard.php
 msgid "Open in a dialog"
-msgstr ""
+msgstr "대화 상자에서 열기"
 
 #: includes/dashboard.php
 msgid "Order"
@@ -218,111 +212,110 @@ msgstr "주문"
 
 #: includes/dashboard.php
 msgid "Over 6 months"
-msgstr ""
+msgstr "6개월 이상"
 
 #: includes/dashboard.php
 msgid "Overview"
-msgstr ""
+msgstr "개요"
 
 #: includes/dashboard.php
 #, php-format
 msgid "Please enable and configure %sDS Stats%s to use TopX."
-msgstr ""
+msgstr "TopX를 사용하려면 %sDS Stats%s을 활성화하고 구성하십시오."
 
 #: includes/dashboard.php
 msgid "Ranking Chart"
-msgstr ""
+msgstr "순위표"
 
 #: includes/dashboard.php
 msgid "Rankings"
-msgstr ""
+msgstr "순위"
 
 #: includes/dashboard.php
 msgid "Records"
-msgstr ""
+msgstr "명씩 보기"
 
 #: includes/dashboard.php
 msgid "Refresh"
-msgstr ""
+msgstr "새로고침"
 
 #: includes/dashboard.php
 msgid "Remove from page"
-msgstr ""
+msgstr "페이지에서 제거"
 
 #: includes/dashboard.php
 msgid "Show less"
-msgstr ""
+msgstr "감추기"
 
 #: includes/dashboard.php
 msgid "Show more"
-msgstr ""
+msgstr "더 보기"
 
 #: includes/dashboard.php
 msgid "Source Distribution"
-msgstr ""
+msgstr "소스 분포"
 
 #: includes/dashboard.php
 msgid "Source Types"
-msgstr ""
+msgstr "소스 유형"
 
 #: includes/dashboard.php
 msgid "Summary"
-msgstr ""
+msgstr "요약"
 
 #: includes/dashboard.php
 msgid "Supported"
-msgstr ""
+msgstr "지원"
 
 #: includes/dashboard.php
 msgid "This dashboard has too many cards to save its layout."
-msgstr ""
+msgstr "이 대시보드는 카드 수가 너무 많아 레이아웃을 저장할 수 없습니다."
 
 #: includes/dashboard.php
 msgid "Timespan"
-msgstr ""
+msgstr "기간"
 
 #: includes/dashboard.php
 msgid "Unknown card."
-msgstr ""
+msgstr "알 수 없는 카드입니다."
 
 #: includes/dashboard.php
 msgid "Unsupported"
-msgstr ""
+msgstr "지원하지 않습니다"
 
 #: includes/dashboard.php
 msgid "Up to 1 day"
-msgstr ""
+msgstr "최대 1일"
 
 #: includes/dashboard.php
 msgid "Uptime by Host"
-msgstr ""
+msgstr "호스트별 가동 시간"
 
 #: includes/dashboard.php
 msgid "Value"
-msgstr ""
+msgstr "값"
 
 #: includes/dashboard.php
-#, php-format
+#, no-php-format
 msgid "Values by % of Peak"
-msgstr ""
+msgstr "% of 피크에 의한 값"
 
 #: includes/dashboard.php
 msgid "What"
-msgstr ""
+msgstr "분류"
 
 #: includes/dashboard.php
 msgid "Yes"
-msgstr ""
+msgstr "네"
 
 #: setup.php
 msgid "TopX"
-msgstr ""
+msgstr "탑엑스"
 
 #: setup.php
-#, fuzzy
 msgid "TopX Data Source"
-msgstr "데이터 소스"
+msgstr "TopX 데이터 소스"
 
 #: setup.php
 msgid "TopX Overview"
-msgstr ""
+msgstr "TopX 개요"

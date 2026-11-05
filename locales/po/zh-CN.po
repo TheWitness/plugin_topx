@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
 "POT-Creation-Date: 2026-11-05 15:53-0500\n"
-"PO-Revision-Date: 2024-07-21 16:42-0400\n"
-"Last-Translator: whsir <wh@whsir.com>\n"
+"PO-Revision-Date: 2026-11-05 16:03-0500\n"
+"Last-Translator: CIQ Inc <support@ciq.com>\n"
 "Language-Team: Chinese (Simplified) <http://translate.cacti.net/projects/cacti/audit/zh-CN/>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.10\n"
 
 #: includes/arrays.php
 msgid "All"
@@ -24,193 +24,187 @@ msgstr "所有"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Average"
-msgstr ""
+msgstr "平均的"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Day"
-msgstr "持续时间"
+msgstr "最后一天"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Hour"
-msgstr "持续时间"
+msgstr "前一小时"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Month"
-msgstr "上次运行时间"
+msgstr "上个月"
 
 #: includes/arrays.php
 msgid "Last Week"
-msgstr ""
+msgstr "上周"
 
 #: includes/arrays.php
 msgid "Last Year"
-msgstr ""
+msgstr "去年"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Normal"
-msgstr "普通用户"
+msgstr "正常"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
-msgstr ""
+msgstr "顶峰"
 
 #: includes/arrays.php
 msgid "Reverse"
-msgstr ""
+msgstr "反向"
 
 #: includes/arrays.php
 msgid "Top 10"
-msgstr ""
+msgstr "前10名"
 
 #: includes/arrays.php
 msgid "Top 20"
-msgstr ""
+msgstr "前 20"
 
 #: includes/arrays.php
 msgid "Top 5"
-msgstr ""
+msgstr "前5"
 
 #: includes/arrays.php
 msgid "Top 50"
-msgstr ""
+msgstr "前50"
 
 #: includes/dashboard.php
 msgid "0–25%"
-msgstr ""
+msgstr "0-25%"
 
 #: includes/dashboard.php
 msgid "1 Minute"
-msgstr ""
+msgstr "1 分钟"
 
 #: includes/dashboard.php
 msgid "1 day – 1 week"
-msgstr ""
+msgstr "1天 – 1周"
 
 #: includes/dashboard.php
 msgid "1 week – 1 month"
-msgstr ""
+msgstr "1周至1个月"
 
 #: includes/dashboard.php
 msgid "1 – 6 months"
-msgstr ""
+msgstr "1-6个月"
 
 #: includes/dashboard.php
 msgid "25–50%"
-msgstr ""
+msgstr "25%–50%"
 
 #: includes/dashboard.php
 msgid "30 Seconds"
-msgstr ""
+msgstr "30秒"
 
 #: includes/dashboard.php
 msgid "5 Minutes"
-msgstr ""
+msgstr "5分钟"
 
 #: includes/dashboard.php
 msgid "50–75%"
-msgstr ""
+msgstr "50-75%"
 
 #: includes/dashboard.php
 msgid "75–100%"
-msgstr ""
+msgstr "75-100%"
 
 #: includes/dashboard.php
 msgid "Add a card…"
-msgstr ""
+msgstr "添加一张卡片…"
 
 #: includes/dashboard.php
 msgid "Add card"
-msgstr ""
+msgstr "添加银行卡"
 
 #: includes/dashboard.php
 msgid "Average and Peak"
-msgstr ""
+msgstr "平均值和峰值"
 
 #: includes/dashboard.php
 msgid "Catalogue Summary"
-msgstr ""
+msgstr "目录概要"
 
 #: includes/dashboard.php
 msgid "Count"
-msgstr ""
+msgstr "计数"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Source"
-msgstr "以下数据源正在由这些图形使用"
+msgstr "数据源"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Sources"
-msgstr "以下数据源正在由这些图形使用"
+msgstr "数据源："
 
 #: includes/dashboard.php
 msgid "Drag to reorder card"
-msgstr ""
+msgstr "拖动以重新排序卡片"
 
 #: includes/dashboard.php
 msgid "Drilldown"
-msgstr ""
+msgstr "向下钻取"
 
 #: includes/dashboard.php
 msgid "Hosts"
-msgstr ""
+msgstr "主机"
 
 #: includes/dashboard.php
 msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
-msgstr ""
+msgstr "所选数据源在各个值范围内的分布情况，以最高值（100% = 峰值）为基准进行衡量。"
 
 #: includes/dashboard.php
 msgid "Invalid refresh interval."
-msgstr ""
+msgstr "刷新间隔无效。"
 
 #: includes/dashboard.php
 msgid "Invalid request. Please try again."
-msgstr ""
+msgstr "请求无效。请重试。"
 
 #: includes/dashboard.php
 msgid "No"
-msgstr ""
+msgstr "不"
 
 #: includes/dashboard.php
 msgid "No Refresh"
-msgstr ""
+msgstr "无需刷新"
 
 #: includes/dashboard.php
 msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
-msgstr ""
+msgstr "目前尚无 TopX 数据源。请先启用 DS Stats 并轮询一些数据。"
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
-msgstr ""
+msgstr "在所选时间范围内，该数据源没有数据。"
 
 #: includes/dashboard.php
 msgid "No data source selected."
-msgstr ""
+msgstr "未选择数据源。"
 
 #: includes/dashboard.php
 msgid "No data sources are available yet."
-msgstr ""
+msgstr "目前尚无数据来源。"
 
 #: includes/dashboard.php
 msgid "No data to chart yet."
-msgstr ""
+msgstr "暂无数据可供绘制图表。"
 
 #: includes/dashboard.php
 msgid "No host uptime data sources were found."
-msgstr ""
+msgstr "未找到主机运行时间数据源。"
 
 #: includes/dashboard.php
 msgid "Open drilldown"
-msgstr ""
+msgstr "打开钻取"
 
 #: includes/dashboard.php
 msgid "Open in a dialog"
-msgstr ""
+msgstr "在对话框中打开"
 
 #: includes/dashboard.php
 msgid "Order"
@@ -218,111 +212,110 @@ msgstr "命令"
 
 #: includes/dashboard.php
 msgid "Over 6 months"
-msgstr ""
+msgstr "超过6个月"
 
 #: includes/dashboard.php
 msgid "Overview"
-msgstr ""
+msgstr "概述"
 
 #: includes/dashboard.php
 #, php-format
 msgid "Please enable and configure %sDS Stats%s to use TopX."
-msgstr ""
+msgstr "请启用并配置 %sDS Stats%s 以使用 TopX。"
 
 #: includes/dashboard.php
 msgid "Ranking Chart"
-msgstr ""
+msgstr "排名表"
 
 #: includes/dashboard.php
 msgid "Rankings"
-msgstr ""
+msgstr "排名"
 
 #: includes/dashboard.php
 msgid "Records"
-msgstr ""
+msgstr "记录"
 
 #: includes/dashboard.php
 msgid "Refresh"
-msgstr ""
+msgstr "刷新"
 
 #: includes/dashboard.php
 msgid "Remove from page"
-msgstr ""
+msgstr "从页面中移除"
 
 #: includes/dashboard.php
 msgid "Show less"
-msgstr ""
+msgstr "显示更少"
 
 #: includes/dashboard.php
 msgid "Show more"
-msgstr ""
+msgstr "显示更多"
 
 #: includes/dashboard.php
 msgid "Source Distribution"
-msgstr ""
+msgstr "来源分布"
 
 #: includes/dashboard.php
 msgid "Source Types"
-msgstr ""
+msgstr "来源类型"
 
 #: includes/dashboard.php
 msgid "Summary"
-msgstr ""
+msgstr "概括"
 
 #: includes/dashboard.php
 msgid "Supported"
-msgstr ""
+msgstr "已支持"
 
 #: includes/dashboard.php
 msgid "This dashboard has too many cards to save its layout."
-msgstr ""
+msgstr "此仪表盘卡片过多，无法保存布局。"
 
 #: includes/dashboard.php
 msgid "Timespan"
-msgstr ""
+msgstr "时间间隔"
 
 #: includes/dashboard.php
 msgid "Unknown card."
-msgstr ""
+msgstr "未知卡片。"
 
 #: includes/dashboard.php
 msgid "Unsupported"
-msgstr ""
+msgstr "不支持"
 
 #: includes/dashboard.php
 msgid "Up to 1 day"
-msgstr ""
+msgstr "最多 1 天"
 
 #: includes/dashboard.php
 msgid "Uptime by Host"
-msgstr ""
+msgstr "主机正常运行时间"
 
 #: includes/dashboard.php
 msgid "Value"
-msgstr ""
+msgstr "价值"
 
 #: includes/dashboard.php
-#, php-format
+#, no-php-format
 msgid "Values by % of Peak"
-msgstr ""
+msgstr "峰值值由 % of 决定"
 
 #: includes/dashboard.php
 msgid "What"
-msgstr ""
+msgstr "什么"
 
 #: includes/dashboard.php
 msgid "Yes"
-msgstr ""
+msgstr "是"
 
 #: setup.php
 msgid "TopX"
-msgstr ""
+msgstr "TopX"
 
 #: setup.php
-#, fuzzy
 msgid "TopX Data Source"
-msgstr "以下数据源正在由这些图形使用"
+msgstr "TopX 数据源"
 
 #: setup.php
 msgid "TopX Overview"
-msgstr ""
+msgstr "TopX 概览"

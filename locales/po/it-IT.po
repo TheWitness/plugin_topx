@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
 "POT-Creation-Date: 2026-11-05 15:53-0500\n"
-"PO-Revision-Date: 2024-07-21 16:32-0400\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2026-11-05 16:00-0500\n"
+"Last-Translator: CIQ Inc <support@ciq.com>\n"
 "Language-Team: \n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.10\n"
 
 #: includes/arrays.php
 msgid "All"
@@ -24,193 +24,187 @@ msgstr "Tutti"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Average"
-msgstr ""
+msgstr "Media"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Day"
-msgstr "Ultima durata"
+msgstr "Ultimo giorno"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Hour"
-msgstr "Ultima durata"
+msgstr "Ultima ora"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Month"
-msgstr "Ultimo runtime"
+msgstr "Ultimo mese"
 
 #: includes/arrays.php
 msgid "Last Week"
-msgstr ""
+msgstr "La settimana scorsa"
 
 #: includes/arrays.php
 msgid "Last Year"
-msgstr ""
+msgstr "Anno scorso"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Normal"
-msgstr "Utente Normale"
+msgstr "Normale"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
-msgstr ""
+msgstr "Picco"
 
 #: includes/arrays.php
 msgid "Reverse"
-msgstr ""
+msgstr "Inverti"
 
 #: includes/arrays.php
 msgid "Top 10"
-msgstr ""
+msgstr "Primi 10"
 
 #: includes/arrays.php
 msgid "Top 20"
-msgstr ""
+msgstr "Primi 20"
 
 #: includes/arrays.php
 msgid "Top 5"
-msgstr ""
+msgstr "Top 5"
 
 #: includes/arrays.php
 msgid "Top 50"
-msgstr ""
+msgstr "Top 50"
 
 #: includes/dashboard.php
 msgid "0–25%"
-msgstr ""
+msgstr "0–25%"
 
 #: includes/dashboard.php
 msgid "1 Minute"
-msgstr ""
+msgstr "1 Minuto"
 
 #: includes/dashboard.php
 msgid "1 day – 1 week"
-msgstr ""
+msgstr "1 giorno – 1 settimana"
 
 #: includes/dashboard.php
 msgid "1 week – 1 month"
-msgstr ""
+msgstr "1 settimana – 1 mese"
 
 #: includes/dashboard.php
 msgid "1 – 6 months"
-msgstr ""
+msgstr "1 – 6 mesi"
 
 #: includes/dashboard.php
 msgid "25–50%"
-msgstr ""
+msgstr "25–50%"
 
 #: includes/dashboard.php
 msgid "30 Seconds"
-msgstr ""
+msgstr "30 secondi"
 
 #: includes/dashboard.php
 msgid "5 Minutes"
-msgstr ""
+msgstr "5 minuti"
 
 #: includes/dashboard.php
 msgid "50–75%"
-msgstr ""
+msgstr "50–75%"
 
 #: includes/dashboard.php
 msgid "75–100%"
-msgstr ""
+msgstr "75–100%"
 
 #: includes/dashboard.php
 msgid "Add a card…"
-msgstr ""
+msgstr "Aggiungi una carta…"
 
 #: includes/dashboard.php
 msgid "Add card"
-msgstr ""
+msgstr "Aggiungi Carta"
 
 #: includes/dashboard.php
 msgid "Average and Peak"
-msgstr ""
+msgstr "Media e picco"
 
 #: includes/dashboard.php
 msgid "Catalogue Summary"
-msgstr ""
+msgstr "Riepilogo del catalogo"
 
 #: includes/dashboard.php
 msgid "Count"
-msgstr ""
+msgstr "Conteggio"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Source"
-msgstr "Fonte(i) dei dati"
+msgstr "Origine Dati"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Sources"
-msgstr "Fonte(i) dei dati"
+msgstr "Fonte Dati"
 
 #: includes/dashboard.php
 msgid "Drag to reorder card"
-msgstr ""
+msgstr "Trascina per riordinare la carta"
 
 #: includes/dashboard.php
 msgid "Drilldown"
-msgstr ""
+msgstr "Drilldown"
 
 #: includes/dashboard.php
 msgid "Hosts"
-msgstr ""
+msgstr "Hosts"
 
 #: includes/dashboard.php
 msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
-msgstr ""
+msgstr "Come le fonti di dati selezionate si distribuiscono nelle diverse fasce di valore, misurate rispetto al valore più alto (100% = il picco)."
 
 #: includes/dashboard.php
 msgid "Invalid refresh interval."
-msgstr ""
+msgstr "Intervallo di aggiornamento non valido."
 
 #: includes/dashboard.php
 msgid "Invalid request. Please try again."
-msgstr ""
+msgstr "Richiesta non valida. Riprova."
 
 #: includes/dashboard.php
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: includes/dashboard.php
 msgid "No Refresh"
-msgstr ""
+msgstr "Nessun aggiornamento"
 
 #: includes/dashboard.php
 msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
-msgstr ""
+msgstr "Al momento non sono disponibili fonti di dati TopX. Abilita DS Stats e avvia prima un'indagine sui dati."
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
-msgstr ""
+msgstr "Nessun dato disponibile per questa fonte nel periodo di tempo selezionato."
 
 #: includes/dashboard.php
 msgid "No data source selected."
-msgstr ""
+msgstr "Nessuna sorgente dati selezionata."
 
 #: includes/dashboard.php
 msgid "No data sources are available yet."
-msgstr ""
+msgstr "Al momento non sono disponibili fonti di dati."
 
 #: includes/dashboard.php
 msgid "No data to chart yet."
-msgstr ""
+msgstr "Nessun dato ancora da inserire nel grafico."
 
 #: includes/dashboard.php
 msgid "No host uptime data sources were found."
-msgstr ""
+msgstr "Non sono state trovate fonti di dati sul tempo di attività dell'host."
 
 #: includes/dashboard.php
 msgid "Open drilldown"
-msgstr ""
+msgstr "Approfondimento aperto"
 
 #: includes/dashboard.php
 msgid "Open in a dialog"
-msgstr ""
+msgstr "Apri in una finestra di dialogo"
 
 #: includes/dashboard.php
 msgid "Order"
@@ -218,111 +212,110 @@ msgstr "Ordine"
 
 #: includes/dashboard.php
 msgid "Over 6 months"
-msgstr ""
+msgstr "Oltre 6 mesi"
 
 #: includes/dashboard.php
 msgid "Overview"
-msgstr ""
+msgstr "Panoramica"
 
 #: includes/dashboard.php
 #, php-format
 msgid "Please enable and configure %sDS Stats%s to use TopX."
-msgstr ""
+msgstr "Si prega di abilitare e configurare %sDS Stats%s per utilizzare TopX."
 
 #: includes/dashboard.php
 msgid "Ranking Chart"
-msgstr ""
+msgstr "Classifica"
 
 #: includes/dashboard.php
 msgid "Rankings"
-msgstr ""
+msgstr "Classifiche"
 
 #: includes/dashboard.php
 msgid "Records"
-msgstr ""
+msgstr "Registrazioni"
 
 #: includes/dashboard.php
 msgid "Refresh"
-msgstr ""
+msgstr "Aggiorna"
 
 #: includes/dashboard.php
 msgid "Remove from page"
-msgstr ""
+msgstr "Rimuovi dalla pagina"
 
 #: includes/dashboard.php
 msgid "Show less"
-msgstr ""
+msgstr "Mostrare meno"
 
 #: includes/dashboard.php
 msgid "Show more"
-msgstr ""
+msgstr "Mostra di più"
 
 #: includes/dashboard.php
 msgid "Source Distribution"
-msgstr ""
+msgstr "Distribuzione della fonte"
 
 #: includes/dashboard.php
 msgid "Source Types"
-msgstr ""
+msgstr "Tipi di origine"
 
 #: includes/dashboard.php
 msgid "Summary"
-msgstr ""
+msgstr "Sommario"
 
 #: includes/dashboard.php
 msgid "Supported"
-msgstr ""
+msgstr "Supportato"
 
 #: includes/dashboard.php
 msgid "This dashboard has too many cards to save its layout."
-msgstr ""
+msgstr "Questa dashboard contiene troppe schede per poter salvare il layout."
 
 #: includes/dashboard.php
 msgid "Timespan"
-msgstr ""
+msgstr "Intervallo di tempo"
 
 #: includes/dashboard.php
 msgid "Unknown card."
-msgstr ""
+msgstr "Carta sconosciuta."
 
 #: includes/dashboard.php
 msgid "Unsupported"
-msgstr ""
+msgstr "Non supportato"
 
 #: includes/dashboard.php
 msgid "Up to 1 day"
-msgstr ""
+msgstr "Fino a 1 giorno"
 
 #: includes/dashboard.php
 msgid "Uptime by Host"
-msgstr ""
+msgstr "Tempo di attività fornito dall'host"
 
 #: includes/dashboard.php
 msgid "Value"
-msgstr ""
+msgstr "Valore"
 
 #: includes/dashboard.php
-#, php-format
+#, no-php-format
 msgid "Values by % of Peak"
-msgstr ""
+msgstr "Valori per % of Picco"
 
 #: includes/dashboard.php
 msgid "What"
-msgstr ""
+msgstr "Cosa"
 
 #: includes/dashboard.php
 msgid "Yes"
-msgstr ""
+msgstr "Sì"
 
 #: setup.php
 msgid "TopX"
-msgstr ""
+msgstr "TopX"
 
 #: setup.php
-#, fuzzy
 msgid "TopX Data Source"
-msgstr "Fonte(i) dei dati"
+msgstr "Fonte dati TopX"
 
 #: setup.php
 msgid "TopX Overview"
-msgstr ""
+msgstr "Panoramica di TopX"

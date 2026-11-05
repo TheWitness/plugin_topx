@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
 "POT-Creation-Date: 2026-11-05 15:53-0500\n"
-"PO-Revision-Date: 2024-07-21 16:39-0400\n"
-"Last-Translator: Coool (github.com/Coool) <coool@mail.lv>\n"
+"PO-Revision-Date: 2026-11-05 16:02-0500\n"
+"Last-Translator: CIQ Inc <support@ciq.com>\n"
 "Language-Team: Russian <http://translate.cacti.net/projects/cacti/audit/ru/>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.10\n"
 
 #: includes/arrays.php
 msgid "All"
@@ -24,193 +24,187 @@ msgstr "Все"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Average"
-msgstr ""
+msgstr "Средне"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Day"
-msgstr "Последняя продолжительность"
+msgstr "Последний день"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Hour"
-msgstr "Последняя продолжительность"
+msgstr "Последний час"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Month"
-msgstr "Последняя среда выполнения"
+msgstr "Последний месяц"
 
 #: includes/arrays.php
 msgid "Last Week"
-msgstr ""
+msgstr "На прошлой неделе"
 
 #: includes/arrays.php
 msgid "Last Year"
-msgstr ""
+msgstr "В прошлом году"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Normal"
-msgstr "Обычный пользователь"
+msgstr "Нормальный"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
-msgstr ""
+msgstr "Пик"
 
 #: includes/arrays.php
 msgid "Reverse"
-msgstr ""
+msgstr "Реверс"
 
 #: includes/arrays.php
 msgid "Top 10"
-msgstr ""
+msgstr "Топ 10"
 
 #: includes/arrays.php
 msgid "Top 20"
-msgstr ""
+msgstr "Топ 20"
 
 #: includes/arrays.php
 msgid "Top 5"
-msgstr ""
+msgstr "Топ-5"
 
 #: includes/arrays.php
 msgid "Top 50"
-msgstr ""
+msgstr "Топ-50"
 
 #: includes/dashboard.php
 msgid "0–25%"
-msgstr ""
+msgstr "0–25%"
 
 #: includes/dashboard.php
 msgid "1 Minute"
-msgstr ""
+msgstr "1 минута"
 
 #: includes/dashboard.php
 msgid "1 day – 1 week"
-msgstr ""
+msgstr "1 день – 1 неделя"
 
 #: includes/dashboard.php
 msgid "1 week – 1 month"
-msgstr ""
+msgstr "1 неделя – 1 месяц"
 
 #: includes/dashboard.php
 msgid "1 – 6 months"
-msgstr ""
+msgstr "1–6 месяцев"
 
 #: includes/dashboard.php
 msgid "25–50%"
-msgstr ""
+msgstr "25–50%"
 
 #: includes/dashboard.php
 msgid "30 Seconds"
-msgstr ""
+msgstr "30 секунд"
 
 #: includes/dashboard.php
 msgid "5 Minutes"
-msgstr ""
+msgstr "5 минут"
 
 #: includes/dashboard.php
 msgid "50–75%"
-msgstr ""
+msgstr "50–75%"
 
 #: includes/dashboard.php
 msgid "75–100%"
-msgstr ""
+msgstr "75–100%"
 
 #: includes/dashboard.php
 msgid "Add a card…"
-msgstr ""
+msgstr "Добавить карту…"
 
 #: includes/dashboard.php
 msgid "Add card"
-msgstr ""
+msgstr "Добавить карточку"
 
 #: includes/dashboard.php
 msgid "Average and Peak"
-msgstr ""
+msgstr "Среднее и пиковое значения"
 
 #: includes/dashboard.php
 msgid "Catalogue Summary"
-msgstr ""
+msgstr "Краткое описание каталога"
 
 #: includes/dashboard.php
 msgid "Count"
-msgstr ""
+msgstr "Количество"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Source"
-msgstr "Источник(и) данных"
+msgstr "Источник данных"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Sources"
-msgstr "Источник(и) данных"
+msgstr "Источники данных"
 
 #: includes/dashboard.php
 msgid "Drag to reorder card"
-msgstr ""
+msgstr "Перетащите, чтобы изменить порядок карточек."
 
 #: includes/dashboard.php
 msgid "Drilldown"
-msgstr ""
+msgstr "Подробное описание"
 
 #: includes/dashboard.php
 msgid "Hosts"
-msgstr ""
+msgstr "Хосты"
 
 #: includes/dashboard.php
 msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
-msgstr ""
+msgstr "Как выбранные источники данных распределяются по диапазонам значений, измеренным относительно наивысшего значения (100% = пик)."
 
 #: includes/dashboard.php
 msgid "Invalid refresh interval."
-msgstr ""
+msgstr "Неверный интервал обновления."
 
 #: includes/dashboard.php
 msgid "Invalid request. Please try again."
-msgstr ""
+msgstr "Недействительный запрос. Пожалуйста, попробуйте еще раз."
 
 #: includes/dashboard.php
 msgid "No"
-msgstr ""
+msgstr "Нет"
 
 #: includes/dashboard.php
 msgid "No Refresh"
-msgstr ""
+msgstr "Без обновления"
 
 #: includes/dashboard.php
 msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
-msgstr ""
+msgstr "Пока нет доступных источников данных TopX. Включите DS Stats и сначала получите некоторые данные."
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
-msgstr ""
+msgstr "Данные по этому источнику за выбранный период времени отсутствуют."
 
 #: includes/dashboard.php
 msgid "No data source selected."
-msgstr ""
+msgstr "Источник данных не выбран."
 
 #: includes/dashboard.php
 msgid "No data sources are available yet."
-msgstr ""
+msgstr "Источники данных пока недоступны."
 
 #: includes/dashboard.php
 msgid "No data to chart yet."
-msgstr ""
+msgstr "Данные для построения графика пока отсутствуют."
 
 #: includes/dashboard.php
 msgid "No host uptime data sources were found."
-msgstr ""
+msgstr "Источники данных о времени безотказной работы хостов не найдены."
 
 #: includes/dashboard.php
 msgid "Open drilldown"
-msgstr ""
+msgstr "Открыть детализацию"
 
 #: includes/dashboard.php
 msgid "Open in a dialog"
-msgstr ""
+msgstr "Открыть в диалоговом окне"
 
 #: includes/dashboard.php
 msgid "Order"
@@ -218,111 +212,110 @@ msgstr "Заказ"
 
 #: includes/dashboard.php
 msgid "Over 6 months"
-msgstr ""
+msgstr "Более 6 месяцев"
 
 #: includes/dashboard.php
 msgid "Overview"
-msgstr ""
+msgstr "Обзор"
 
 #: includes/dashboard.php
 #, php-format
 msgid "Please enable and configure %sDS Stats%s to use TopX."
-msgstr ""
+msgstr "Пожалуйста, включите и настройте %sDS Stats%s для использования TopX."
 
 #: includes/dashboard.php
 msgid "Ranking Chart"
-msgstr ""
+msgstr "Рейтинговая таблица"
 
 #: includes/dashboard.php
 msgid "Rankings"
-msgstr ""
+msgstr "Рейтинги"
 
 #: includes/dashboard.php
 msgid "Records"
-msgstr ""
+msgstr "Записи"
 
 #: includes/dashboard.php
 msgid "Refresh"
-msgstr ""
+msgstr "Обновить"
 
 #: includes/dashboard.php
 msgid "Remove from page"
-msgstr ""
+msgstr "Удалить со страницы"
 
 #: includes/dashboard.php
 msgid "Show less"
-msgstr ""
+msgstr "Показать меньше"
 
 #: includes/dashboard.php
 msgid "Show more"
-msgstr ""
+msgstr "Показать больше"
 
 #: includes/dashboard.php
 msgid "Source Distribution"
-msgstr ""
+msgstr "Распределение исходного кода"
 
 #: includes/dashboard.php
 msgid "Source Types"
-msgstr ""
+msgstr "Типы источников"
 
 #: includes/dashboard.php
 msgid "Summary"
-msgstr ""
+msgstr "Резюме"
 
 #: includes/dashboard.php
 msgid "Supported"
-msgstr ""
+msgstr "Поддерживается"
 
 #: includes/dashboard.php
 msgid "This dashboard has too many cards to save its layout."
-msgstr ""
+msgstr "На этой панели управления слишком много карточек, чтобы сохранить её расположение."
 
 #: includes/dashboard.php
 msgid "Timespan"
-msgstr ""
+msgstr "Временной промежуток"
 
 #: includes/dashboard.php
 msgid "Unknown card."
-msgstr ""
+msgstr "Неизвестная карта."
 
 #: includes/dashboard.php
 msgid "Unsupported"
-msgstr ""
+msgstr "Неподдерживаемый"
 
 #: includes/dashboard.php
 msgid "Up to 1 day"
-msgstr ""
+msgstr "До 1 дня"
 
 #: includes/dashboard.php
 msgid "Uptime by Host"
-msgstr ""
+msgstr "Время бесперебойной работы по данным хоста"
 
 #: includes/dashboard.php
 msgid "Value"
-msgstr ""
+msgstr "Значение"
 
 #: includes/dashboard.php
-#, php-format
+#, no-php-format
 msgid "Values by % of Peak"
-msgstr ""
+msgstr "Значения по % of Пик"
 
 #: includes/dashboard.php
 msgid "What"
-msgstr ""
+msgstr "Что"
 
 #: includes/dashboard.php
 msgid "Yes"
-msgstr ""
+msgstr "Да"
 
 #: setup.php
 msgid "TopX"
-msgstr ""
+msgstr "ТопХ"
 
 #: setup.php
-#, fuzzy
 msgid "TopX Data Source"
-msgstr "Источник(и) данных"
+msgstr "Источник данных TopX"
 
 #: setup.php
 msgid "TopX Overview"
-msgstr ""
+msgstr "Обзор TopX"

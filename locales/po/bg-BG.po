@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
 "POT-Creation-Date: 2026-11-05 15:53-0500\n"
-"PO-Revision-Date: 2024-07-21 16:25-0400\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2026-11-05 15:58-0500\n"
+"Last-Translator: CIQ Inc <support@ciq.com>\n"
 "Language-Team: \n"
 "Language: bg_BG\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.10\n"
 
 #: includes/arrays.php
 msgid "All"
@@ -24,193 +24,187 @@ msgstr "Всички"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Average"
-msgstr ""
+msgstr "Средно"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Day"
-msgstr "Последна продължителност"
+msgstr "Последен ден"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Hour"
-msgstr "Последна продължителност"
+msgstr "Последен час"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Month"
-msgstr "Време на последно изпълнение"
+msgstr "Последен Месец"
 
 #: includes/arrays.php
 msgid "Last Week"
-msgstr ""
+msgstr "Миналата седмица"
 
 #: includes/arrays.php
 msgid "Last Year"
-msgstr ""
+msgstr "Миналата година"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Normal"
-msgstr "Обикновен потребител"
+msgstr "Нормално"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
-msgstr ""
+msgstr "Връх"
 
 #: includes/arrays.php
 msgid "Reverse"
-msgstr ""
+msgstr "Обратен"
 
 #: includes/arrays.php
 msgid "Top 10"
-msgstr ""
+msgstr "Топ 10"
 
 #: includes/arrays.php
 msgid "Top 20"
-msgstr ""
+msgstr "Топ 20"
 
 #: includes/arrays.php
 msgid "Top 5"
-msgstr ""
+msgstr "Топ 5"
 
 #: includes/arrays.php
 msgid "Top 50"
-msgstr ""
+msgstr "Топ 50"
 
 #: includes/dashboard.php
 msgid "0–25%"
-msgstr ""
+msgstr "0–25%"
 
 #: includes/dashboard.php
 msgid "1 Minute"
-msgstr ""
+msgstr "1 минута"
 
 #: includes/dashboard.php
 msgid "1 day – 1 week"
-msgstr ""
+msgstr "1 ден – 1 седмица"
 
 #: includes/dashboard.php
 msgid "1 week – 1 month"
-msgstr ""
+msgstr "1 седмица – 1 месец"
 
 #: includes/dashboard.php
 msgid "1 – 6 months"
-msgstr ""
+msgstr "1 – 6 месеца"
 
 #: includes/dashboard.php
 msgid "25–50%"
-msgstr ""
+msgstr "25–50%"
 
 #: includes/dashboard.php
 msgid "30 Seconds"
-msgstr ""
+msgstr "30 секунди"
 
 #: includes/dashboard.php
 msgid "5 Minutes"
-msgstr ""
+msgstr "5 минути"
 
 #: includes/dashboard.php
 msgid "50–75%"
-msgstr ""
+msgstr "50–75%"
 
 #: includes/dashboard.php
 msgid "75–100%"
-msgstr ""
+msgstr "75–100%"
 
 #: includes/dashboard.php
 msgid "Add a card…"
-msgstr ""
+msgstr "Добавяне на карта…"
 
 #: includes/dashboard.php
 msgid "Add card"
-msgstr ""
+msgstr "Добавяне на карта"
 
 #: includes/dashboard.php
 msgid "Average and Peak"
-msgstr ""
+msgstr "Средно и пиково"
 
 #: includes/dashboard.php
 msgid "Catalogue Summary"
-msgstr ""
+msgstr "Резюме на каталога"
 
 #: includes/dashboard.php
 msgid "Count"
-msgstr ""
+msgstr "Брой"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Source"
-msgstr "Източник(ци) на данни"
+msgstr "Източник на данни"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Sources"
-msgstr "Източник(ци) на данни"
+msgstr "Източници на данни"
 
 #: includes/dashboard.php
 msgid "Drag to reorder card"
-msgstr ""
+msgstr "Плъзнете, за да пренаредите картата"
 
 #: includes/dashboard.php
 msgid "Drilldown"
-msgstr ""
+msgstr "Детайлно проучване"
 
 #: includes/dashboard.php
 msgid "Hosts"
-msgstr ""
+msgstr "Домакини"
 
 #: includes/dashboard.php
 msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
-msgstr ""
+msgstr "Как избраните източници на данни се разпределят в диапазоните на стойностите, измерени спрямо най-високата стойност (100% = пикът)."
 
 #: includes/dashboard.php
 msgid "Invalid refresh interval."
-msgstr ""
+msgstr "Невалиден интервал на опресняване."
 
 #: includes/dashboard.php
 msgid "Invalid request. Please try again."
-msgstr ""
+msgstr "Невалидна заявка. Моля, опитайте отново."
 
 #: includes/dashboard.php
 msgid "No"
-msgstr ""
+msgstr "Не"
 
 #: includes/dashboard.php
 msgid "No Refresh"
-msgstr ""
+msgstr "Без обновяване"
 
 #: includes/dashboard.php
 msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
-msgstr ""
+msgstr "Все още няма налични източници на данни от TopX. Активирайте DS Stats и първо проверете някои данни."
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
-msgstr ""
+msgstr "Няма данни за този източник за избрания период от време."
 
 #: includes/dashboard.php
 msgid "No data source selected."
-msgstr ""
+msgstr "Не е избран източник на данни."
 
 #: includes/dashboard.php
 msgid "No data sources are available yet."
-msgstr ""
+msgstr "Все още няма налични източници на данни."
 
 #: includes/dashboard.php
 msgid "No data to chart yet."
-msgstr ""
+msgstr "Все още няма данни за графика."
 
 #: includes/dashboard.php
 msgid "No host uptime data sources were found."
-msgstr ""
+msgstr "Не бяха намерени източници на данни за работоспособността на хоста."
 
 #: includes/dashboard.php
 msgid "Open drilldown"
-msgstr ""
+msgstr "Отвори детайлизиране"
 
 #: includes/dashboard.php
 msgid "Open in a dialog"
-msgstr ""
+msgstr "Отваряне в диалогов прозорец"
 
 #: includes/dashboard.php
 msgid "Order"
@@ -218,111 +212,110 @@ msgstr "Поръчка"
 
 #: includes/dashboard.php
 msgid "Over 6 months"
-msgstr ""
+msgstr "Над 6 месеца"
 
 #: includes/dashboard.php
 msgid "Overview"
-msgstr ""
+msgstr "Преглед"
 
 #: includes/dashboard.php
 #, php-format
 msgid "Please enable and configure %sDS Stats%s to use TopX."
-msgstr ""
+msgstr "Моля, активирайте и конфигурирайте %sDS Stats%s, за да използвате TopX."
 
 #: includes/dashboard.php
 msgid "Ranking Chart"
-msgstr ""
+msgstr "Класация"
 
 #: includes/dashboard.php
 msgid "Rankings"
-msgstr ""
+msgstr "Класации"
 
 #: includes/dashboard.php
 msgid "Records"
-msgstr ""
+msgstr "Записи"
 
 #: includes/dashboard.php
 msgid "Refresh"
-msgstr ""
+msgstr "Обновяване"
 
 #: includes/dashboard.php
 msgid "Remove from page"
-msgstr ""
+msgstr "Премахване от страницата"
 
 #: includes/dashboard.php
 msgid "Show less"
-msgstr ""
+msgstr "Покажи по-малко"
 
 #: includes/dashboard.php
 msgid "Show more"
-msgstr ""
+msgstr "Покажи повече"
 
 #: includes/dashboard.php
 msgid "Source Distribution"
-msgstr ""
+msgstr "Разпределение на източника"
 
 #: includes/dashboard.php
 msgid "Source Types"
-msgstr ""
+msgstr "Видове източници"
 
 #: includes/dashboard.php
 msgid "Summary"
-msgstr ""
+msgstr "Резюме"
 
 #: includes/dashboard.php
 msgid "Supported"
-msgstr ""
+msgstr "Поддържано"
 
 #: includes/dashboard.php
 msgid "This dashboard has too many cards to save its layout."
-msgstr ""
+msgstr "Това табло за управление има твърде много карти, за да се запази оформлението му."
 
 #: includes/dashboard.php
 msgid "Timespan"
-msgstr ""
+msgstr "Времеви период"
 
 #: includes/dashboard.php
 msgid "Unknown card."
-msgstr ""
+msgstr "Неизвестна карта."
 
 #: includes/dashboard.php
 msgid "Unsupported"
-msgstr ""
+msgstr "Неподдържано"
 
 #: includes/dashboard.php
 msgid "Up to 1 day"
-msgstr ""
+msgstr "До 1 ден"
 
 #: includes/dashboard.php
 msgid "Uptime by Host"
-msgstr ""
+msgstr "Време на работа от хоста"
 
 #: includes/dashboard.php
 msgid "Value"
-msgstr ""
+msgstr "Стойност"
 
 #: includes/dashboard.php
-#, php-format
+#, no-php-format
 msgid "Values by % of Peak"
-msgstr ""
+msgstr "Стойности по % of Peak"
 
 #: includes/dashboard.php
 msgid "What"
-msgstr ""
+msgstr "Какво"
 
 #: includes/dashboard.php
 msgid "Yes"
-msgstr ""
+msgstr "Да"
 
 #: setup.php
 msgid "TopX"
-msgstr ""
+msgstr "ТопX"
 
 #: setup.php
-#, fuzzy
 msgid "TopX Data Source"
-msgstr "Източник(ци) на данни"
+msgstr "Източник на данни TopX"
 
 #: setup.php
 msgid "TopX Overview"
-msgstr ""
+msgstr "Общ преглед на TopX"

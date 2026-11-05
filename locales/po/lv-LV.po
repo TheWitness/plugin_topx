@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
 "POT-Creation-Date: 2026-11-05 15:53-0500\n"
-"PO-Revision-Date: 2024-07-21 16:36-0400\n"
-"Last-Translator: Coool (github.com/Coool) <coool@mail.lv>\n"
+"PO-Revision-Date: 2026-11-05 16:01-0500\n"
+"Last-Translator: CIQ Inc <support@ciq.com>\n"
 "Language-Team: Latvian <http://translate.cacti.net/projects/cacti/audit/lv/>\n"
 "Language: lv_LV\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= 19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.10\n"
 
 #: includes/arrays.php
 msgid "All"
@@ -24,193 +24,187 @@ msgstr "Visi"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Average"
-msgstr ""
+msgstr "Vidēji"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Day"
-msgstr "Pēdējais ilgums"
+msgstr "Pēdējā diena"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Hour"
-msgstr "Pēdējais ilgums"
+msgstr "Pēdējā stunda"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Last Month"
-msgstr "Pēdējais izpildes laiks"
+msgstr "Pagājušais mēnesis"
 
 #: includes/arrays.php
 msgid "Last Week"
-msgstr ""
+msgstr "Pagājusī nedēļa"
 
 #: includes/arrays.php
 msgid "Last Year"
-msgstr ""
+msgstr "Pagājušais gads"
 
 #: includes/arrays.php
-#, fuzzy
 msgid "Normal"
-msgstr "Normāls lietotājs"
+msgstr "Parasts"
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
-msgstr ""
+msgstr "Pīķis"
 
 #: includes/arrays.php
 msgid "Reverse"
-msgstr ""
+msgstr "Atsaukt"
 
 #: includes/arrays.php
 msgid "Top 10"
-msgstr ""
+msgstr "10 labākie"
 
 #: includes/arrays.php
 msgid "Top 20"
-msgstr ""
+msgstr "20 labākie"
 
 #: includes/arrays.php
 msgid "Top 5"
-msgstr ""
+msgstr "5 labākie"
 
 #: includes/arrays.php
 msgid "Top 50"
-msgstr ""
+msgstr "50 labākie"
 
 #: includes/dashboard.php
 msgid "0–25%"
-msgstr ""
+msgstr "0–25 %"
 
 #: includes/dashboard.php
 msgid "1 Minute"
-msgstr ""
+msgstr "1 minūte"
 
 #: includes/dashboard.php
 msgid "1 day – 1 week"
-msgstr ""
+msgstr "1 diena – 1 nedēļa"
 
 #: includes/dashboard.php
 msgid "1 week – 1 month"
-msgstr ""
+msgstr "1 nedēļa – 1 mēnesis"
 
 #: includes/dashboard.php
 msgid "1 – 6 months"
-msgstr ""
+msgstr "1–6 mēneši"
 
 #: includes/dashboard.php
 msgid "25–50%"
-msgstr ""
+msgstr "25–50%"
 
 #: includes/dashboard.php
 msgid "30 Seconds"
-msgstr ""
+msgstr "30 sekundes"
 
 #: includes/dashboard.php
 msgid "5 Minutes"
-msgstr ""
+msgstr "5 minūtes"
 
 #: includes/dashboard.php
 msgid "50–75%"
-msgstr ""
+msgstr "50–75%"
 
 #: includes/dashboard.php
 msgid "75–100%"
-msgstr ""
+msgstr "75–100%"
 
 #: includes/dashboard.php
 msgid "Add a card…"
-msgstr ""
+msgstr "Pievienot karti…"
 
 #: includes/dashboard.php
 msgid "Add card"
-msgstr ""
+msgstr "Pievienot karti"
 
 #: includes/dashboard.php
 msgid "Average and Peak"
-msgstr ""
+msgstr "Vidējais un maksimālais"
 
 #: includes/dashboard.php
 msgid "Catalogue Summary"
-msgstr ""
+msgstr "Kataloga kopsavilkums"
 
 #: includes/dashboard.php
 msgid "Count"
-msgstr ""
+msgstr "Skaits"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Source"
-msgstr "Neatstājiet datu avotu(-s) neskartus."
+msgstr "Datu avots"
 
 #: includes/dashboard.php
-#, fuzzy
 msgid "Data Sources"
-msgstr "Neatstājiet datu avotu(-s) neskartus."
+msgstr "Datu avoti"
 
 #: includes/dashboard.php
 msgid "Drag to reorder card"
-msgstr ""
+msgstr "Velciet, lai mainītu kartītes secību"
 
 #: includes/dashboard.php
 msgid "Drilldown"
-msgstr ""
+msgstr "Detalizēta informācija"
 
 #: includes/dashboard.php
 msgid "Hosts"
-msgstr ""
+msgstr "Saimnieki"
 
 #: includes/dashboard.php
 msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
-msgstr ""
+msgstr "Kā atlasītie datu avoti sadalās pa vērtību diapazoniem, mērot attiecībā pret augstāko vērtību (100 % = maksimums)."
 
 #: includes/dashboard.php
 msgid "Invalid refresh interval."
-msgstr ""
+msgstr "Nederīgs atsvaidzināšanas intervāls."
 
 #: includes/dashboard.php
 msgid "Invalid request. Please try again."
-msgstr ""
+msgstr "Nederīgs pieprasījums. Lūdzu, mēģiniet vēlreiz."
 
 #: includes/dashboard.php
 msgid "No"
-msgstr ""
+msgstr "Nē"
 
 #: includes/dashboard.php
 msgid "No Refresh"
-msgstr ""
+msgstr "Nav atsvaidzināšanas"
 
 #: includes/dashboard.php
 msgid "No TopX data sources are available yet. Enable DS Stats and poll some data first."
-msgstr ""
+msgstr "Vēl nav pieejams neviens TopX datu avots. Vispirms iespējojiet DS statistiku un aptaujājiet dažus datus."
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
-msgstr ""
+msgstr "Šim avotam nav datu par atlasīto laika periodu."
 
 #: includes/dashboard.php
 msgid "No data source selected."
-msgstr ""
+msgstr "Nav atlasīts datu avots."
 
 #: includes/dashboard.php
 msgid "No data sources are available yet."
-msgstr ""
+msgstr "Vēl nav pieejams neviens datu avots."
 
 #: includes/dashboard.php
 msgid "No data to chart yet."
-msgstr ""
+msgstr "Vēl nav datu, ko attēlot diagrammā."
 
 #: includes/dashboard.php
 msgid "No host uptime data sources were found."
-msgstr ""
+msgstr "Netika atrasti resursdatora darbības laika datu avoti."
 
 #: includes/dashboard.php
 msgid "Open drilldown"
-msgstr ""
+msgstr "Atvērt detalizētu izklāstu"
 
 #: includes/dashboard.php
 msgid "Open in a dialog"
-msgstr ""
+msgstr "Atvērt dialoglodziņā"
 
 #: includes/dashboard.php
 msgid "Order"
@@ -218,111 +212,110 @@ msgstr "Pasūtījums"
 
 #: includes/dashboard.php
 msgid "Over 6 months"
-msgstr ""
+msgstr "Vairāk nekā 6 mēneši"
 
 #: includes/dashboard.php
 msgid "Overview"
-msgstr ""
+msgstr "Pārskats"
 
 #: includes/dashboard.php
 #, php-format
 msgid "Please enable and configure %sDS Stats%s to use TopX."
-msgstr ""
+msgstr "Lūdzu, iespējojiet un konfigurējiet %sDS Stats%s, lai izmantotu TopX."
 
 #: includes/dashboard.php
 msgid "Ranking Chart"
-msgstr ""
+msgstr "Rangu diagramma"
 
 #: includes/dashboard.php
 msgid "Rankings"
-msgstr ""
+msgstr "Reitingi"
 
 #: includes/dashboard.php
 msgid "Records"
-msgstr ""
+msgstr "Piezīmes"
 
 #: includes/dashboard.php
 msgid "Refresh"
-msgstr ""
+msgstr "Atsvaidzināt"
 
 #: includes/dashboard.php
 msgid "Remove from page"
-msgstr ""
+msgstr "Noņemt no lapas"
 
 #: includes/dashboard.php
 msgid "Show less"
-msgstr ""
+msgstr "Rādīt mazāk"
 
 #: includes/dashboard.php
 msgid "Show more"
-msgstr ""
+msgstr "Rādīt vairāk"
 
 #: includes/dashboard.php
 msgid "Source Distribution"
-msgstr ""
+msgstr "Avota sadalījums"
 
 #: includes/dashboard.php
 msgid "Source Types"
-msgstr ""
+msgstr "Avotu veidi"
 
 #: includes/dashboard.php
 msgid "Summary"
-msgstr ""
+msgstr "Kopsavilkums"
 
 #: includes/dashboard.php
 msgid "Supported"
-msgstr ""
+msgstr "Atbalstīts"
 
 #: includes/dashboard.php
 msgid "This dashboard has too many cards to save its layout."
-msgstr ""
+msgstr "Šajā informācijas panelī ir pārāk daudz karšu, lai saglabātu tā izkārtojumu."
 
 #: includes/dashboard.php
 msgid "Timespan"
-msgstr ""
+msgstr "Laika posms"
 
 #: includes/dashboard.php
 msgid "Unknown card."
-msgstr ""
+msgstr "Nezināma karte."
 
 #: includes/dashboard.php
 msgid "Unsupported"
-msgstr ""
+msgstr "Neatbalstīta"
 
 #: includes/dashboard.php
 msgid "Up to 1 day"
-msgstr ""
+msgstr "Līdz 1 dienai"
 
 #: includes/dashboard.php
 msgid "Uptime by Host"
-msgstr ""
+msgstr "Darbības laiks pēc saimniekdatora"
 
 #: includes/dashboard.php
 msgid "Value"
-msgstr ""
+msgstr "Value"
 
 #: includes/dashboard.php
-#, php-format
+#, no-php-format
 msgid "Values by % of Peak"
-msgstr ""
+msgstr "Vērtības pēc % of Peak"
 
 #: includes/dashboard.php
 msgid "What"
-msgstr ""
+msgstr "Kas"
 
 #: includes/dashboard.php
 msgid "Yes"
-msgstr ""
+msgstr "Jā"
 
 #: setup.php
 msgid "TopX"
-msgstr ""
+msgstr "TopX"
 
 #: setup.php
-#, fuzzy
 msgid "TopX Data Source"
-msgstr "Neatstājiet datu avotu(-s) neskartus."
+msgstr "TopX datu avots"
 
 #: setup.php
 msgid "TopX Overview"
-msgstr ""
+msgstr "TopX pārskats"
