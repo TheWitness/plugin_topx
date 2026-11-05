@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-05 15:11-0500\n"
+"POT-Creation-Date: 2026-11-05 15:53-0500\n"
 "PO-Revision-Date: 2024-07-21 16:37-0400\n"
 "Last-Translator: kaktus <kaktus_j_p@o2.pl>\n"
 "Language-Team: Polish <http://translate.cacti.net/projects/cacti/audit/pl/>\n"
@@ -161,6 +161,10 @@ msgid "Hosts"
 msgstr ""
 
 #: includes/dashboard.php
+msgid "How the selected data sources spread across value bands, measured against the highest value (100% = the peak)."
+msgstr ""
+
+#: includes/dashboard.php
 msgid "Invalid refresh interval."
 msgstr ""
 
@@ -298,7 +302,8 @@ msgid "Value"
 msgstr ""
 
 #: includes/dashboard.php
-msgid "Value Distribution"
+#, php-format
+msgid "Values by % of Peak"
 msgstr ""
 
 #: includes/dashboard.php

@@ -219,17 +219,21 @@ function topx_build_ds_list(array $supported, array $unsupported): array {
  * @return array The merged data source list keyed by signed data template id.
  */
 function topx_get_ds_list(): array {
-	$supported = db_fetch_assoc("SELECT DISTINCT(t3.dt_name) AS dsname, t1.id AS dsid, COUNT(t1.id) AS dscount, 'true' AS sup
+	// Only count data source *instances* that actually exist on a device
+	// (local_data_id > 0); the data_template_data row with local_data_id = 0 is
+	// the template master itself, so a template that is defined but not used on
+	// any device is excluded rather than shown with a misleading count.
+	$supported = db_fetch_assoc("SELECT t3.dt_name AS dsname, t1.id AS dsid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'true' AS sup
 		FROM data_template AS t1
-		INNER JOIN data_template_data AS t2 ON t1.id = t2.data_template_id
+		INNER JOIN data_template_data AS dtd ON t1.id = dtd.data_template_id AND dtd.local_data_id > 0
 		INNER JOIN plugin_topx_source AS t3 ON t1.hash = t3.hash
-		GROUP BY data_template_id
+		GROUP BY t1.id, t3.dt_name
 		ORDER BY dsname");
 
-	$unsupported = db_fetch_assoc("SELECT DISTINCT(CONCAT('unsupported - ', t1.name)) AS dsname, t1.id AS dsid, COUNT(t1.id) AS dscount, 'false' AS sup
+	$unsupported = db_fetch_assoc("SELECT CONCAT('unsupported - ', t1.name) AS dsname, t1.id AS dsid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'false' AS sup
 		FROM data_template AS t1
-		INNER JOIN data_template_data AS t2 ON t1.id = t2.data_template_id
-		GROUP BY data_template_id
+		INNER JOIN data_template_data AS dtd ON t1.id = dtd.data_template_id AND dtd.local_data_id > 0
+		GROUP BY t1.id, t1.name
 		ORDER BY dsname");
 
 	return topx_build_ds_list($supported, $unsupported);

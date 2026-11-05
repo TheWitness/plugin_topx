@@ -4,6 +4,13 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.1
 
+- Only list data sources that are actually in use: the data source dropdown and
+  the Overview tables/counts now exclude data source templates that no device
+  uses, and count real data source instances rather than the template master.
+- Renamed the drilldown "Value Distribution" card to "Values by % of Peak" and
+  added an explanatory caption describing the value bands.
+- The Overview "Data Sources" drilldown link now uses Cacti's ajax navigation
+  (class `pic`) instead of a full page reload.
 - Ranking Chart readability: short interface/alias axis labels (full data source
   name on hover), the data source's own unit on the value axis (e.g. Bits,
   Utilization), locale-formatted tooltip and axis values instead of long raw

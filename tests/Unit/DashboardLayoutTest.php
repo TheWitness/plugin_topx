@@ -120,6 +120,54 @@ describe('topx_drilldown_card_body chart', function (): void {
 	});
 });
 
+describe('topx_drilldown_card_body distribution', function (): void {
+	it('renders the value bands with an explanatory caption', function (): void {
+		$_SESSION = [];
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) {
+			return 10;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [
+				['ldid' => 1, 'name' => 'a', 'xvalue' => 100, 'xpeak' => 200],
+				['ldid' => 2, 'name' => 'b', 'xvalue' => 20,  'xpeak' => 200],
+			];
+		};
+
+		$ds = ['key' => 5, 'supported' => false, 'entry' => ['key' => 5, 'name' => 'x', 'count' => '2', 'supported' => 'false']];
+
+		$body = topx_drilldown_card_body('distribution', $ds);
+
+		expect($body)->toContain('topxStackBar');
+		expect($body)->toContain('topxDashNote');
+		expect($body)->toContain('100% = the peak');
+
+		unset($GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
+});
+
+describe('topx_overview_card_body types', function (): void {
+	it('renders a Cacti ajax (pic) drilldown link per data source', function (): void {
+		$GLOBALS['__test_db_fetch_assoc'] = function ($sql) {
+			if (strpos($sql, 'plugin_topx_source') !== false) {
+				return [['dsname' => 'CPU', 'dsid' => '3', 'dscount' => '2', 'sup' => 'true']];
+			}
+
+			return [];
+		};
+
+		$body = topx_overview_card_body('types');
+
+		expect($body)->toContain('topxDashGlyph');
+		expect($body)->toContain('class="pic topxDashGlyph"');
+		expect($body)->toContain('action=view&ds=');
+		expect($body)->toContain('CPU');
+
+		unset($GLOBALS['__test_db_fetch_assoc']);
+	});
+});
+
 describe('topx_dashboard_layout_save', function (): void {
 	it('rejects a non-POST request', function (): void {
 		$GLOBALS['__test_user_settings'] = [];

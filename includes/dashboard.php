@@ -658,7 +658,7 @@ function topx_overview_card_body(string $key): string {
 					. '<td>' . html_escape($entry['name']) . '</td>'
 					. '<td class="topxDashCenter">' . ($supported ? __esc('Yes', 'topx') : __esc('No', 'topx')) . '</td>'
 					. '<td class="topxDashNum" data-sort-value="' . (int) $entry['count'] . '">' . number_format_i18n((int) $entry['count'], 0) . '</td>'
-					. '<td class="topxDashCenter"><a class="topxDashGlyph" href="' . $url . '" title="' . __esc('Open drilldown', 'topx') . '"><i class="fas fa-chart-bar" aria-hidden="true"></i></a></td>'
+					. '<td class="topxDashCenter"><a class="pic topxDashGlyph" href="' . $url . '" title="' . __esc('Open drilldown', 'topx') . '"><i class="fas fa-chart-bar" aria-hidden="true"></i></a></td>'
 					. '</tr>';
 			}
 
@@ -865,7 +865,7 @@ function topx_drilldown_card_meta(): array {
 		'chart'        => ['title' => __('Ranking Chart', 'topx'),     'span' => 4, 'expandable' => false],
 		'tiles'        => ['title' => __('Summary', 'topx'),           'span' => 4, 'expandable' => false],
 		'gauges'       => ['title' => __('Average and Peak', 'topx'),  'span' => 4, 'expandable' => false],
-		'distribution' => ['title' => __('Value Distribution', 'topx'), 'span' => 4, 'expandable' => false],
+		'distribution' => ['title' => __('Values by % of Peak', 'topx'), 'span' => 4, 'expandable' => false],
 	];
 }
 
@@ -1075,6 +1075,7 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			}
 
 			print '</div>';
+			print '<p class="topxDashNote">' . __esc('How the selected data sources spread across value bands, measured against the highest value (100% = the peak).', 'topx') . '</p>';
 
 			break;
 	}
