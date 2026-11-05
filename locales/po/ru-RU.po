@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-05 13:53-0500\n"
+"POT-Creation-Date: 2026-11-05 15:11-0500\n"
 "PO-Revision-Date: 2024-07-21 16:39-0400\n"
 "Last-Translator: Coool (github.com/Coool) <coool@mail.lv>\n"
 "Language-Team: Russian <http://translate.cacti.net/projects/cacti/audit/ru/>\n"
@@ -119,14 +119,6 @@ msgid "75–100%"
 msgstr ""
 
 #: includes/dashboard.php
-msgid "< 1 day"
-msgstr ""
-
-#: includes/dashboard.php
-msgid "> 6 months"
-msgstr ""
-
-#: includes/dashboard.php
 msgid "Add a card…"
 msgstr ""
 
@@ -221,6 +213,10 @@ msgid "Order"
 msgstr "Заказ"
 
 #: includes/dashboard.php
+msgid "Over 6 months"
+msgstr ""
+
+#: includes/dashboard.php
 msgid "Overview"
 msgstr ""
 
@@ -287,6 +283,10 @@ msgstr ""
 
 #: includes/dashboard.php
 msgid "Unsupported"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Up to 1 day"
 msgstr ""
 
 #: includes/dashboard.php

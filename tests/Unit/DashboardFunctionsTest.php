@@ -75,6 +75,29 @@ describe('topx_overview_stats', function (): void {
 	});
 });
 
+describe('topx_short_label', function (): void {
+	it('uses the interface segment before a trailing rrd field name', function (): void {
+		expect(topx_short_label('Device - Traffic - 188.120.193.222 - wan1 - traffic_out'))->toBe('wan1');
+	});
+
+	it('uses the final segment when it is not an rrd field name', function (): void {
+		expect(topx_short_label('Device - Traffic - 192.168.11.1 - bridge'))->toBe('bridge');
+	});
+
+	it('keeps interface names that contain uppercase', function (): void {
+		expect(topx_short_label('Device - slo12_TCM'))->toBe('slo12_TCM');
+	});
+
+	it('returns the whole name when there is nothing to split', function (): void {
+		expect(topx_short_label('single'))->toBe('single');
+	});
+
+	it('returns the input when it has no usable segments', function (): void {
+		expect(topx_short_label(''))->toBe('');
+		expect(topx_short_label('  -   - '))->toBe('  -   - ');
+	});
+});
+
 describe('topx_compute_ranking', function (): void {
 	it('ranks an unsupported source directly from the stats table', function (): void {
 		$captured = [];

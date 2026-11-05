@@ -44,6 +44,82 @@ describe('topx_dashboard_layout persistence', function (): void {
 	});
 });
 
+describe('topx_dashboard_chart', function (): void {
+	it('emits a billboard placeholder carrying the labels, values and colour range', function (): void {
+		$html = topx_dashboard_chart(['eth0', 'eth1'], [10, 20], 'bits', true, 5.0, ['#111111', '#222222']);
+
+		expect($html)->toContain('topx-bb-chart');
+		expect($html)->toContain('data-chart=');
+		expect($html)->toContain('barColors');
+		expect($html)->toContain('#111111');
+		expect($html)->toContain('eth0');
+	});
+
+	it('returns an empty-state message when there is nothing to chart', function (): void {
+		expect(topx_dashboard_chart([], [], 'bits', true))->toContain('topxDashEmpty');
+	});
+});
+
+describe('topx_overview_card_body uptime', function (): void {
+	it('renders the red-to-green uptime range chart when hosts are found', function (): void {
+		$GLOBALS['__test_db_fetch_assoc'] = function ($sql) {
+			// 8640000000 timeticks -> 1000 days -> the ">6 months" bucket.
+			return [['val' => 8640000000]];
+		};
+
+		$body = topx_overview_card_body('uptime');
+
+		expect($body)->toContain('topx-bb-chart');
+		expect($body)->toContain('#e63946');
+
+		unset($GLOBALS['__test_db_fetch_assoc']);
+	});
+
+	it('shows an empty state when no uptime data sources exist', function (): void {
+		$GLOBALS['__test_db_fetch_assoc'] = function ($sql) {
+			return [];
+		};
+
+		expect(topx_overview_card_body('uptime'))->toContain('topxDashEmpty');
+
+		unset($GLOBALS['__test_db_fetch_assoc']);
+	});
+});
+
+describe('topx_drilldown_card_body chart', function (): void {
+	it('renders short axis labels and the full name for hover', function (): void {
+		$_SESSION = [];
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) {
+			return 10;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [[
+				'ldid'   => 1,
+				'name'   => 'Device - Traffic - 10.0.0.1 - wan1 - traffic_out',
+				'xvalue' => 100,
+				'xpeak'  => 200,
+			]];
+		};
+
+		$ds = [
+			'key'       => 5,
+			'supported' => false,
+			'entry'     => ['key' => 5, 'name' => 'unsupported - x', 'count' => '1', 'supported' => 'false'],
+		];
+
+		$body = topx_drilldown_card_body('chart', $ds);
+
+		expect($body)->toContain('topx-bb-chart');
+		expect($body)->toContain('wan1');
+		expect($body)->toContain('fullLabels');
+		expect($body)->toContain('traffic_out');
+
+		unset($GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
+});
+
 describe('topx_dashboard_layout_save', function (): void {
 	it('rejects a non-POST request', function (): void {
 		$GLOBALS['__test_user_settings'] = [];

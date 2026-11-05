@@ -95,8 +95,9 @@ function topx_dashboard_init_timespan(): void {
  * @return string The whitelisted data_source_stats_* table name.
  */
 function topx_dashboard_bucket(): string {
-	topx_dashboard_init_timespan();
-
+	// The page render (and the card AJAX path) initialises Cacti's session
+	// timespan; read it here rather than re-including the timespan library on
+	// every card so card rendering stays self-contained.
 	$start = function_exists('get_current_graph_start') ? (int) get_current_graph_start() : 0;
 	$end   = function_exists('get_current_graph_end') ? (int) get_current_graph_end() : 0;
 	$span  = ($end > $start) ? $end - $start : 7200;
@@ -212,15 +213,19 @@ function topx_dashboard_gauge(?float $current, ?float $min, ?float $max, float $
  * Render a billboard chart placeholder. The JSON payload is read by
  * js/topx_dashboard.js after the card is inserted so it survives AJAX refresh.
  *
- * @param array  $labels  The category labels.
- * @param array  $values  The numeric values.
- * @param string $title   The value-axis label.
- * @param bool   $rotated Whether to render horizontal bars.
- * @param float  $average Optional average annotation line (0 to omit).
+ * @param array  $labels     The category labels.
+ * @param array  $values     The numeric values.
+ * @param string $title      The value-axis label.
+ * @param bool   $rotated    Whether to render horizontal bars.
+ * @param float  $average    Optional average annotation line (0 to omit).
+ * @param array  $bar_colors Optional ordered per-bar colours (a "range"); when
+ *                           empty js/topx_dashboard.js uses its default palette.
+ * @param array  $full_labels Optional full labels shown on hover when the axis
+ *                            labels are shortened (same order as $labels).
  *
  * @return string The chart placeholder HTML.
  */
-function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0): string {
+function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = []): string {
 	$payload = [
 		'series'  => __('Value', 'topx'),
 		'labels'  => array_values($labels),
@@ -229,6 +234,8 @@ function topx_dashboard_chart(array $labels, array $values, string $title, bool 
 		'rotated' => $rotated,
 		'average' => $average,
 		'averageLabel' => __('Average', 'topx'),
+		'barColors'    => array_values($bar_colors),
+		'fullLabels'   => array_values($full_labels),
 	];
 
 	if (cacti_count($labels) === 0) {
@@ -595,12 +602,14 @@ function topx_overview_card_body(string $key): string {
 		case 'uptime':
 			$buckets = topx_uptime_bucket_days(topx_uptime_host_days());
 
+			// Avoid '<'/'>' in labels: billboard injects the tooltip title as
+			// HTML, so a literal angle bracket leaks markup (e.g. "</th>").
 			$labels = [
-				__('< 1 day', 'topx'),
+				__('Up to 1 day', 'topx'),
 				__('1 day – 1 week', 'topx'),
 				__('1 week – 1 month', 'topx'),
 				__('1 – 6 months', 'topx'),
-				__('> 6 months', 'topx'),
+				__('Over 6 months', 'topx'),
 			];
 
 			$values = [
@@ -617,7 +626,11 @@ function topx_overview_card_body(string $key): string {
 				break;
 			}
 
-			print topx_dashboard_chart($labels, $values, __('Hosts', 'topx'), false);
+			// A distinct multi-hue "colour wheel" across the ranges (warm ->
+			// cool, short uptime -> long) so the chart is not monotone.
+			$uptime_colors = ['#e63946', '#f3722c', '#f9c74f', '#90be6d', '#2a9d8f'];
+
+			print topx_dashboard_chart($labels, $values, __('Hosts', 'topx'), false, 0.0, $uptime_colors);
 
 			break;
 		case 'types':
@@ -974,14 +987,21 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			break;
 		case 'chart':
 			$labels = [];
+			$full   = [];
 			$values = [];
 
 			foreach ($rows as $row) {
-				$labels[] = (string) $row['name'];
+				$labels[] = topx_short_label((string) $row['name']);
+				$full[]   = (string) $row['name'];
 				$values[] = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
 			}
 
-			print topx_dashboard_chart($labels, $values, $payload['unit'], true, $payload['avg']);
+			// The value axis is labelled with the data source's own unit
+			// (e.g. Bits, Utilization). Unsupported sources have no unit, so the
+			// axis is left unlabelled rather than repeating a generic word.
+			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : '';
+
+			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], [], $full);
 
 			break;
 		case 'tiles':
