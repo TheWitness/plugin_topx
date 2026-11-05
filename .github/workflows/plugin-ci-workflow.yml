@@ -121,7 +121,13 @@ jobs:
     
     - name: Setup Permissions
       run: |
-        sudo chown -R www-data:runner ${{ github.workspace }}/cacti
+        # Owner must be the runner (not www-data): the shared
+        # setup-plugin-dependencies action runs `composer install` in this
+        # fixture as the runner user, and composer's autoload generation
+        # touch()es files in include/vendor. www-data ownership makes that fail
+        # with "touch(): Utime failed: Operation not permitted". Ownership is
+        # handed back to www-data right before the poller runs.
+        sudo chown -R runner:www-data ${{ github.workspace }}/cacti
         sudo find ${{ github.workspace }}/cacti -type d -exec chmod 775 {} \;
         sudo find ${{ github.workspace }}/cacti -type f -exec chmod 664 {} \;
         sudo chmod +x ${{ github.workspace }}/cacti/cmd.php
@@ -144,7 +150,12 @@ jobs:
         mysql "$MYSQL_AUTH_USR" -e "GRANT SELECT ON mysql.time_zone_name TO 'cactiuser'@'localhost';"
         mysql "$MYSQL_AUTH_USR" -e "GRANT SELECT ON mysql.time_zone_name TO 'cactiuser'@'127.0.0.1';"
         mysql "$MYSQL_AUTH_USR" -e "FLUSH PRIVILEGES;"
-        mysql "$MYSQL_AUTH_USR" cacti < ${{ github.workspace }}/cacti/cacti.sql
+        # Cacti 1.2.x's cacti.sql ships a stray `DELIMITER //` directive with no
+        # matching `//` terminator or `DELIMITER ;` reset. The mysql client
+        # forwards it to the server, which rejects it (ERROR 1064). The schema
+        # itself uses only standard ';'-terminated statements, so drop any
+        # DELIMITER directive before importing.
+        sed '/^DELIMITER/d' "${{ github.workspace }}/cacti/cacti.sql" | mysql "$MYSQL_AUTH_USR" cacti
         mysql "$MYSQL_AUTH_USR" -e "INSERT INTO settings (name, value) VALUES ('path_php_binary', '/usr/bin/php')" cacti
     
     # Core's release archives exclude .github and tests. Fetch these paths
