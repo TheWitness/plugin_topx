@@ -16,7 +16,7 @@ When generating code for this repository:
 - **PHP**: 8.1+ (write for the lowest PHP version the CI matrix tests; do not use language features beyond what CI tests)
 - **Platform**: Cacti Plugin Architecture (Cacti 1.2.32+), "TopX" highest/lowest data source reporting
 - **Database**: MySQL/MariaDB, through Cacti's dsstats rollup tables
-- **Frontend**: jQuery-based UI (`js/`), Chart.js horizontal bar chart
+- **Frontend**: jQuery-based UI (`js/`), billboard.js horizontal bar chart (bundled by Cacti)
 
 ### Key Dependencies
 - Cacti core framework (`api_plugin_*`, `db_*_prepared()`, `cacti_log()`, Cacti's dsstats tables)
@@ -31,7 +31,7 @@ topx/                                  # Repository root (install to plugins/top
 ├── css/                               # Theme-neutral styling (css/topx.css)
 ├── images/                            # Console tab images
 ├── includes/                          # Plugin API: functions.php, arrays.php
-├── js/                                # topx.js chart init + bundled Chart.js annotation plugin
+├── js/                                # topx.js chart init (billboard.js, bundled by Cacti core)
 ├── locales/                           # gettext tree (build_gettext.sh, po/, LC_MESSAGES/)
 ├── screenshots/                       # README imagery
 ├── tests/                             # Pest suite (phpunit.xml, bootstrap, Unit, bin tooling)

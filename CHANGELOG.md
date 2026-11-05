@@ -25,7 +25,12 @@ Modernization for Cacti 1.2.32 standards:
   `build_gettext.sh`, `po/cacti.pot`, and the standard per-language catalogs.
 - CSS/JS organization: consolidated the per-theme `themes/*.css` into a single
   theme-neutral `css/topx.css` (CSS custom properties + `currentColor`); moved
-  the inline chart initialization into `js/topx.js`, fed by a JSON data island.
+  the inline chart initialization into `js/topx.js` fed by a JSON data island,
+  migrated the chart from the bundled Chart.js to Cacti's own billboard.js, and
+  dropped the vendored `js/chartjs-plugin-annotation.min.js`.
+- CSP: added the standard `plugin_topx_csp_nonce()` helper and applied the
+  per-request nonce to the inline chart data island; eliminated all other inline
+  executable JavaScript (the filter helper now lives in `js/topx.js`).
 - Added a `manifest.json` (with a `themes/` tombstone) plus a Pest test suite
   and the shared CI tooling, GitHub workflows, Copilot instructions, and issue
   and pull request templates used across the Cacti plugin fleet.

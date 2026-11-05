@@ -45,3 +45,19 @@
 	overflow-y: auto;
 	max-height: 150px;
 }
+
+/* billboard.js average annotation line (rotated axis renders it vertical) */
+.bb line.topx-avg-line,
+.topx-avg-line line {
+	stroke: #cc0000;
+	stroke-dasharray: 4 3;
+}
+
+.topx-avg-line text {
+	fill: #cc0000;
+}
+
+#topx_chart {
+	max-width: 100%;
+}
+

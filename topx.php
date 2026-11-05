@@ -35,6 +35,7 @@ $title = __('TopX', 'topx');
 general_header();
 
 print get_md5_include_css('plugins/topx/css/topx.css');
+print get_md5_include_js('plugins/topx/js/topx.js');
 
 if (read_config_option('dsstats_enable') != 'on') {
 	print __('Please enable and configure %sDS Stats%s', '<a href="' . html_escape($config['url_path']) . 'settings.php?tab=data">', '</a>', 'topx');
@@ -181,7 +182,7 @@ if ($ar_ds[$_SESSION['sess_topx_ds']]['supported'] === 'true') {
 	$pie_title = $source['unit'] . ' [ ' . $source['final_unit'] . ' ] ';
 
 	print '<table class="topx_table">';
-	print '<tr><th>' . __('Data Source', 'topx') . '</th><th>' . __('Avg. value [%s]', $source['final_unit'], 'topx') . '</th><th>' . __('Peak [%s]', $source['final_unit'], 'topx') . '</th></tr>';
+	print '<tr><th>' . __('Data Source', 'topx') . '</th><th>' . __('Avg. value [%s]', html_escape($source['final_unit']), 'topx') . '</th><th>' . __('Peak [%s]', html_escape($source['final_unit']), 'topx') . '</th></tr>';
 
 	$avg_count = 0;
 
@@ -262,20 +263,22 @@ if ($ar_ds[$_SESSION['sess_topx_ds']]['supported'] === 'true') {
 	print '</table>';
 }
 
-/* chart */
+/* chart - rendered with billboard.js (bundled by Cacti's general_header) */
 if ($limit > 0) {
 	$payload = [
-		'canvas'  => 'topx_chart',
-		'labels'  => array_values($label),
-		'values'  => array_map('floatval', array_values($graph)),
-		'title'   => isset($pie_title) ? $pie_title : '',
-		'average' => (float) $avg,
+		'bindto'       => '#topx_chart',
+		'series'       => __('Value', 'topx'),
+		'labels'       => array_values($label),
+		'values'       => array_map('floatval', array_values($graph)),
+		'title'        => isset($pie_title) ? $pie_title : '',
+		'average'      => (float) $avg,
+		'averageLabel' => __('Average', 'topx'),
+		'width'        => 800,
+		'height'       => 40 + $limit * 28,
 	];
 
-	print '<div class="topx_graph"><br><br><canvas id="topx_chart" width="800" height="' . (20 + $limit * 25) . '"></canvas>';
-	print '<script type="application/json" id="topx-chart-data">' . json_encode($payload, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . '</script>';
-	print get_md5_include_js('plugins/topx/js/chartjs-plugin-annotation.min.js');
-	print get_md5_include_js('plugins/topx/js/topx.js');
+	print '<div class="topx_graph"><br><br><div id="topx_chart"></div>';
+	print '<script type="application/json" id="topx-chart-data" ' . plugin_topx_csp_nonce() . '>' . json_encode($payload, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . '</script>';
 	print '</div>';
 } else {
 	print '<br><br>' . __('Displaying all records, the chart will not be displayed. It is only shown for 50 or fewer records.', 'topx') . '<br>';
@@ -332,16 +335,6 @@ function topx_render_filter(array $ar_ds, array $filters): void {
 					</tr>
 				</table>
 			</form>
-			<script type='text/javascript'>
-			function applyTopxFilter(objForm) {
-				var strURL = '?ds=' + objForm.ds.value;
-				strURL += '&age=' + objForm.age.value;
-				strURL += '&topx=' + objForm.topx.value;
-				strURL += '&sort=' + objForm.sort.value;
-				strURL += '&what=' + objForm.what.value;
-				document.location = strURL;
-			}
-			</script>
 		</td>
 	</tr>
 	<?php

@@ -24,6 +24,22 @@
 */
 
 /**
+ * Returns the Content-Security-Policy nonce attribute for inline <script>
+ * tags, safely across Cacti versions. Newer Cacti releases enforce a CSP that
+ * requires a per-request nonce on parser-inserted scripts; older releases lack
+ * the CactiSecureHeaders class, so this returns an empty string there.
+ *
+ * @return string The nonce attribute when supported, otherwise an empty string.
+ */
+function plugin_topx_csp_nonce(): string {
+	if (class_exists('CactiSecureHeaders')) {
+		return CactiSecureHeaders::getNonceAttribute();
+	}
+
+	return '';
+}
+
+/**
  * Returns the whitelisted dsstats rollup table name for a requested age
  * bucket. Because a table name can never be bound as a prepared-statement
  * parameter, this allowlist is the only sanctioned way to turn untrusted
