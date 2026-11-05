@@ -212,15 +212,17 @@ function topx_dashboard_gauge(?float $current, ?float $min, ?float $max, float $
  * Render a billboard chart placeholder. The JSON payload is read by
  * js/topx_dashboard.js after the card is inserted so it survives AJAX refresh.
  *
- * @param array  $labels  The category labels.
- * @param array  $values  The numeric values.
- * @param string $title   The value-axis label.
- * @param bool   $rotated Whether to render horizontal bars.
- * @param float  $average Optional average annotation line (0 to omit).
+ * @param array  $labels     The category labels.
+ * @param array  $values     The numeric values.
+ * @param string $title      The value-axis label.
+ * @param bool   $rotated    Whether to render horizontal bars.
+ * @param float  $average    Optional average annotation line (0 to omit).
+ * @param array  $bar_colors Optional ordered per-bar colours (a "range"); when
+ *                           empty js/topx_dashboard.js uses its default palette.
  *
  * @return string The chart placeholder HTML.
  */
-function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0): string {
+function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = []): string {
 	$payload = [
 		'series'  => __('Value', 'topx'),
 		'labels'  => array_values($labels),
@@ -229,6 +231,7 @@ function topx_dashboard_chart(array $labels, array $values, string $title, bool 
 		'rotated' => $rotated,
 		'average' => $average,
 		'averageLabel' => __('Average', 'topx'),
+		'barColors'    => array_values($bar_colors),
 	];
 
 	if (cacti_count($labels) === 0) {
@@ -617,7 +620,11 @@ function topx_overview_card_body(string $key): string {
 				break;
 			}
 
-			print topx_dashboard_chart($labels, $values, __('Hosts', 'topx'), false);
+			// Red (just rebooted) through green (long uptime), matching the
+			// theme severity anchors: down -> recovering -> amber -> up.
+			$uptime_colors = ['#cc0000', '#d9830f', '#c9b03a', '#7cae4a', '#3c9a5f'];
+
+			print topx_dashboard_chart($labels, $values, __('Hosts', 'topx'), false, 0.0, $uptime_colors);
 
 			break;
 		case 'types':

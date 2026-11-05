@@ -4,6 +4,11 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.1
 
+- Chart colours: replaced the single flat grey bar fill (invisible on dark
+  themes) with theme-friendly, green-forward per-bar colours. The Ranking Chart
+  uses a readable categorical palette; the Uptime-by-Host chart uses an ordered
+  red -> green range so longer uptime reads as "good", matching Cacti's theme
+  severity conventions.
 - Reworked the UI into draggable card dashboards using the shared Cacti plugin
   card engine (as in apcupsd/monitor/syslog): per-card tools (expand, maximize,
   refresh, remove), an "Add card" catalogue, drag/keyboard reorder, a Cacti

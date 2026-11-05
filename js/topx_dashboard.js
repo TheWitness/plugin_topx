@@ -320,15 +320,28 @@ function topxDashRenderCharts(root) {
 
 		node.dataset.rendered = '1';
 
-		var colors = {};
-		colors[cfg.series] = '#555555';
+		// Per-bar colours. A chart may supply its own ordered range (e.g. the
+		// Uptime-by-Host card's red -> green buckets); otherwise fall back to a
+		// theme-friendly, green-forward categorical palette so bars are readable
+		// and distinct on every Cacti theme. Flat grey (#555) was invisible on
+		// dark themes.
+		var palette = (cfg.barColors && cfg.barColors.length) ? cfg.barColors : [
+			'#3c9a5f', '#2e86de', '#8e5bd0', '#d9830f',
+			'#17a2a2', '#c9b03a', '#c0556f', '#5aa0c9'
+		];
 
 		var options = {
 			bindto: node,
 			data: {
 				columns: [[cfg.series].concat(cfg.values)],
 				type: 'bar',
-				colors: colors
+				color: function(inColor, d) {
+					if (d && typeof d === 'object' && typeof d.index === 'number') {
+						return palette[d.index % palette.length];
+					}
+
+					return palette[0];
+				}
 			},
 			bar: {
 				width: {
