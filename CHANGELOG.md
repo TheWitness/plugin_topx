@@ -4,6 +4,11 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.1
 
+- Ranking Chart readability: short interface/alias axis labels (full data source
+  name on hover), the data source's own unit on the value axis (e.g. Bits,
+  Utilization), locale-formatted tooltip and axis values instead of long raw
+  floats, and a chart height that grows with the record count so Top 10/20/50
+  stay legible.
 - Chart colours: replaced the single flat grey bar fill (invisible on dark
   themes) with theme-friendly, green-forward per-bar colours. The Ranking Chart
   uses a readable categorical palette; the Uptime-by-Host chart uses an ordered

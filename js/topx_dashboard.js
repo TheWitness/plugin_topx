@@ -298,6 +298,19 @@ function initTopxDashboard() {
 	});
 }
 
+/** Format a chart value for display with the browser locale's thousands
+ *  separators and at most two decimals, so huge raw floats (e.g.
+ *  16835076.05555555) read as 16,835,076.06. */
+function topxFormatNumber(value) {
+	var n = Number(value);
+
+	if (!isFinite(n)) {
+		return value;
+	}
+
+	return n.toLocaleString(undefined, {maximumFractionDigits: 2});
+}
+
 /** Render every billboard chart placeholder under a root from its data-chart
  *  JSON. Skips placeholders already rendered, so it is safe to call again after a
  *  card is added or refreshed. billboard.js is loaded globally by general_header(). */
@@ -358,6 +371,11 @@ function topxDashRenderCharts(root) {
 					label: {
 						text: cfg.title,
 						position: 'outer-center'
+					},
+					tick: {
+						format: function(value) {
+							return topxFormatNumber(value);
+						}
 					}
 				}
 			},
@@ -365,9 +383,29 @@ function topxDashRenderCharts(root) {
 				show: false
 			},
 			tooltip: {
-				show: true
+				show: true,
+				format: {
+					// Show the full data source name (if supplied) on hover, and
+					// a locale-formatted value instead of a long raw float.
+					title: function(index) {
+						if (cfg.fullLabels && cfg.fullLabels.length && typeof cfg.fullLabels[index] !== 'undefined') {
+							return cfg.fullLabels[index];
+						}
+
+						return (cfg.labels && typeof cfg.labels[index] !== 'undefined') ? cfg.labels[index] : index;
+					},
+					value: function(value) {
+						return topxFormatNumber(value);
+					}
+				}
 			}
 		};
+
+		// Horizontal (rotated) ranking charts grow with the record count so Top
+		// 10/20/50 stay readable instead of squeezing bars into a fixed height.
+		if (cfg.rotated) {
+			options.size = {height: Math.max(240, 44 + cfg.values.length * 34)};
+		}
 
 		if (cfg.average && cfg.average > 0) {
 			options.grid = {

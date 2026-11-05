@@ -86,6 +86,40 @@ describe('topx_overview_card_body uptime', function (): void {
 	});
 });
 
+describe('topx_drilldown_card_body chart', function (): void {
+	it('renders short axis labels and the full name for hover', function (): void {
+		$_SESSION = [];
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) {
+			return 10;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [[
+				'ldid'   => 1,
+				'name'   => 'Device - Traffic - 10.0.0.1 - wan1 - traffic_out',
+				'xvalue' => 100,
+				'xpeak'  => 200,
+			]];
+		};
+
+		$ds = [
+			'key'       => 5,
+			'supported' => false,
+			'entry'     => ['key' => 5, 'name' => 'unsupported - x', 'count' => '1', 'supported' => 'false'],
+		];
+
+		$body = topx_drilldown_card_body('chart', $ds);
+
+		expect($body)->toContain('topx-bb-chart');
+		expect($body)->toContain('wan1');
+		expect($body)->toContain('fullLabels');
+		expect($body)->toContain('traffic_out');
+
+		unset($GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
+});
+
 describe('topx_dashboard_layout_save', function (): void {
 	it('rejects a non-POST request', function (): void {
 		$GLOBALS['__test_user_settings'] = [];

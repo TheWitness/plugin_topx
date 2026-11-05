@@ -95,8 +95,9 @@ function topx_dashboard_init_timespan(): void {
  * @return string The whitelisted data_source_stats_* table name.
  */
 function topx_dashboard_bucket(): string {
-	topx_dashboard_init_timespan();
-
+	// The page render (and the card AJAX path) initialises Cacti's session
+	// timespan; read it here rather than re-including the timespan library on
+	// every card so card rendering stays self-contained.
 	$start = function_exists('get_current_graph_start') ? (int) get_current_graph_start() : 0;
 	$end   = function_exists('get_current_graph_end') ? (int) get_current_graph_end() : 0;
 	$span  = ($end > $start) ? $end - $start : 7200;
@@ -219,10 +220,12 @@ function topx_dashboard_gauge(?float $current, ?float $min, ?float $max, float $
  * @param float  $average    Optional average annotation line (0 to omit).
  * @param array  $bar_colors Optional ordered per-bar colours (a "range"); when
  *                           empty js/topx_dashboard.js uses its default palette.
+ * @param array  $full_labels Optional full labels shown on hover when the axis
+ *                            labels are shortened (same order as $labels).
  *
  * @return string The chart placeholder HTML.
  */
-function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = []): string {
+function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = []): string {
 	$payload = [
 		'series'  => __('Value', 'topx'),
 		'labels'  => array_values($labels),
@@ -232,6 +235,7 @@ function topx_dashboard_chart(array $labels, array $values, string $title, bool 
 		'average' => $average,
 		'averageLabel' => __('Average', 'topx'),
 		'barColors'    => array_values($bar_colors),
+		'fullLabels'   => array_values($full_labels),
 	];
 
 	if (cacti_count($labels) === 0) {
@@ -981,14 +985,20 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			break;
 		case 'chart':
 			$labels = [];
+			$full   = [];
 			$values = [];
 
 			foreach ($rows as $row) {
-				$labels[] = (string) $row['name'];
+				$labels[] = topx_short_label((string) $row['name']);
+				$full[]   = (string) $row['name'];
 				$values[] = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
 			}
 
-			print topx_dashboard_chart($labels, $values, $payload['unit'], true, $payload['avg']);
+			// The value axis is labelled with the data source's own unit
+			// (e.g. Bits, Utilization) rather than the slash-delimited scale set.
+			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : __('Value', 'topx');
+
+			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], [], $full);
 
 			break;
 		case 'tiles':

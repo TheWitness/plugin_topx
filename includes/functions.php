@@ -525,3 +525,36 @@ function topx_compute_ranking(int $ds_key, bool $supported, string $table, strin
 
 	return ['source' => $source, 'rows' => $result, 'avg' => (float) $avg];
 }
+
+/**
+ * Derives a short, readable axis label from a data source's full name. Data
+ * source names are long device-qualified strings such as
+ * "Device - Traffic - 10.0.0.1 - wan1 - traffic_out"; the chart only needs the
+ * most specific part (the interface/alias, e.g. "wan1"). When the final segment
+ * looks like an rrd field name (all-lowercase with an underscore, e.g.
+ * "traffic_out") the segment before it is used instead. The full name is still
+ * shown on hover. Kept free of database access so it can be unit tested.
+ *
+ * @param string $name The full data source name.
+ *
+ * @return string A short label for the chart axis.
+ */
+function topx_short_label(string $name): string {
+	$parts = array_values(array_filter(array_map('trim', explode(' - ', $name)), function ($part) {
+		return $part !== '';
+	}));
+
+	$count = cacti_count($parts);
+
+	if ($count === 0) {
+		return $name;
+	}
+
+	$last = $parts[$count - 1];
+
+	if ($count >= 2 && preg_match('/^[a-z0-9]+(_[a-z0-9]+)+$/', $last)) {
+		return $parts[$count - 2];
+	}
+
+	return $last;
+}
