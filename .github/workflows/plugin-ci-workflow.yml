@@ -55,11 +55,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4']
-        # Pinned to 24.04: the ubuntu-latest migration to Ubuntu 26 breaks
-        # composer's autoload generation in the shared setup-plugin-dependencies
-        # action with "touch(): Utime failed: Operation not permitted". Revert to
-        # ubuntu-latest once the shared Cacti CI tooling supports Ubuntu 26.
-        os: [ubuntu-24.04]
+        os: [ubuntu-latest]
     
     services:
       mariadb:
@@ -125,7 +121,13 @@ jobs:
     
     - name: Setup Permissions
       run: |
-        sudo chown -R www-data:runner ${{ github.workspace }}/cacti
+        # Owner must be the runner (not www-data): the shared
+        # setup-plugin-dependencies action runs `composer install` in this
+        # fixture as the runner user, and composer's autoload generation
+        # touch()es files in include/vendor. www-data ownership makes that fail
+        # with "touch(): Utime failed: Operation not permitted". Ownership is
+        # handed back to www-data right before the poller runs.
+        sudo chown -R runner:www-data ${{ github.workspace }}/cacti
         sudo find ${{ github.workspace }}/cacti -type d -exec chmod 775 {} \;
         sudo find ${{ github.workspace }}/cacti -type f -exec chmod 664 {} \;
         sudo chmod +x ${{ github.workspace }}/cacti/cmd.php
