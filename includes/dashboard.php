@@ -995,8 +995,9 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			}
 
 			// The value axis is labelled with the data source's own unit
-			// (e.g. Bits, Utilization) rather than the slash-delimited scale set.
-			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : __('Value', 'topx');
+			// (e.g. Bits, Utilization). Unsupported sources have no unit, so the
+			// axis is left unlabelled rather than repeating a generic word.
+			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : '';
 
 			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], [], $full);
 
