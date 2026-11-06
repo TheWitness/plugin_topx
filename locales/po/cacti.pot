@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-06 09:09-0500\n"
+"POT-Creation-Date: 2026-11-06 10:51-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -466,6 +466,11 @@ msgid "Data Source [new]"
 msgstr ""
 
 #: topx_sources.php
+#, php-format
+msgid "Data Source [new: %s]"
+msgstr ""
+
+#: topx_sources.php
 msgid "Data Template"
 msgstr ""
 
@@ -623,6 +628,10 @@ msgstr ""
 
 #: topx_sources.php
 msgid "Chart Label"
+msgstr ""
+
+#: topx_sources.php
+msgid "(template not installed)"
 msgstr ""
 
 #: topx_sources.php

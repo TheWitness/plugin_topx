@@ -11,6 +11,17 @@ All notable changes to the TopX plugin are documented in this file.
   each template (in-use vs unused), and provides add/edit/delete plus XML
   **Import/Export** keyed on the portable Data Template hash, mirroring Cacti's
   own template import/export.
+- Clicking an unconfigured ("Supported: No") Data Template in the grid now opens
+  the editor pre-pointed at that template, so an administrator can turn any
+  template into a supported source in a couple of clicks. Supported definitions
+  whose stored hash matches no installed template are flagged "(template not
+  installed)" rather than shown with a blank template.
+- A single Data Template can now carry **multiple independent definitions** (for
+  example traffic_in and traffic_out ranked separately): each definition is its
+  own row in the grid and its own selectable entry on the dashboard. To rank by
+  just one of several data sources, use a single definition with a `field=field`
+  metric expression; add further definitions only when you want to rank several
+  of a template's fields separately.
 - Upgrades now grant the new management realm to everyone who can already view
   TopX (users and groups), and the upgrade runs from the `config_arrays` hook on
   every page, so administrators upgrading in place no longer get a "401

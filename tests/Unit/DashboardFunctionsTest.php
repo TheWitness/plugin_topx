@@ -121,4 +121,36 @@ describe('topx_compute_ranking', function (): void {
 
 		unset($GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
 	});
+
+	it('resolves a supported definition by its own id, not the template id', function (): void {
+		$fetched_source_id = null;
+
+		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) use (&$fetched_source_id) {
+			if (strpos($sql, 'FROM plugin_topx_source WHERE id') !== false) {
+				$fetched_source_id = $p[0];
+
+				return ['id' => 8, 'hash' => 'abc', 'operation' => 'cpu=cpu', 'final_unit' => '%'];
+			}
+
+			return [];
+		};
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) {
+			// Hash -> data template id resolution, then the AVG() query.
+			return strpos($sql, 'FROM data_template WHERE hash') !== false ? 12 : 3;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [['ldid' => 1, 'name' => 'cpu', 'xvalue' => 10, 'xpeak' => 20]];
+		};
+
+		// ds_key -8 => plugin_topx_source id 8 (a specific definition).
+		$out = topx_compute_ranking(-8, true, 'data_source_stats_hourly', 'average', 'DESC', 5, 'xvalue');
+
+		expect($fetched_source_id)->toBe(8);
+		expect($out['source']['operation'])->toBe('cpu=cpu');
+		expect($out['rows'])->toHaveCount(1);
+
+		unset($GLOBALS['__test_db_fetch_row_prepared'], $GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
 });

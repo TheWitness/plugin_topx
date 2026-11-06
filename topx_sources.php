@@ -354,6 +354,20 @@ function topx_sources_edit(): void {
 		} else {
 			$header_label = __('Data Source [new]', 'topx');
 		}
+	} elseif (isset_request_var('hash') && preg_match('/^[a-f0-9]{32}$/', get_nfilter_request_var('hash'))) {
+		// Adding support for a specific Data Template picked from the grid:
+		// pre-select its hash and default the display name to the template name
+		// so the form is immediately ready to save.
+		$hash          = get_nfilter_request_var('hash');
+		$template_name = (string) db_fetch_cell_prepared('SELECT name FROM data_template WHERE hash = ?', array($hash));
+
+		if ($template_name !== '') {
+			$source['hash']    = $hash;
+			$source['dt_name'] = $template_name;
+			$header_label      = __esc('Data Source [new: %s]', $template_name, 'topx');
+		} else {
+			$header_label = __('Data Source [new]', 'topx');
+		}
 	} else {
 		$header_label = __('Data Source [new]', 'topx');
 	}
@@ -650,16 +664,26 @@ function topx_sources(): void {
 		foreach ($list as $row) {
 			$is_source = ((int) $row['id'] > 0);
 
-			$edit_url = 'topx_sources.php?action=edit&id=' . (int) $row['id'];
-
-			if (!$is_source) {
+			if ($is_source) {
+				$edit_url = 'topx_sources.php?action=edit&id=' . (int) $row['id'];
+			} else {
 				$edit_url = 'topx_sources.php?action=edit&hash=' . html_escape($row['hash']);
+			}
+
+			// A supported definition whose stored hash matches no installed Data
+			// Template (e.g. a seeded default for a package that is not present,
+			// or an imported definition) is flagged so the administrator can see
+			// it needs re-pointing rather than appearing as a blank template.
+			$template = (string) $row['template'];
+
+			if ($template === '') {
+				$template = $is_source ? __('(template not installed)', 'topx') : '';
 			}
 
 			form_alternate_row('line' . ($is_source ? (int) $row['id'] : 't' . html_escape($row['hash'])), true);
 
 			form_selectable_cell(filter_value($row['name'] !== '' ? $row['name'] : $row['template'], get_request_var('filter'), $edit_url), $row['id']);
-			form_selectable_cell(html_escape($row['template']), $row['id']);
+			form_selectable_cell(html_escape($template), $row['id']);
 			form_selectable_cell($row['supported'] === 'Yes' ? __('Yes', 'topx') : __('No', 'topx'), $row['id'], '', 'text-align:center');
 			form_selectable_cell(number_format_i18n((int) $row['in_use'], -1), $row['id'], '', 'text-align:right');
 			form_selectable_cell($is_source ? html_escape($range_labels[(int) $row['range_type']] ?? '') : '', $row['id']);

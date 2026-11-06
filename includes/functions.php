@@ -181,18 +181,23 @@ function topx_final_operation($value, string $final_operation, string $final_uni
 
 /**
  * Builds the keyed data source list used to populate the filter dropdown from
- * the raw supported/unsupported rows. Supported sources (those matching a
- * plugin_topx_source hash) are keyed by the negative of their data template id
- * so the two sets never collide. Kept free of database access so it can be
- * unit tested directly.
+ * the raw supported/unsupported rows. Supported sources (each a plugin_topx_source
+ * definition) are keyed by the negative of their *definition* id, so a Data
+ * Template can carry several independent definitions (e.g. traffic_in and
+ * traffic_out ranked separately) and each appears as its own selectable entry.
+ * Unsupported templates are keyed by their positive template id, so the two sets
+ * never collide. Each entry also carries the underlying template_id used to look
+ * up data source instances. Kept free of database access so it can be unit
+ * tested directly.
  *
- * @param array $supported   Rows of supported data templates (dsname, dsid,
+ * @param array $supported   Rows of supported definitions (dsname, dsid [the
+ *                           plugin_topx_source id], tplid [the data template id],
  *                           dscount) flagged sup='true'.
  * @param array $unsupported Rows of unsupported data templates flagged
  *                           sup='false'.
  *
  * @return array The merged list keyed by signed id, each entry holding key,
- *               name, count and supported flags.
+ *               name, count, supported and template_id.
  */
 function topx_build_ds_list(array $supported, array $unsupported): array {
 	$list = [];
@@ -201,10 +206,11 @@ function topx_build_ds_list(array $supported, array $unsupported): array {
 		$key = ($ds['sup'] === 'true') ? -1 * (int) $ds['dsid'] : (int) $ds['dsid'];
 
 		$list[$key] = [
-			'key'       => $key,
-			'name'      => $ds['dsname'],
-			'count'     => $ds['dscount'],
-			'supported' => $ds['sup'],
+			'key'         => $key,
+			'name'        => $ds['dsname'],
+			'count'       => $ds['dscount'],
+			'supported'   => $ds['sup'],
+			'template_id' => isset($ds['tplid']) ? (int) $ds['tplid'] : (int) $ds['dsid'],
 		];
 	}
 
@@ -223,11 +229,11 @@ function topx_get_ds_list(): array {
 	// (local_data_id > 0); the data_template_data row with local_data_id = 0 is
 	// the template master itself, so a template that is defined but not used on
 	// any device is excluded rather than shown with a misleading count.
-	$supported = db_fetch_assoc("SELECT t3.dt_name AS dsname, t1.id AS dsid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'true' AS sup
+	$supported = db_fetch_assoc("SELECT t3.dt_name AS dsname, t3.id AS dsid, t1.id AS tplid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'true' AS sup
 		FROM data_template AS t1
 		INNER JOIN data_template_data AS dtd ON t1.id = dtd.data_template_id AND dtd.local_data_id > 0
 		INNER JOIN plugin_topx_source AS t3 ON t1.hash = t3.hash
-		GROUP BY t1.id, t3.dt_name
+		GROUP BY t3.id, t3.dt_name, t1.id
 		ORDER BY dsname");
 
 	$unsupported = db_fetch_assoc("SELECT CONCAT('unsupported - ', t1.name) AS dsname, t1.id AS dsid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'false' AS sup
@@ -410,6 +416,11 @@ function topx_overview_stats(): array {
 	$unsupported = 0;
 	$sources     = 0;
 
+	// A Data Template can carry several supported definitions, each its own list
+	// entry; count the template's data source instances only once so the total
+	// is not inflated by multi-definition templates.
+	$counted = [];
+
 	foreach ($list as $entry) {
 		if ($entry['supported'] === 'true') {
 			$supported++;
@@ -417,7 +428,12 @@ function topx_overview_stats(): array {
 			$unsupported++;
 		}
 
-		$sources += (int) $entry['count'];
+		$tpl = (int) ($entry['template_id'] ?? 0);
+
+		if (!isset($counted[$tpl])) {
+			$sources          += (int) $entry['count'];
+			$counted[$tpl]     = true;
+		}
 	}
 
 	return [
@@ -451,13 +467,14 @@ function topx_overview_stats(): array {
  *               average.
  */
 function topx_compute_ranking(int $ds_key, bool $supported, string $table, string $order, string $dir, int $limit, string $computed_order): array {
-	$id           = $supported ? -1 * $ds_key : $ds_key;
 	$limit_clause = $limit > 0 ? " LIMIT $limit" : '';
 	$source       = [];
 	$result       = [];
 	$avg          = 0;
 
 	if (!$supported) {
+		$id = $ds_key;
+
 		$from = " FROM data_template_data AS t1
 			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
 			WHERE t1.data_template_id = ?";
@@ -470,15 +487,17 @@ function topx_compute_ranking(int $ds_key, bool $supported, string $table, strin
 		return ['source' => $source, 'rows' => $result, 'avg' => (float) $avg];
 	}
 
-	$source = db_fetch_row_prepared('SELECT plugin_topx_source.*
-		FROM plugin_topx_source
-		INNER JOIN data_template ON plugin_topx_source.hash = data_template.hash
-		WHERE data_template.id = ?',
-		array($id));
+	// A supported entry is keyed by the negative of its plugin_topx_source id, so
+	// a Data Template can carry several independent definitions. Resolve the
+	// definition by its own id, then derive the data template id (via the stored
+	// hash) that locates the data source instances to rank.
+	$source = db_fetch_row_prepared('SELECT * FROM plugin_topx_source WHERE id = ?', array(-1 * $ds_key));
 
 	if (!is_array($source)) {
 		$source = [];
 	}
+
+	$id = (int) db_fetch_cell_prepared('SELECT id FROM data_template WHERE hash = ?', array($source['hash'] ?? ''));
 
 	$operation = $source['operation'] ?? '';
 

@@ -13,9 +13,38 @@ column shows how many Data Sources on your devices use each template, so you can
 tell in-use templates from unused ones at a glance.
 
 Click a row (or the "Add" link) to open the editor, fill in the fields below and
-save. Use Import / Export to move definitions between installs - the export is an
-XML document keyed on the Data Template hash, so it applies cleanly to any Cacti
-that has the same template.
+save. Clicking a template whose Supported column shows "No" opens the editor
+already pointed at that template, so turning it into a supported source only
+takes a couple of clicks. Use Import / Export to move definitions between
+installs - the export is an XML document keyed on the Data Template hash, so it
+applies cleanly to any Cacti that has the same template.
+
+
+ONE DATA SOURCE OR SEVERAL?
+---------------------------
+
+A Data Template often defines more than one RRD data source (for example an
+interface template has traffic_in and traffic_out).
+
+  * If you only care about ONE of them, create a single definition and name that
+    field in the Metric Expression, e.g. "traffic_in=traffic_in". You do NOT
+    need multiple rows for this.
+
+  * If you want to rank SEVERAL of a template's fields SEPARATELY (e.g. a Top-N
+    of inbound traffic AND a separate Top-N of outbound traffic), add one
+    definition per field - multiple rows for the same Data Template are allowed.
+    Each definition becomes its own entry in the dashboard's data source picker.
+
+  * If you want to rank by a COMBINATION (sum, percentage, ...), use one
+    definition with a combining Metric Expression, e.g. "traffic_in+traffic_out"
+    or "hdd_total%hdd_used".
+
+The bundled defaults are seeded against the standard Cacti package template
+hashes. If your install uses a template with a different hash (a custom or
+repackaged template), the seeded row will show as "(template not installed)" and
+your real template will show as "Supported: No" - just click it and configure a
+definition. This is why a template may not appear "auto-supported": the support
+is keyed on the exact template hash.
 
 
 EDITOR FIELDS
