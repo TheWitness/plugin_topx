@@ -4,6 +4,13 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.2
 
+- The TopX tab pages (`topx.php`) now render with `general_header()` so they show
+  as a tab without the Console left-hand menu.
+- New mappings default the **Metric Expression** to `field=field` for a template
+  that has a single RRD data source (so it ranks out of the box, as the common
+  `users=users` case required), and the editor validates range thresholds on
+  save: an increasing range must have Normal < Warning < Alert and a decreasing
+  range Normal > Warning > Alert, raising a message when violated.
 - The drilldown toolbar gains an **Edit Rule / Add Rule** link (for users with
   the management realm) that jumps to the Data Source editor for the shown
   source, and the editor shows a **live preview** of the definition's cards
