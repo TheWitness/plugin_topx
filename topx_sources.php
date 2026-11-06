@@ -643,7 +643,7 @@ function topx_sources(): void {
 			'sort'    => 'ASC',
 		],
 		'supported' => [
-			'display' => __('Supported', 'topx'),
+			'display' => __('Status', 'topx'),
 			'align'   => 'center',
 			'sort'    => 'ASC',
 			'tip'     => __('Whether a TopX Data Source definition exists for the Data Template.', 'topx'),

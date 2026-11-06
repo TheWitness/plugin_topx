@@ -16,10 +16,10 @@ All notable changes to the TopX plugin are documented in this file.
   template into a supported source in a couple of clicks. Supported definitions
   whose stored hash matches no installed template are flagged "(template not
   installed)" rather than shown with a blank template.
-- The grid's Supported column renders as a status pill ("Supported" /
+- The grid's Status column renders the support state as a pill ("Supported" /
   "Not Supported", green/red) and the filter bar gains a **Has Data Sources**
-  toggle (defaulting to Cacti's `default_has` setting, like the Data Templates
-  page) to hide templates that no device uses.
+  toggle switch (defaulting to Cacti's `default_has` setting, like the Data
+  Templates page) to hide templates that no device uses.
 - A single Data Template can now carry **multiple independent definitions** (for
   example traffic_in and traffic_out ranked separately): each definition is its
   own row in the grid and its own selectable entry on the dashboard. To rank by
