@@ -88,3 +88,33 @@ span.deviceStatus.deviceDown {
 	color: #c62828 !important;
 }
 
+/* Clickable token helpers on the Data Source editor (append to the Metric
+   Expression / Chart Label Pattern on click). Theme-neutral: colour is
+   inherited via currentColor. */
+.topxTokens {
+	line-height: 1.8;
+}
+
+.topxTokenGroup strong {
+	margin-right: 4px;
+}
+
+a.topxToken {
+	display: inline-block;
+	padding: 0 6px;
+	border: 1px solid rgba(128, 128, 128, 0.45);
+	border-radius: 9px;
+	font-family: monospace;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+a.topxToken:hover,
+a.topxToken:focus {
+	background-color: rgba(128, 128, 128, 0.18);
+}
+
+.topxTokenHint {
+	opacity: 0.8;
+}
+

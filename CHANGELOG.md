@@ -26,6 +26,11 @@ All notable changes to the TopX plugin are documented in this file.
   just one of several data sources, use a single definition with a `field=field`
   metric expression; add further definitions only when you want to rank several
   of a template's fields separately.
+- The Data Source editor now offers clickable token helpers: under **Metric
+  Expression** the template's RRD data source names, and under **Chart Label
+  Pattern** the host replacements (`|host_description|`, ...) plus, for
+  data-query templates, the `|query_<field>|` tokens. Clicking a token appends it
+  to the field, and the lists refresh when the selected Data Template changes.
 - Upgrades now grant the new management realm to everyone who can already view
   TopX (users and groups), and the upgrade runs from the `config_arrays` hook on
   every page, so administrators upgrading in place no longer get a "401

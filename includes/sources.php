@@ -417,6 +417,100 @@ function topx_source_template_choices(): array {
 }
 
 /**
+ * The static per-host chart-label replacement tokens (without the surrounding
+ * pipes). These apply to every data source regardless of type, so they are
+ * always offered in the editor's Chart Label helper. Kept free of database
+ * access so it can be unit tested directly.
+ *
+ * @return string[] The bare host replacement token names.
+ */
+function topx_host_replacements(): array {
+	return ['host_description', 'host_hostname', 'host_id'];
+}
+
+/**
+ * Returns the RRD data source field names defined by the Data Template with the
+ * given hash (e.g. traffic_in, traffic_out), so the editor can offer them as
+ * clickable building blocks for the Metric Expression. Reads the template
+ * master rows (local_data_id = 0 is implied by joining the template directly).
+ *
+ * @param string $hash The portable Data Template hash.
+ *
+ * @return string[] The distinct data source field names, ordered by name.
+ */
+function topx_source_rrd_fields(string $hash): array {
+	if (!preg_match('/^[a-f0-9]{32}$/', $hash)) {
+		return [];
+	}
+
+	$rows = db_fetch_assoc_prepared("SELECT DISTINCT dtr.data_source_name AS field
+		FROM data_template_rrd AS dtr
+		INNER JOIN data_template AS dt ON dtr.data_template_id = dt.id
+		WHERE dt.hash = ? AND dtr.data_source_name != ''
+		ORDER BY dtr.data_source_name",
+		array($hash));
+
+	$fields = [];
+
+	foreach ($rows as $row) {
+		$fields[] = (string) $row['field'];
+	}
+
+	return $fields;
+}
+
+/**
+ * Returns the SNMP data-query field names available to the Data Sources of the
+ * template with the given hash (e.g. ifAlias, ifName), so the editor can offer
+ * |query_<field>| tokens for the Chart Label. Empty for templates that are not
+ * data-query based or that have no cached instances.
+ *
+ * @param string $hash The portable Data Template hash.
+ *
+ * @return string[] The distinct data-query field names, ordered by name.
+ */
+function topx_source_query_fields(string $hash): array {
+	if (!preg_match('/^[a-f0-9]{32}$/', $hash)) {
+		return [];
+	}
+
+	$rows = db_fetch_assoc_prepared("SELECT DISTINCT hsc.field_name AS field
+		FROM data_local AS dl
+		INNER JOIN data_template AS dt ON dl.data_template_id = dt.id
+		INNER JOIN host_snmp_cache AS hsc ON dl.host_id = hsc.host_id AND dl.snmp_query_id = hsc.snmp_query_id
+		WHERE dt.hash = ? AND dl.snmp_query_id > 0 AND hsc.field_name != ''
+		ORDER BY hsc.field_name",
+		array($hash));
+
+	$fields = [];
+
+	foreach ($rows as $row) {
+		$fields[] = (string) $row['field'];
+	}
+
+	return $fields;
+}
+
+/**
+ * Builds the editor "token help" payload for a Data Template hash: the RRD field
+ * names usable in the Metric Expression, the always-available host replacement
+ * tokens, and (for data-query templates) the data-query field names usable as
+ * |query_<field>| Chart Label tokens. Shared by the initial server render and
+ * the AJAX refresh that fires when the template selection changes.
+ *
+ * @param string $hash The portable Data Template hash.
+ *
+ * @return array{rrd: string[], host: string[], query: string[]} The token sets.
+ */
+function topx_token_help(string $hash): array {
+	return [
+		'rrd'   => topx_source_rrd_fields($hash),
+		'host'  => topx_host_replacements(),
+		'query' => topx_source_query_fields($hash),
+	];
+}
+
+/**
  * Resolves the chart-label substitution tokens for a single ranked data source
  * instance. Returns host-level tokens (host_description, host_hostname,
  * host_id) plus one query_<field> token per SNMP data-query field cached for

@@ -24,6 +24,66 @@ describe('topx_range_type_labels', function (): void {
 	});
 });
 
+describe('topx_host_replacements', function (): void {
+	it('returns the static host token names', function (): void {
+		expect(topx_host_replacements())->toBe(['host_description', 'host_hostname', 'host_id']);
+	});
+});
+
+describe('topx_source_rrd_fields', function (): void {
+	it('returns an empty list for an invalid hash without querying', function (): void {
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			throw new RuntimeException('should not query');
+		};
+
+		expect(topx_source_rrd_fields('not-a-hash'))->toBe([]);
+	});
+
+	it('returns the template RRD field names', function (): void {
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [['field' => 'traffic_in'], ['field' => 'traffic_out']];
+		};
+
+		expect(topx_source_rrd_fields('6632e1e0b58a565c135d7ff90440c335'))->toBe(['traffic_in', 'traffic_out']);
+	});
+});
+
+describe('topx_source_query_fields', function (): void {
+	it('returns the data query field names', function (): void {
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [['field' => 'ifAlias'], ['field' => 'ifName']];
+		};
+
+		expect(topx_source_query_fields('6632e1e0b58a565c135d7ff90440c335'))->toBe(['ifAlias', 'ifName']);
+	});
+
+	it('returns an empty list for an invalid hash', function (): void {
+		expect(topx_source_query_fields('xx'))->toBe([]);
+	});
+});
+
+describe('topx_token_help', function (): void {
+	it('combines rrd, host and query token sets', function (): void {
+		$calls = 0;
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) use (&$calls) {
+			$calls++;
+
+			if (strpos($sql, 'data_template_rrd') !== false) {
+				return [['field' => 'cpu']];
+			}
+
+			return [['field' => 'ifName']];
+		};
+
+		$help = topx_token_help('6632e1e0b58a565c135d7ff90440c335');
+
+		expect($help['rrd'])->toBe(['cpu']);
+		expect($help['host'])->toBe(['host_description', 'host_hostname', 'host_id']);
+		expect($help['query'])->toBe(['ifName']);
+	});
+});
+
 describe('topx_get_source', function (): void {
 	it('returns the row when found', function (): void {
 		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {

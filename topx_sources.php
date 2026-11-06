@@ -50,6 +50,12 @@ switch (get_request_var('action')) {
 		topx_sources_export();
 
 		break;
+	case 'tokens':
+		header('Content-Type: application/json; charset=UTF-8');
+
+		print topx_sources_tokens_ajax();
+
+		break;
 	case 'import':
 		top_header();
 
@@ -336,6 +342,98 @@ function topx_sources_import_save(): void {
 }
 
 /**
+ * Builds the clickable comma-delimited token links for an editor helper row.
+ * Each link carries the target input id and the literal text to append, which
+ * the page script inserts into the Metric Expression or Chart Label field on
+ * click.
+ *
+ * @param array  $tokens     The bare token/field names.
+ * @param string $target     The id of the input the tokens append to.
+ * @param bool   $wrap_pipes Whether to wrap each token in |pipes| (chart label
+ *                           replacements) or use it verbatim (RRD field names).
+ * @param string $prefix     An optional token prefix (e.g. 'query_').
+ *
+ * @return string The comma-delimited anchor HTML, or '' when there are none.
+ */
+function topx_tokens_links(array $tokens, string $target, bool $wrap_pipes, string $prefix = ''): string {
+	$links = [];
+
+	foreach ($tokens as $token) {
+		$text = $prefix . $token;
+
+		if ($wrap_pipes) {
+			$text = '|' . $text . '|';
+		}
+
+		$links[] = "<a href='#' class='topxToken' data-target='" . html_escape($target) .
+			"' data-token='" . html_escape($text) . "'>" . html_escape($text) . '</a>';
+	}
+
+	return implode(', ', $links);
+}
+
+/**
+ * Renders the Metric Expression helper markup for a template hash: the template's
+ * RRD data source field names as clickable building blocks.
+ *
+ * @param string $hash The Data Template hash.
+ *
+ * @return string The helper HTML (an empty hint when the hash has no fields).
+ */
+function topx_tokens_operation_html(string $hash): string {
+	$payload = topx_token_help($hash);
+
+	if (cacti_sizeof($payload['rrd']) === 0) {
+		return "<em class='topxTokenHint'>" . __esc('Select a Data Template to list its data sources.', 'topx') . '</em>';
+	}
+
+	return "<span class='topxTokenGroup'><strong>" . __esc('Data Sources', 'topx') . ':</strong> ' .
+		topx_tokens_links($payload['rrd'], 'operation', false) . '</span>';
+}
+
+/**
+ * Renders the Chart Label helper markup for a template hash: the always-available
+ * host replacements plus, for data-query templates, the |query_<field>| tokens.
+ *
+ * @param string $hash The Data Template hash.
+ *
+ * @return string The helper HTML.
+ */
+function topx_tokens_label_html(string $hash): string {
+	$payload = topx_token_help($hash);
+
+	$html = "<span class='topxTokenGroup'><strong>" . __esc('Host', 'topx') . ':</strong> ' .
+		topx_tokens_links($payload['host'], 'chart_label', true) . '</span>';
+
+	if (cacti_sizeof($payload['query'])) {
+		$html .= "<br><span class='topxTokenGroup'><strong>" . __esc('Data Query', 'topx') . ':</strong> ' .
+			topx_tokens_links($payload['query'], 'chart_label', true, 'query_') . '</span>';
+	}
+
+	return $html;
+}
+
+/**
+ * AJAX endpoint: returns the editor token helper HTML for the requested Data
+ * Template hash as JSON, so the helpers refresh when the template selection
+ * changes without reloading the form.
+ *
+ * @return string A JSON document with 'operation' and 'chart_label' HTML.
+ */
+function topx_sources_tokens_ajax(): string {
+	$hash = get_nfilter_request_var('hash');
+
+	if (!preg_match('/^[a-f0-9]{32}$/', $hash)) {
+		$hash = '';
+	}
+
+	return json_encode([
+		'operation'   => topx_tokens_operation_html($hash),
+		'chart_label' => topx_tokens_label_html($hash),
+	], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+}
+
+/**
  * Renders the Add/Edit form for a single source definition.
  *
  * @return void
@@ -372,6 +470,8 @@ function topx_sources_edit(): void {
 		$header_label = __('Data Source [new]', 'topx');
 	}
 
+	print get_md5_include_css('plugins/topx/css/topx.css');
+
 	$templates = topx_source_template_choices();
 
 	$fields = [
@@ -381,6 +481,7 @@ function topx_sources_edit(): void {
 			'description'   => __('The Cacti Data Template this definition ranks. The portable template hash is stored, so the definition survives export/import between installs. The count shows how many Data Sources currently use each template.', 'topx'),
 			'value'         => '|arg1:hash|',
 			'array'         => $templates,
+			'on_change'     => 'topxRefreshTokens()',
 		],
 		'dt_name' => [
 			'method'        => 'textbox',
@@ -397,6 +498,12 @@ function topx_sources_edit(): void {
 			'value'         => '|arg1:operation|',
 			'max_length'    => 100,
 			'size'          => 40,
+		],
+		'operation_help' => [
+			'method'        => 'custom',
+			'friendly_name' => __('Data Sources', 'topx'),
+			'description'   => __('The data sources in this template\'s RRD files. Click one to append it to the Metric Expression.', 'topx'),
+			'value'         => "<div id='operation_tokens' class='topxTokens'>" . topx_tokens_operation_html((string) $source['hash']) . '</div>',
 		],
 		'unit' => [
 			'method'        => 'textbox',
@@ -482,6 +589,12 @@ function topx_sources_edit(): void {
 			'max_length'    => 128,
 			'size'          => 60,
 		],
+		'chart_label_help' => [
+			'method'        => 'custom',
+			'friendly_name' => __('Replacements', 'topx'),
+			'description'   => __('Click a replacement to append it to the Chart Label Pattern.', 'topx'),
+			'value'         => "<div id='chart_label_tokens' class='topxTokens'>" . topx_tokens_label_html((string) $source['hash']) . '</div>',
+		],
 		'id' => [
 			'method' => 'hidden_zero',
 			'value'  => '|arg1:id|',
@@ -506,6 +619,37 @@ function topx_sources_edit(): void {
 	html_end_box(true, true);
 
 	form_save_button('topx_sources.php', 'return');
+
+	?>
+	<script type='text/javascript' <?php print plugin_topx_csp_nonce(); ?>>
+		function topxBindTokens() {
+			$('.topxToken').off('click.topx').on('click.topx', function(event) {
+				event.preventDefault();
+
+				var field = $('#' + $(this).data('target'));
+				var token = $(this).data('token');
+
+				if (field.length) {
+					field.val((field.val() || '') + token).focus();
+				}
+			});
+		}
+
+		function topxRefreshTokens() {
+			var hash = $('#hash').val();
+
+			$.get('topx_sources.php?action=tokens&hash=' + encodeURIComponent(hash), function(data) {
+				$('#operation_tokens').html(data.operation);
+				$('#chart_label_tokens').html(data.chart_label);
+				topxBindTokens();
+			}, 'json');
+		}
+
+		$(function() {
+			topxBindTokens();
+		});
+	</script>
+	<?php
 }
 
 /**

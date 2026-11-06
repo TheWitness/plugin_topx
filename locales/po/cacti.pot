@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-06 11:53-0500\n"
+"POT-Creation-Date: 2026-11-06 13:19-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -457,6 +457,18 @@ msgid "Import complete: %1$d inserted, %2$d updated, %3$d skipped (no matching D
 msgstr ""
 
 #: topx_sources.php
+msgid "Select a Data Template to list its data sources."
+msgstr ""
+
+#: topx_sources.php
+msgid "Host"
+msgstr ""
+
+#: topx_sources.php
+msgid "Data Query"
+msgstr ""
+
+#: topx_sources.php
 #, php-format
 msgid "Data Source [edit: %s]"
 msgstr ""
@@ -492,6 +504,10 @@ msgstr ""
 
 #: topx_sources.php
 msgid "How the RRD data source fields are combined, e.g. \"cpu=cpu\" (single field), \"traffic_in+traffic_out\" (sum), \"hdd_total%hdd_used\" (percentage) or \"uptime/100\" (scaled)."
+msgstr ""
+
+#: topx_sources.php
+msgid "The data sources in this template's RRD files. Click one to append it to the Metric Expression."
 msgstr ""
 
 #: topx_sources.php
@@ -596,6 +612,14 @@ msgstr ""
 
 #: topx_sources.php
 msgid "How each ranked item is named on the chart, using |token| substitution: |host_description|, |host_hostname|, |host_id| and |query_<field>| (e.g. |query_ifName|). Example: \"|host_description| - |query_ifName|\". Leave blank to derive the label from the Data Source name."
+msgstr ""
+
+#: topx_sources.php
+msgid "Replacements"
+msgstr ""
+
+#: topx_sources.php
+msgid "Click a replacement to append it to the Chart Label Pattern."
 msgstr ""
 
 #: topx_sources.php
