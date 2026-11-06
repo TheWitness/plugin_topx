@@ -513,6 +513,43 @@ function topx_dashboard_toolbar_add(array $absent, array $meta): void {
 	print '</select>';
 }
 
+/**
+ * Renders an Edit/Add Rule link in the drilldown toolbar for users who may
+ * manage the TopX Data Sources. For a supported source it links to the editor
+ * for that definition; for an unsupported template it links to the editor
+ * pre-pointed at the template so a rule can be added. Hidden for users without
+ * the management realm.
+ *
+ * @param array $ds The resolved data source (key, supported).
+ *
+ * @return void
+ *
+ * @global array $config Cacti global configuration array; used for URL paths.
+ */
+function topx_dashboard_toolbar_edit(array $ds): void {
+	global $config;
+
+	if (!is_realm_allowed(1) && !api_user_realm_auth('topx_sources.php')) {
+		return;
+	}
+
+	if (!empty($ds['supported'])) {
+		$url   = 'topx_sources.php?action=edit&id=' . (-1 * (int) $ds['key']);
+		$label = __('Edit Rule', 'topx');
+	} else {
+		$hash = db_fetch_cell_prepared('SELECT hash FROM data_template WHERE id = ?', array((int) $ds['key']));
+
+		if (empty($hash)) {
+			return;
+		}
+
+		$url   = 'topx_sources.php?action=edit&hash=' . $hash;
+		$label = __('Add Rule', 'topx');
+	}
+
+	print '<a class="topxDashEdit" href="' . html_escape($config['url_path'] . 'plugins/topx/' . $url) . '">' . html_escape($label) . '</a>';
+}
+
 /* ============================================================================
  * Overview scope: aggregate across every TopX data source.
  * ========================================================================== */
@@ -1246,6 +1283,7 @@ function topx_drilldown_dashboard(): void {
 
 	topx_dashboard_toolbar_timespan();
 	topx_dashboard_toolbar_add($absent, $meta);
+	topx_dashboard_toolbar_edit($ds);
 	topx_dashboard_toolbar_refresh($current_refresh);
 	print '</div>';
 

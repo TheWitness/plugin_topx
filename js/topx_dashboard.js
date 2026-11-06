@@ -374,7 +374,12 @@ function topxDashRenderCharts(root) {
 				rotated: !!cfg.rotated,
 				x: {
 					type: 'category',
-					categories: cfg.labels
+					categories: cfg.labels,
+					tick: {
+						// Keep each ranking label on a single line instead of
+						// wrapping long "host - datasource" names onto two rows.
+						multiline: false
+					}
 				},
 				y: {
 					label: {

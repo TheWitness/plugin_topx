@@ -54,6 +54,43 @@
 	min-width: 180px;
 }
 
+.topxDashEdit {
+	box-sizing: border-box;
+	padding: 4px 10px;
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: 7px;
+	background: color-mix(in srgb, currentColor 4%, transparent);
+	color: inherit;
+	font-size: 12px;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.topxDashEdit:hover,
+.topxDashEdit:focus {
+	background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* Live preview below the Data Source editor: cards stacked full-width,
+   independent of the dashboard's draggable columnar layout. */
+.topxPreviewStack {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.topxPreviewCard {
+	padding: 10px 12px;
+	border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+	border-radius: 8px;
+}
+
+.topxPreviewCardTitle {
+	margin: 0 0 8px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
 .topxDashRefresh {
 	display: flex;
 	align-items: center;

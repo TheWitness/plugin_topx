@@ -29,6 +29,7 @@ include_once('./include/auth.php');
 include_once($config['base_path'] . '/plugins/topx/includes/functions.php');
 include_once($config['base_path'] . '/plugins/topx/includes/arrays.php');
 include_once($config['base_path'] . '/plugins/topx/includes/sources.php');
+include_once($config['base_path'] . '/plugins/topx/includes/dashboard.php');
 
 $topx_source_actions = [
 	1 => __('Delete', 'topx'),
@@ -624,6 +625,10 @@ function topx_sources_edit(): void {
 
 	form_save_button('topx_sources.php', 'return');
 
+	if ((int) $source['id'] > 0) {
+		topx_sources_preview($source);
+	}
+
 	?>
 	<script type='text/javascript' <?php print plugin_topx_csp_nonce(); ?>>
 		function topxBindTokens() {
@@ -654,6 +659,73 @@ function topx_sources_edit(): void {
 		});
 	</script>
 	<?php
+}
+
+/**
+ * Renders a live preview of a saved definition's drilldown cards below the edit
+ * form, stacked full-width (independent of the dashboard's draggable columnar
+ * layout) so the administrator can change a setting, save, and see the effect
+ * without navigating away. Degrades quietly when the template is unresolved or
+ * DS Stats is not yet available.
+ *
+ * @param array $source The saved source definition being edited.
+ *
+ * @return void
+ *
+ * @global array $config Cacti global configuration array; used for URL paths.
+ */
+function topx_sources_preview(array $source): void {
+	global $config;
+
+	$template_id = (int) db_fetch_cell_prepared('SELECT id FROM data_template WHERE hash = ?', array($source['hash']));
+
+	if ($template_id === 0) {
+		return;
+	}
+
+	topx_dashboard_print_css();
+
+	html_start_box(__('Preview', 'topx'), '100%', '', '3', 'center', '');
+
+	if (!topx_dashboard_dsstats_ready()) {
+		html_end_box();
+
+		return;
+	}
+
+	topx_dashboard_init_timespan();
+
+	$ds = [
+		'key'       => -1 * (int) $source['id'],
+		'supported' => true,
+		'entry'     => [
+			'key'         => -1 * (int) $source['id'],
+			'name'        => $source['dt_name'],
+			'count'       => 0,
+			'supported'   => 'true',
+			'template_id' => $template_id,
+		],
+	];
+
+	$meta = topx_drilldown_card_meta();
+
+	print '<tr class="even"><td>';
+	print '<p class="topxDashNote">' . __esc('A live preview of this definition over the selected timespan. Save your changes to refresh it.', 'topx') . '</p>';
+	print '<div id="topx_preview" class="topxPreviewStack">';
+
+	foreach (topx_drilldown_available_cards() as $key) {
+		print '<div class="topxPreviewCard">'
+			. '<h3 class="topxPreviewCardTitle">' . html_escape($meta[$key]['title']) . '</h3>'
+			. topx_drilldown_card_body($key, $ds)
+			. '</div>';
+	}
+
+	print '</div></td></tr>';
+
+	html_end_box();
+
+	print '<script type="text/javascript" ' . plugin_topx_csp_nonce() . ' src="' . $config['url_path'] . 'plugins/topx/js/topx_dashboard.js?v=' . filemtime($config['base_path'] . '/plugins/topx/js/topx_dashboard.js') . '"></script>';
+	print '<script type="text/javascript" ' . plugin_topx_csp_nonce() . '>$(function() { if (typeof topxDashRenderCharts === "function") { topxDashRenderCharts(document.getElementById("topx_preview")); } });</script>';
 }
 
 /**

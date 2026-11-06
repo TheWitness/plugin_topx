@@ -4,6 +4,11 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.2
 
+- The drilldown toolbar gains an **Edit Rule / Add Rule** link (for users with
+  the management realm) that jumps to the Data Source editor for the shown
+  source, and the editor shows a **live preview** of the definition's cards
+  (stacked full-width) below Save/Return, so a change can be saved and seen
+  without leaving the page. Ranking Chart labels no longer wrap onto two lines.
 - New **Console → Management → TopX Data Sources** interface for managing the
   supported Data Source definitions without editing any PHP files. It lists both
   configured and unconfigured Data Templates with a `cdef.php`-style filter
