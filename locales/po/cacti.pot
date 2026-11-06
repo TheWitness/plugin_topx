@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-06 10:51-0500\n"
+"POT-Creation-Date: 2026-11-06 11:47-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -635,6 +635,10 @@ msgid "(template not installed)"
 msgstr ""
 
 #: topx_sources.php
+msgid "Not Supported"
+msgstr ""
+
+#: topx_sources.php
 msgid "No Data Sources Found"
 msgstr ""
 
@@ -648,6 +652,10 @@ msgstr ""
 
 #: topx_sources.php
 msgid "Default"
+msgstr ""
+
+#: topx_sources.php
+msgid "Has Data Sources"
 msgstr ""
 
 #: topx_sources.php

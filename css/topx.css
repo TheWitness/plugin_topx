@@ -61,3 +61,30 @@
 	max-width: 100%;
 }
 
+/* Supported-status pills on the Data Sources management grid. Mirrors Cacti's
+   deviceStatus pill (present only in some themes) so the column renders as a
+   rounded pill on every theme and Cacti version, while the deviceUp/deviceDown
+   classes supply the status colour. */
+span.deviceStatus {
+	display: inline-block;
+	padding: 1px 9px;
+	border: 1px solid transparent;
+	border-radius: 10px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 16px;
+	white-space: nowrap;
+}
+
+span.deviceStatus.deviceUp {
+	background-color: rgba(40, 180, 40, 0.15);
+	border-color: rgba(40, 180, 40, 0.55);
+	color: #1b7a1b !important;
+}
+
+span.deviceStatus.deviceDown {
+	background-color: rgba(211, 47, 47, 0.15);
+	border-color: rgba(211, 47, 47, 0.55);
+	color: #c62828 !important;
+}
+

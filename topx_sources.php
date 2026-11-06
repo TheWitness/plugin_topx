@@ -541,6 +541,12 @@ function topx_sources(): void {
 			'pageset' => true,
 			'default' => '-1',
 		],
+		'has_data' => [
+			'filter'  => FILTER_VALIDATE_REGEXP,
+			'options' => ['options' => ['regexp' => '(true|false)']],
+			'pageset' => true,
+			'default' => read_config_option('default_has') == 'on' ? 'true' : 'false',
+		],
 		'sort_column' => [
 			'filter'  => FILTER_CALLBACK,
 			'default' => 'name',
@@ -554,6 +560,8 @@ function topx_sources(): void {
 	];
 
 	validate_store_request_vars($filters, 'sess_topx_sources');
+
+	print get_md5_include_css('plugins/topx/css/topx.css');
 
 	$rows = (get_request_var('rows') == '-1') ? read_config_option('num_rows_table') : get_request_var('rows');
 
@@ -601,6 +609,10 @@ function topx_sources(): void {
 		$sql_where    .= ($sql_where === '' ? 'WHERE ' : ' AND ') . "supported = 'Yes'";
 	} elseif (get_request_var('supported') == '0') {
 		$sql_where    .= ($sql_where === '' ? 'WHERE ' : ' AND ') . "supported = 'No'";
+	}
+
+	if (get_request_var('has_data') == 'true') {
+		$sql_where    .= ($sql_where === '' ? 'WHERE ' : ' AND ') . 'in_use > 0';
 	}
 
 	$sql_order = get_order_string();
@@ -684,7 +696,12 @@ function topx_sources(): void {
 
 			form_selectable_cell(filter_value($row['name'] !== '' ? $row['name'] : $row['template'], get_request_var('filter'), $edit_url), $row['id']);
 			form_selectable_cell(html_escape($template), $row['id']);
-			form_selectable_cell($row['supported'] === 'Yes' ? __('Yes', 'topx') : __('No', 'topx'), $row['id'], '', 'text-align:center');
+			form_selectable_cell(
+				$row['supported'] === 'Yes'
+					? "<span class='deviceStatus deviceUp'>" . __esc('Supported', 'topx') . '</span>'
+					: "<span class='deviceStatus deviceDown'>" . __esc('Not Supported', 'topx') . '</span>',
+				$row['id'], '', 'text-align:center'
+			);
 			form_selectable_cell(number_format_i18n((int) $row['in_use'], -1), $row['id'], '', 'text-align:right');
 			form_selectable_cell($is_source ? html_escape($range_labels[(int) $row['range_type']] ?? '') : '', $row['id']);
 			form_selectable_cell($is_source ? html_escape($row['operation']) : '', $row['id']);
@@ -755,6 +772,12 @@ function topx_sources_filter(): void {
 						</td>
 						<td>
 							<span>
+								<input type='checkbox' id='has_data' <?php print (get_request_var('has_data') == 'true' ? 'checked' : ''); ?>>
+								<label for='has_data'><?php print __('Has Data Sources', 'topx'); ?></label>
+							</span>
+						</td>
+						<td>
+							<span>
 								<input type='submit' class='ui-button ui-corner-all ui-widget' id='refresh' value='<?php print __esc('Go', 'topx'); ?>' title='<?php print __esc('Set/Refresh Filters', 'topx'); ?>'>
 								<input type='button' class='ui-button ui-corner-all ui-widget' id='clear' value='<?php print __esc('Clear', 'topx'); ?>' title='<?php print __esc('Clear Filters', 'topx'); ?>'>
 								<input type='button' class='ui-button ui-corner-all ui-widget' id='import' value='<?php print __esc('Import', 'topx'); ?>' title='<?php print __esc('Import Data Sources', 'topx'); ?>'>
@@ -769,6 +792,7 @@ function topx_sources_filter(): void {
 					strURL  = 'topx_sources.php?header=false';
 					strURL += '&filter='+$('#filter').val();
 					strURL += '&supported='+$('#supported').val();
+					strURL += '&has_data='+$('#has_data').is(':checked');
 					strURL += '&rows='+$('#rows').val();
 					loadPageNoHeader(strURL);
 				}
@@ -780,6 +804,7 @@ function topx_sources_filter(): void {
 				$(function() {
 					$('#refresh').click(function() { applyFilter(); });
 					$('#clear').click(function() { clearFilter(); });
+					$('#has_data').on('click', function() { applyFilter(); });
 					$('#import').click(function() { loadUrl({url:'topx_sources.php?action=import'}); });
 					$('#export').click(function() { document.location = 'topx_sources.php?action=export'; });
 
