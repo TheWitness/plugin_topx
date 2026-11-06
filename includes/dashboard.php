@@ -1283,7 +1283,12 @@ function topx_drilldown_dashboard(): void {
 
 	topx_dashboard_toolbar_timespan();
 	topx_dashboard_toolbar_add($absent, $meta);
+	// View glue: topx_drilldown_dashboard() cannot be unit-tested because it
+	// includes Cacti's timespan library. The button logic is covered directly by
+	// the topx_dashboard_toolbar_edit() unit tests.
+	// @codeCoverageIgnoreStart
 	topx_dashboard_toolbar_edit($ds);
+	// @codeCoverageIgnoreEnd
 	topx_dashboard_toolbar_refresh($current_refresh);
 	print '</div>';
 
