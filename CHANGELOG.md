@@ -4,6 +4,9 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.1
 
+- CI: limit the SQL delimiter workaround to the known broken upstream schema
+  and propagate schema preparation failures through the import pipeline.
+
 - Only list data sources that are actually in use: the data source dropdown and
   the Overview tables/counts now exclude data source templates that no device
   uses, and count real data source instances rather than the template master.
