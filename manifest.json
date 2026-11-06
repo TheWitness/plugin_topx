@@ -20,7 +20,8 @@
         "manifest.json",
         "screenshots/",
         "setup.php",
-        "topx.php"
+        "topx.php",
+        "topx_sources.php"
     ],
     "whitelist": []
 }

@@ -40,6 +40,7 @@ function plugin_topx_install(): void {
 	api_plugin_register_hook('topx', 'draw_navigation_text',   'topx_draw_navigation_text',    'setup.php');
 
 	api_plugin_register_realm('topx', 'topx.php', 'Plugin TopX - View', 1);
+	api_plugin_register_realm('topx', 'topx_sources.php', 'Manage TopX Data Sources', 1);
 
 	topx_setup_database();
 }
@@ -63,12 +64,31 @@ function topx_setup_database(): void {
 			['name' => 'final_unit',      'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
 			['name' => 'final_number',    'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
 			['name' => 'system',          'type' => 'varchar(20)',        'default' => 'bits',  'NULL' => false],
+			['name' => 'range_type',      'type' => 'tinyint(1)',         'default' => '0',     'NULL' => false],
+			['name' => 'range_normal',    'type' => 'double',             'default' => null,    'NULL' => true],
+			['name' => 'range_warning',   'type' => 'double',             'default' => null,    'NULL' => true],
+			['name' => 'range_alert',     'type' => 'double',             'default' => null,    'NULL' => true],
+			['name' => 'chart_label',     'type' => 'varchar(128)',       'default' => '',      'NULL' => false],
 		],
 		'type'    => 'InnoDB',
 		'comment' => 'sources',
 	];
 
 	api_plugin_db_table_create('topx', 'plugin_topx_source', $data);
+
+	// Add the range/label columns on installs that predate them. Each call is a
+	// safe no-op when the column already exists, so this runs unconditionally
+	// from both the install and upgrade paths.
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_type',    'type' => 'tinyint(1)',   'default' => '0',  'NULL' => false, 'after' => 'system']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_normal',  'type' => 'double',       'default' => null, 'NULL' => true,  'after' => 'range_type']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_warning', 'type' => 'double',       'default' => null, 'NULL' => true,  'after' => 'range_normal']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_alert',   'type' => 'double',       'default' => null, 'NULL' => true,  'after' => 'range_warning']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'chart_label',   'type' => 'varchar(128)', 'default' => '',   'NULL' => false, 'after' => 'range_alert']);
 
 	$data = [
 		'columns' => [
@@ -110,21 +130,22 @@ function topx_seed_sources(): void {
 	}
 
 	$defaults = [
-		['desc', 'ucd/net - Load Average - 1 Minute', '9b82d44eb563027659683765f92c9757', 'load_1min=load_1min', 'Load', 'strip', 'load', '2', 'decimal'],
-		['desc', 'Host MIB - CPU Utilization', 'f6e7d21c19434666bbdac00ccef9932f', 'cpu=cpu', 'Utilization', 'strip', '%', '1', 'decimal'],
-		['desc', 'Host MIB - Hard Drive Space', 'd814fa3b79bd0f8933b6e0834d3f16d0', 'hdd_total%hdd_used', 'Used', 'strip', '%', '1', 'decimal'],
-		['desc', 'Interface - Errors_in + Discards_in', '36335cd98633963a575b70639cd2fdad', 'discards_in+errors_in', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal'],
-		['desc', 'Interface - Errors_out + Discards_out', '36335cd98633963a575b70639cd2fdad', 'discards_out+errors_out', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal'],
-		['desc', 'Mikrotik - System - Uptime', '0d8804fbc44a6ab9db89f8d83d050627', 'uptime/100', 'Uptime in seconds', '/', 'sec/min/hour/days', '1/60/3600/86400', 'decimal'],
-		['desc', 'APC load', 'be63bc4946561a274ace2c982548f255', 'load=load', 'Load', 'strip', '%', '0', 'decimal'],
-		['desc', 'MultiCPU AVG', '9561518147a2423734394410bcd241b4', 'load=load', 'Utilization', 'strip', '%', '0', 'decimal'],
-		['desc', 'Interface - Traffic_in+Traffic_out', '6632e1e0b58a565c135d7ff90440c335', 'traffic_in+traffic_out', 'Bits', '/', 'bit/Kbit/Mbit/Gbit/Tbit', '1/1024/1048576/1073741824/1099511627776', 'bits'],
+		['desc', 'ucd/net - Load Average - 1 Minute', '9b82d44eb563027659683765f92c9757', 'load_1min=load_1min', 'Load', 'strip', 'load', '2', 'decimal', 0, 1, 2, 4, '|host_description|'],
+		['desc', 'Host MIB - CPU Utilization', 'f6e7d21c19434666bbdac00ccef9932f', 'cpu=cpu', 'Utilization', 'strip', '%', '1', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'Host MIB - Hard Drive Space', 'd814fa3b79bd0f8933b6e0834d3f16d0', 'hdd_total%hdd_used', 'Used', 'strip', '%', '1', 'decimal', 0, 70, 85, 95, '|host_description|'],
+		['desc', 'Interface - Errors_in + Discards_in', '36335cd98633963a575b70639cd2fdad', 'discards_in+errors_in', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
+		['desc', 'Interface - Errors_out + Discards_out', '36335cd98633963a575b70639cd2fdad', 'discards_out+errors_out', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
+		['desc', 'Mikrotik - System - Uptime', '0d8804fbc44a6ab9db89f8d83d050627', 'uptime/100', 'Uptime in seconds', '/', 'sec/min/hour/days', '1/60/3600/86400', 'decimal', 1, null, null, null, '|host_description|'],
+		['desc', 'APC load', 'be63bc4946561a274ace2c982548f255', 'load=load', 'Load', 'strip', '%', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'MultiCPU AVG', '9561518147a2423734394410bcd241b4', 'load=load', 'Utilization', 'strip', '%', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'Interface - Traffic_in+Traffic_out', '6632e1e0b58a565c135d7ff90440c335', 'traffic_in+traffic_out', 'Bits', '/', 'bit/Kbit/Mbit/Gbit/Tbit', '1/1024/1048576/1073741824/1099511627776', 'bits', 0, null, null, null, '|host_description| - |query_ifName|'],
 	];
 
 	foreach ($defaults as $row) {
 		db_execute_prepared('INSERT INTO plugin_topx_source
-			(sorting, dt_name, hash, operation, unit, final_operation, final_unit, final_number, system)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			(sorting, dt_name, hash, operation, unit, final_operation, final_unit, final_number, system,
+			range_type, range_normal, range_warning, range_alert, chart_label)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 			$row);
 	}
 }
@@ -219,6 +240,11 @@ function plugin_topx_upgrade() {
 		api_plugin_register_hook('topx', 'draw_navigation_text', 'topx_draw_navigation_text', 'setup.php', true);
 	}
 
+	// Register the management realm for installations that predate it.
+	if (!db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx_sources.php'")) {
+		api_plugin_register_realm('topx', 'topx_sources.php', 'Manage TopX Data Sources', 1);
+	}
+
 	return false;
 }
 
@@ -267,6 +293,34 @@ function topx_draw_navigation_text($nav) {
 		'mapping' => 'topx.php:dashboard',
 		'url'     => 'topx.php?action=view',
 		'level'   => 1,
+	];
+
+	$nav['topx_sources.php:'] = [
+		'title'   => __('TopX Data Sources', 'topx'),
+		'mapping' => 'index.php:',
+		'url'     => 'topx_sources.php',
+		'level'   => 1,
+	];
+
+	$nav['topx_sources.php:edit'] = [
+		'title'   => __('(Edit)', 'topx'),
+		'mapping' => 'index.php:,topx_sources.php:',
+		'url'     => '',
+		'level'   => 2,
+	];
+
+	$nav['topx_sources.php:import'] = [
+		'title'   => __('Import', 'topx'),
+		'mapping' => 'index.php:,topx_sources.php:',
+		'url'     => '',
+		'level'   => 2,
+	];
+
+	$nav['topx_sources.php:actions'] = [
+		'title'   => __('Actions', 'topx'),
+		'mapping' => 'index.php:,topx_sources.php:',
+		'url'     => '',
+		'level'   => 2,
 	];
 
 	return $nav;

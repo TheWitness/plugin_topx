@@ -20,11 +20,15 @@ describe('plugin_topx_install', function (): void {
 		expect($hooks)->toContain('top_graph_header_tabs');
 	});
 
-	it('registers a single view realm for topx.php', function (): void {
+	it('registers the view and management realms', function (): void {
 		plugin_topx_install();
 
-		expect($GLOBALS['__test_registered_realms'])->toHaveCount(1);
-		expect($GLOBALS['__test_registered_realms'][0]['file'])->toBe('topx.php');
+		expect($GLOBALS['__test_registered_realms'])->toHaveCount(2);
+
+		$files = array_column($GLOBALS['__test_registered_realms'], 'file');
+
+		expect($files)->toContain('topx.php');
+		expect($files)->toContain('topx_sources.php');
 	});
 
 	it('provisions both plugin tables idempotently', function (): void {

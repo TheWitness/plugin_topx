@@ -1,58 +1,74 @@
-HOW TO ADD ANOTHER DATA SOURCE FOR VERSION > 0.4:
--------------------------------------------------
-Now you must edit few php files. I marked places for your code:
-MARK 1) setup.php - add your DS like others
-MARK 2) topx.php - final operation. It is not necessary. It depands on your data
-MARK 3) topx.php - your queries to data source stats
-MARK 4) topx.php - It is not necessary. It depands on your data
+ADDING YOUR OWN TOPX DATA SOURCES
+=================================
+
+As of TopX 1.2 you no longer edit any PHP files to add a Data Source. Everything
+is managed from:
+
+    Console -> Management -> TopX Data Sources
+
+The list shows every Cacti Data Template, whether or not TopX already ranks it.
+Use the filter bar (Search, Supported: All / Yes / No, Rows) to narrow it down,
+exactly like Cacti's CDEF, Data Query and other management pages. The "In Use"
+column shows how many Data Sources on your devices use each template, so you can
+tell in-use templates from unused ones at a glance.
+
+Click a row (or the "Add" link) to open the editor, fill in the fields below and
+save. Use Import / Export to move definitions between installs - the export is an
+XML document keyed on the Data Template hash, so it applies cleanly to any Cacti
+that has the same template.
 
 
+EDITOR FIELDS
+-------------
 
+Data Template      The Cacti Data Template this definition ranks. The portable
+                   template hash is stored, so the definition survives
+                   export/import between installs.
 
-HOW TO ADD ANOTHER DATA SOURCE FOR VERSION < 0.4:
--------------------------------------------------
+Display Name       Friendly name shown on the dashboards. Blank = template name.
 
-All available datasources:
-SELECT DISTINCT data_template.id, data_template.name,hash
-FROM data_template INNER JOIN data_template_data
-ON data_template.id=data_template_data.data_template_id
-ORDER BY data_template.name
+Metric Expression  How the RRD data source fields are combined:
+                     single field    cpu=cpu
+                     sum             traffic_in+traffic_out
+                     percentage      hdd_total%hdd_used
+                     scaled          uptime/100
 
-I choose (id and hash are important):
-|  41 | Interface - Traffic                            | 6632e1e0b58a565c135d7ff90440c335 |
+Metric Label       Short label for what is measured (e.g. "Utilization",
+                   "Bits"); used on the chart value axis.
 
+Range Direction    Increasing - higher is more significant (CPU, traffic), or
+                   Decreasing - lower is more significant (free disk space,
+                   uptime headroom). Drives the default ranking sense and the
+                   threshold colouring.
 
-Go to (change id at the and to correct id)
-http(s)://your.cacti.installation/data_templates.php?action=template_edit&id=41
+Default Sort       Default sort direction when the source is first opened.
 
-Second way is via sql client:
-select * from data_template_rrd where local_data_id=0 and data_template_id=16 order by data_source_name
+Display Scaling    Strip  = round to the precision and append the unit.
+                   Divide = walk a slash-delimited unit/divisor ladder
+                            (e.g. bit/Kbit/Mbit).
 
+Display Unit(s)    The display unit, or a slash-delimited ladder for Divide
+                   scaling (e.g. "bit/Kbit/Mbit/Gbit").
 
-There you find data source item (one or more, but my plugin works with one or two only):
-For Interface traffic you found two  data source items named "traffic_in" and "traffic_out"
+Precision /        Strip  = number of decimal places.
+Divisors           Divide = slash-delimited divisor ladder
+                            (e.g. "1/1024/1048576").
 
-Now you have all informations.
+Value System       Numbering system used when auto-scaling unsupported values.
 
-Now you must edit setup.php. I marked 4 places for your code:
-MARK 1)
-INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit) 
-values ('desc','Interface  traffic','6632e1e0b58a565c135d7ff90440c335','traffic_in+traffic_out','bits','/1024','kbit')");
-sorting - asc or desc
-dt_name - your name of this data source
-hash - you found out it earlier
-operation with values - if you have only one, insert itemvalue=itemvalue (proc=proc). For two operation, try to understand prepared rows
-unit - number of process or similiar
-final_operation - for displaying in topx table
-final_units - dtto
+Normal / Warning / Optional absolute health thresholds. Leave blank to disable
+Alert Threshold    threshold colouring. For an Increasing range a value at or
+                   above a threshold is in that band; for a Decreasing range a
+                   value at or below a threshold is in that band. These are an
+                   absolute health signal and are independent of the dashboard's
+                   "Values by % of Peak" card, which is always relative to the
+                   live peak of the returned set.
 
-MARK2)
-For one value (proc=proc) only add row at the beginning of case (like cpu=cpu, ...)
-For two values, you can do what you want (add,substract,...). Result must be in $avg_value
-
-MARK3)
-Similar to MARK2. Be careful with two values. You have to insert one to value1 and second to value2
-
-MARK4)
-Similar to MARK3, instead of update it is for first insert of values
-
+Chart Label        How each ranked item is named on the chart, using |token|
+Pattern            substitution:
+                     |host_description|  |host_hostname|  |host_id|
+                     |query_<field>|     e.g. |query_ifName|, |query_hrStorageDescr|
+                   Example: "|host_description| - |query_ifName|". Unresolved
+                   tokens are dropped and the separators tidied, so the pattern
+                   degrades cleanly. Blank = derive the label from the Data
+                   Source name.

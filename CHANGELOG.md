@@ -2,6 +2,30 @@
 
 All notable changes to the TopX plugin are documented in this file.
 
+## 1.2
+
+- New **Console → Management → TopX Data Sources** interface for managing the
+  supported Data Source definitions without editing any PHP files. It lists both
+  configured and unconfigured Data Templates with a `cdef.php`-style filter
+  (Search, **Supported: All / Yes / No**, Rows), shows how many Data Sources use
+  each template (in-use vs unused), and provides add/edit/delete plus XML
+  **Import/Export** keyed on the portable Data Template hash, mirroring Cacti's
+  own template import/export.
+- Extended the `plugin_topx_source` schema with range semantics the original
+  design lacked: `range_type` (increasing vs decreasing), optional
+  `range_normal` / `range_warning` / `range_alert` health thresholds, and a
+  declarative `chart_label` naming pattern. New columns are added idempotently on
+  upgrade; the existing `operation`/`final_*` metric and display-scaling columns
+  are retained.
+- Charts can now be named with Cacti "suggested value" style `|token|`
+  substitution (`|host_description|`, `|host_hostname|`, `|query_<field>|`, e.g.
+  `|host_description| - |query_ifName|`), falling back to the derived short label
+  when a pattern is blank or resolves away. When a source defines thresholds, the
+  Ranking Chart bars are coloured by health band (normal/warning/alert).
+- The "Values by % of Peak" distribution remains computed relative to the live
+  peak of the returned set; absolute thresholds are a separate, operator-defined
+  health signal.
+
 ## 1.1
 
 - Only list data sources that are actually in use: the data source dropdown and

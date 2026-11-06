@@ -62,15 +62,23 @@ function topx_filter_arrays(): array {
 /**
  * Config_arrays plugin hook. Publishes the TopX filter option arrays as
  * globals so they are available to any Cacti code that consumes plugin
- * configuration arrays. Called by Cacti's plugin architecture via the
- * 'config_arrays' hook.
+ * configuration arrays, and registers the plugin's Console > Management menu
+ * entry. Called by Cacti's plugin architecture via the 'config_arrays' hook.
  *
  * @return void
  *
  * @global array $topx_filter_arrays Populated with the TopX filter arrays.
+ * @global array $menu              Cacti's admin menu registry; appended with
+ *                                  the TopX Data Sources management entry.
  */
 function topx_config_arrays(): void {
-	global $topx_filter_arrays;
+	global $topx_filter_arrays, $menu;
 
 	$topx_filter_arrays = topx_filter_arrays();
+
+	if (is_realm_allowed(1) || api_user_realm_auth('topx_sources.php')) {
+		// 'Management' is a Cacti-core menu label, so it is intentionally left
+		// in the default domain to merge into the existing Management section.
+		$menu[__('Management')]['plugins/topx/topx_sources.php'] = __('TopX Data Sources', 'topx');
+	}
 }

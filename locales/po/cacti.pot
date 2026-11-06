@@ -6,16 +6,17 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Cacti \n"
+"Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-05 15:53-0500\n"
+"POT-Creation-Date: 2026-11-06 09:09-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Cacti Developers <developers@cacti.net>>\n"
+"Last-Translator: Cacti Developers <developers@cacti.net>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: includes/arrays.php
 msgid "Last Hour"
@@ -53,7 +54,7 @@ msgstr ""
 msgid "Top 50"
 msgstr ""
 
-#: includes/arrays.php
+#: includes/arrays.php topx_sources.php
 msgid "All"
 msgstr ""
 
@@ -71,6 +72,14 @@ msgstr ""
 
 #: includes/arrays.php includes/dashboard.php
 msgid "Peak"
+msgstr ""
+
+#: includes/arrays.php
+msgid "Management"
+msgstr ""
+
+#: includes/arrays.php setup.php topx_sources.php
+msgid "TopX Data Sources"
 msgstr ""
 
 #: includes/dashboard.php
@@ -170,7 +179,7 @@ msgstr ""
 msgid "Uptime by Host"
 msgstr ""
 
-#: includes/dashboard.php
+#: includes/dashboard.php topx_sources.php
 msgid "Data Sources"
 msgstr ""
 
@@ -178,7 +187,7 @@ msgstr ""
 msgid "Source Types"
 msgstr ""
 
-#: includes/dashboard.php
+#: includes/dashboard.php topx_sources.php
 msgid "Supported"
 msgstr ""
 
@@ -226,11 +235,11 @@ msgstr ""
 msgid "Drilldown"
 msgstr ""
 
-#: includes/dashboard.php
+#: includes/dashboard.php topx_sources.php
 msgid "No"
 msgstr ""
 
-#: includes/dashboard.php
+#: includes/dashboard.php topx_sources.php
 msgid "Yes"
 msgstr ""
 
@@ -307,6 +316,51 @@ msgstr ""
 msgid "What"
 msgstr ""
 
+#: includes/sources.php
+msgid "Increasing - higher is more significant"
+msgstr ""
+
+#: includes/sources.php
+msgid "Decreasing - lower is more significant"
+msgstr ""
+
+#: includes/sources.php
+msgid "Decimal (SI, base 1000)"
+msgstr ""
+
+#: includes/sources.php
+msgid "Binary (base 1024)"
+msgstr ""
+
+#: includes/sources.php
+msgid "Bits"
+msgstr ""
+
+#: includes/sources.php
+msgid "The import document is empty."
+msgstr ""
+
+#: includes/sources.php
+msgid "The import document is not valid XML."
+msgstr ""
+
+#: includes/sources.php
+msgid "The import document is not a TopX Data Source export."
+msgstr ""
+
+#: includes/sources.php
+msgid "The import document contains no Data Sources."
+msgstr ""
+
+#: includes/sources.php
+#, php-format
+msgid "(%d in use)"
+msgstr ""
+
+#: includes/sources.php
+msgid "(unused)"
+msgstr ""
+
 #: setup.php
 msgid "TopX"
 msgstr ""
@@ -317,4 +371,300 @@ msgstr ""
 
 #: setup.php
 msgid "TopX Data Source"
+msgstr ""
+
+#: setup.php
+msgid "(Edit)"
+msgstr ""
+
+#: setup.php topx_sources.php
+msgid "Import"
+msgstr ""
+
+#: setup.php
+msgid "Actions"
+msgstr ""
+
+#: topx_sources.php
+msgid "Delete"
+msgstr ""
+
+#: topx_sources.php
+msgid "Export"
+msgstr ""
+
+#: topx_sources.php
+msgid "Please choose a valid Data Template."
+msgstr ""
+
+#: topx_sources.php
+msgid "Delete Data Sources"
+msgstr ""
+
+#: topx_sources.php
+msgid "Export Data Sources"
+msgstr ""
+
+#: topx_sources.php
+msgid "Click 'Continue' to delete the following Data Source."
+msgid_plural "Click 'Continue' to delete the following Data Sources."
+msgstr[0] ""
+msgstr[1] ""
+
+#: topx_sources.php
+msgid "Cancel"
+msgstr ""
+
+#: topx_sources.php
+msgid "Continue"
+msgstr ""
+
+#: topx_sources.php
+msgid "Delete Data Source"
+msgid_plural "Delete Data Sources"
+msgstr[0] ""
+msgstr[1] ""
+
+#: topx_sources.php
+msgid "Click 'Continue' to export the following Data Source."
+msgid_plural "Click 'Continue' to export the following Data Sources."
+msgstr[0] ""
+msgstr[1] ""
+
+#: topx_sources.php
+msgid "Import TopX Data Sources"
+msgstr ""
+
+#: topx_sources.php
+msgid "Import Text"
+msgstr ""
+
+#: topx_sources.php
+msgid "Paste the contents of a TopX Data Source XML export here, or choose a file below."
+msgstr ""
+
+#: topx_sources.php
+msgid "Import File"
+msgstr ""
+
+#: topx_sources.php
+msgid "A TopX Data Source XML export file to import."
+msgstr ""
+
+#: topx_sources.php
+#, php-format
+msgid "Import complete: %1$d inserted, %2$d updated, %3$d skipped (no matching Data Template on this install)."
+msgstr ""
+
+#: topx_sources.php
+#, php-format
+msgid "Data Source [edit: %s]"
+msgstr ""
+
+#: topx_sources.php
+msgid "Data Source [new]"
+msgstr ""
+
+#: topx_sources.php
+msgid "Data Template"
+msgstr ""
+
+#: topx_sources.php
+msgid "The Cacti Data Template this definition ranks. The portable template hash is stored, so the definition survives export/import between installs. The count shows how many Data Sources currently use each template."
+msgstr ""
+
+#: topx_sources.php
+msgid "Display Name"
+msgstr ""
+
+#: topx_sources.php
+msgid "A friendly name shown in the TopX dashboards. Leave blank to use the Data Template name."
+msgstr ""
+
+#: topx_sources.php
+msgid "Metric Expression"
+msgstr ""
+
+#: topx_sources.php
+msgid "How the RRD data source fields are combined, e.g. \"cpu=cpu\" (single field), \"traffic_in+traffic_out\" (sum), \"hdd_total%hdd_used\" (percentage) or \"uptime/100\" (scaled)."
+msgstr ""
+
+#: topx_sources.php
+msgid "Metric Label"
+msgstr ""
+
+#: topx_sources.php
+msgid "A short label for what is measured, e.g. \"Utilization\", \"Bits\". Used for the chart value axis."
+msgstr ""
+
+#: topx_sources.php
+msgid "Range Direction"
+msgstr ""
+
+#: topx_sources.php
+msgid "Whether a higher value is the more significant one (increasing, e.g. CPU/traffic) or a lower value is (decreasing, e.g. free disk space or uptime headroom). Drives the default ranking sense and threshold colouring."
+msgstr ""
+
+#: topx_sources.php
+msgid "Default Sort"
+msgstr ""
+
+#: topx_sources.php
+msgid "The default sort direction applied when this source is first opened."
+msgstr ""
+
+#: topx_sources.php
+msgid "Ascending"
+msgstr ""
+
+#: topx_sources.php
+msgid "Descending"
+msgstr ""
+
+#: topx_sources.php
+msgid "Display Scaling"
+msgstr ""
+
+#: topx_sources.php
+msgid "How computed values are formatted for display. \"Strip\" rounds to the precision and appends the unit; \"Divide\" walks a slash-delimited unit/divisor ladder (e.g. bit/Kbit/Mbit)."
+msgstr ""
+
+#: topx_sources.php
+msgid "Divide (unit ladder)"
+msgstr ""
+
+#: topx_sources.php
+msgid "Strip (round + unit)"
+msgstr ""
+
+#: topx_sources.php
+msgid "Display Unit(s)"
+msgstr ""
+
+#: topx_sources.php
+msgid "The display unit, or a slash-delimited ladder for the Divide scaling (e.g. \"bit/Kbit/Mbit/Gbit\")."
+msgstr ""
+
+#: topx_sources.php
+msgid "Precision / Divisors"
+msgstr ""
+
+#: topx_sources.php
+msgid "For Strip scaling, the number of decimal places. For Divide scaling, the slash-delimited divisor ladder (e.g. \"1/1024/1048576\")."
+msgstr ""
+
+#: topx_sources.php
+msgid "Value System"
+msgstr ""
+
+#: topx_sources.php
+msgid "The numbering system used when auto-scaling unsupported values."
+msgstr ""
+
+#: topx_sources.php
+msgid "Normal Threshold"
+msgstr ""
+
+#: topx_sources.php
+msgid "Optional. The upper bound of the healthy band. Leave blank to disable threshold colouring."
+msgstr ""
+
+#: topx_sources.php
+msgid "Warning Threshold"
+msgstr ""
+
+#: topx_sources.php
+msgid "Optional. Values at or beyond this (at or below, for decreasing ranges) are shown in the warning colour."
+msgstr ""
+
+#: topx_sources.php
+msgid "Alert Threshold"
+msgstr ""
+
+#: topx_sources.php
+msgid "Optional. Values at or beyond this (at or below, for decreasing ranges) are shown in the alert colour."
+msgstr ""
+
+#: topx_sources.php
+msgid "Chart Label Pattern"
+msgstr ""
+
+#: topx_sources.php
+msgid "How each ranked item is named on the chart, using |token| substitution: |host_description|, |host_hostname|, |host_id| and |query_<field>| (e.g. |query_ifName|). Example: \"|host_description| - |query_ifName|\". Leave blank to derive the label from the Data Source name."
+msgstr ""
+
+#: topx_sources.php
+msgid "Name"
+msgstr ""
+
+#: topx_sources.php
+msgid "The TopX display name, or the Data Template name when not yet configured."
+msgstr ""
+
+#: topx_sources.php
+msgid "Whether a TopX Data Source definition exists for the Data Template."
+msgstr ""
+
+#: topx_sources.php
+msgid "In Use"
+msgstr ""
+
+#: topx_sources.php
+msgid "The number of Data Sources on devices that use the Data Template."
+msgstr ""
+
+#: topx_sources.php
+msgid "Direction"
+msgstr ""
+
+#: topx_sources.php
+msgid "Expression"
+msgstr ""
+
+#: topx_sources.php
+msgid "Chart Label"
+msgstr ""
+
+#: topx_sources.php
+msgid "No Data Sources Found"
+msgstr ""
+
+#: topx_sources.php
+msgid "Search"
+msgstr ""
+
+#: topx_sources.php
+msgid "Rows"
+msgstr ""
+
+#: topx_sources.php
+msgid "Default"
+msgstr ""
+
+#: topx_sources.php
+msgid "Go"
+msgstr ""
+
+#: topx_sources.php
+msgid "Set/Refresh Filters"
+msgstr ""
+
+#: topx_sources.php
+msgid "Clear"
+msgstr ""
+
+#: topx_sources.php
+msgid "Clear Filters"
+msgstr ""
+
+#: topx_sources.php
+msgid "Import Data Sources"
+msgstr ""
+
+#: topx_sources.php
+msgid "Export All"
+msgstr ""
+
+#: topx_sources.php
+msgid "Export All Data Sources"
 msgstr ""

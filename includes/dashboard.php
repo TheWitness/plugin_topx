@@ -989,11 +989,39 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			$labels = [];
 			$full   = [];
 			$values = [];
+			$colors = [];
+
+			$pattern = ($ds['supported'] && isset($source['chart_label'])) ? (string) $source['chart_label'] : '';
 
 			foreach ($rows as $row) {
-				$labels[] = topx_short_label((string) $row['name']);
+				$value = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
+				$label = '';
+
+				if ($pattern !== '' && isset($row['ldid'])) {
+					$label = topx_apply_chart_label($pattern, topx_chart_label_tokens((int) $row['ldid']));
+				}
+
+				if ($label === '') {
+					$label = topx_short_label((string) $row['name']);
+				}
+
+				$labels[] = $label;
 				$full[]   = (string) $row['name'];
-				$values[] = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
+				$values[] = $value;
+
+				if ($ds['supported']) {
+					$class = topx_range_class($value, $source);
+
+					if ($class !== '') {
+						$colors[] = topx_range_color($class);
+					}
+				}
+			}
+
+			// Only colour the bars when every bar resolved a band, so the
+			// per-bar colour array stays aligned with the values.
+			if (cacti_sizeof($colors) !== cacti_sizeof($values)) {
+				$colors = [];
 			}
 
 			// The value axis is labelled with the data source's own unit
@@ -1001,7 +1029,7 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			// axis is left unlabelled rather than repeating a generic word.
 			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : '';
 
-			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], [], $full);
+			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], $colors, $full);
 
 			break;
 		case 'tiles':

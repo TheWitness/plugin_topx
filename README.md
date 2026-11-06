@@ -45,8 +45,13 @@ Cacti Group.
 
 ## Adding your own data sources
 
-See [HOW_TO_ADD_YOUR_DATA.txt](HOW_TO_ADD_YOUR_DATA.txt) for the format of the
-`plugin_topx_source` definitions.
+Use **Console → Management → TopX Data Sources**. From there you can see every
+Data Template (configured or not), filter by **Supported: All / Yes / No**, and
+add, edit, delete, import or export the definitions — no PHP editing required.
+Each definition points at a Data Template by its portable hash, describes how its
+RRD fields combine (the metric expression) and how values are scaled and named
+on the charts. See [HOW_TO_ADD_YOUR_DATA.txt](HOW_TO_ADD_YOUR_DATA.txt) for a
+field-by-field description of the `plugin_topx_source` definition.
 
 ## Possible bugs or ideas?
 

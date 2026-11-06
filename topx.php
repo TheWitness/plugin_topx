@@ -29,6 +29,7 @@ include_once('./include/auth.php');
 include_once('./include/global_arrays.php');
 include_once($config['base_path'] . '/plugins/topx/includes/functions.php');
 include_once($config['base_path'] . '/plugins/topx/includes/arrays.php');
+include_once($config['base_path'] . '/plugins/topx/includes/sources.php');
 include_once($config['base_path'] . '/plugins/topx/includes/dashboard.php');
 
 set_default_action();
