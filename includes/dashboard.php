@@ -547,7 +547,7 @@ function topx_dashboard_toolbar_edit(array $ds): void {
 		$label = __('Add Rule', 'topx');
 	}
 
-	print '<a class="topxDashEdit" href="' . html_escape($config['url_path'] . 'plugins/topx/' . $url) . '">' . html_escape($label) . '</a>';
+	print '<a class="ui-button ui-corner-all ui-widget ui-state-active topxDashEdit" role="button" href="' . html_escape($config['url_path'] . 'plugins/topx/' . $url) . '">' . html_escape($label) . '</a>';
 }
 
 /* ============================================================================

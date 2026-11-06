@@ -54,21 +54,11 @@
 	min-width: 180px;
 }
 
+/* The Edit/Add Rule link is themed by Cacti's jQuery UI button classes
+   (ui-button ui-state-active); only the toolbar alignment is set here. */
 .topxDashEdit {
-	box-sizing: border-box;
-	padding: 4px 10px;
-	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 7px;
-	background: color-mix(in srgb, currentColor 4%, transparent);
-	color: inherit;
-	font-size: 12px;
 	text-decoration: none;
 	white-space: nowrap;
-}
-
-.topxDashEdit:hover,
-.topxDashEdit:focus {
-	background: color-mix(in srgb, currentColor 12%, transparent);
 }
 
 /* Live preview below the Data Source editor: cards stacked full-width,

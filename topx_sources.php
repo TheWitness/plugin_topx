@@ -505,7 +505,6 @@ function topx_sources_edit(): void {
 			'description'   => __('The Cacti Data Template this definition ranks. The portable template hash is stored, so the definition survives export/import between installs. The count shows how many Data Sources currently use each template.', 'topx'),
 			'value'         => '|arg1:hash|',
 			'array'         => $templates,
-			'on_change'     => 'topxRefreshTokens()',
 		],
 		'dt_name' => [
 			'method'        => 'textbox',
@@ -688,6 +687,7 @@ function topx_sources_edit(): void {
 
 		$(function() {
 			topxBindTokens();
+			$('#hash').on('change', function() { topxRefreshTokens(); });
 		});
 	</script>
 	<?php
@@ -1001,7 +1001,7 @@ function topx_sources_filter(): void {
 						</td>
 						<td><?php print __('Supported', 'topx'); ?></td>
 						<td>
-							<select id='supported' onChange='applyFilter()'>
+							<select id='supported'>
 								<option value='-1'<?php print (get_request_var('supported') == '-1' ? ' selected' : ''); ?>><?php print __('All', 'topx'); ?></option>
 								<option value='1'<?php print (get_request_var('supported') == '1' ? ' selected' : ''); ?>><?php print __('Yes', 'topx'); ?></option>
 								<option value='0'<?php print (get_request_var('supported') == '0' ? ' selected' : ''); ?>><?php print __('No', 'topx'); ?></option>
@@ -1009,7 +1009,7 @@ function topx_sources_filter(): void {
 						</td>
 						<td><?php print __('Rows', 'topx'); ?></td>
 						<td>
-							<select id='rows' onChange='applyFilter()'>
+							<select id='rows'>
 								<option value='-1'<?php print (get_request_var('rows') == '-1' ? ' selected' : ''); ?>><?php print __('Default', 'topx'); ?></option>
 								<?php
 								global $item_rows;
@@ -1056,6 +1056,7 @@ function topx_sources_filter(): void {
 				$(function() {
 					$('#refresh').click(function() { applyFilter(); });
 					$('#clear').click(function() { clearFilter(); });
+					$('#supported, #rows').on('change', function() { applyFilter(); });
 					$('#has_data').on('click', function() { applyFilter(); });
 					$('#import').click(function() { loadUrl({url:'topx_sources.php?action=import'}); });
 					$('#export').click(function() { document.location = 'topx_sources.php?action=export'; });
