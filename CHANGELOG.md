@@ -4,6 +4,11 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.2
 
+- The Metric Expression now actually applies a trailing `/N` divisor
+  (e.g. `uptime=uptime/8640000` to turn SNMP uptime timeticks into days):
+  previously the division was ignored and the raw value was charted and ranked.
+  The scaled value is now used for the average, ranking and chart axis, not only
+  the display formatter.
 - The Ranking Chart now shows both the average and the peak on each bar as a
   bullet-style bar (a thin average "measure" bar nested inside a thicker,
   lighter peak band, via billboard's `bar.overlap`), and the good/warning/alert
