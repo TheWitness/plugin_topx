@@ -4,6 +4,11 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.2
 
+- The Ranking Chart now shows both the average and the peak on each bar as a
+  stacked two-tone bar (the solid segment is the average; a lighter segment
+  extends it to the peak), and the good/warning/alert colours are a more vivid,
+  theme-appropriate green/orange/red so the "good" state actually reads as green
+  on dark themes like Deepness.
 - The TopX tab pages (`topx.php`) now render with `general_header()` so they show
   as a tab without the Console left-hand menu.
 - New mappings default the **Metric Expression** to `field=field` for a template
