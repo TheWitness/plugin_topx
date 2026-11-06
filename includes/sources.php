@@ -270,11 +270,8 @@ function topx_source_export_xml(array $rows): string {
 		$node = $doc->createElement('source');
 
 		foreach ($columns as $column) {
+			// Null/missing values coalesce to an empty element.
 			$value = $row[$column] ?? '';
-
-			if ($value === null) {
-				$value = '';
-			}
 
 			$child = $doc->createElement($column);
 			$child->appendChild($doc->createTextNode((string) $value));
