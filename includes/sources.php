@@ -410,7 +410,7 @@ function topx_source_template_choices(): array {
 		$count = (int) $row['in_use'];
 
 		$suffix = $count > 0
-			? sprintf(__('(%d in use)', 'topx'), $count)
+			? __('(%d in use)', $count, 'topx')
 			: __('(unused)', 'topx');
 
 		$choices[$row['hash']] = $row['name'] . ' ' . $suffix;

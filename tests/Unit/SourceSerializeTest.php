@@ -90,6 +90,13 @@ describe('topx_source export/import round-trip', function (): void {
 		expect($parsed['error'])->not->toBe('');
 	});
 
+	it('rejects a malformed XML document', function (): void {
+		$parsed = topx_source_import_xml('<topx_data_sources><source></broken>');
+
+		expect($parsed['sources'])->toBe([]);
+		expect($parsed['error'])->not->toBe('');
+	});
+
 	it('rejects an empty document', function (): void {
 		$parsed = topx_source_import_xml('   ');
 

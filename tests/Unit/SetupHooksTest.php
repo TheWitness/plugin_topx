@@ -107,6 +107,49 @@ describe('plugin_topx_check_config', function (): void {
 	});
 });
 
+describe('plugin_topx_upgrade', function (): void {
+	it('registers the management realm and nav hook catch-ups on a relevant page', function (): void {
+		$tmp = sys_get_temp_dir() . '/topx_upg_' . uniqid();
+		mkdir($tmp . '/plugins/topx', 0777, true);
+		copy(dirname(__DIR__, 2) . '/INFO', $tmp . '/plugins/topx/INFO');
+
+		$GLOBALS['config']['base_path']      = $tmp;
+		$GLOBALS['__test_registered_hooks']  = [];
+		$GLOBALS['__test_registered_realms'] = [];
+
+		// Falsy db_fetch_cell => the hook/realm catch-up guards both fire.
+		$GLOBALS['__test_db_fetch_cell'] = function ($sql) {
+			return '';
+		};
+
+		test_set_current_page('index.php');
+
+		expect(plugin_topx_upgrade())->toBeFalse();
+
+		$realm_files = array_column($GLOBALS['__test_registered_realms'], 'file');
+		expect($realm_files)->toContain('topx_sources.php');
+
+		unset($GLOBALS['__test_db_fetch_cell']);
+
+		unlink($tmp . '/plugins/topx/INFO');
+		rmdir($tmp . '/plugins/topx');
+		rmdir($tmp . '/plugins');
+		rmdir($tmp);
+	});
+});
+
+describe('topx_draw_navigation_text', function (): void {
+	it('registers the management page breadcrumb entries', function (): void {
+		$nav = topx_draw_navigation_text([]);
+
+		expect($nav)->toHaveKey('topx_sources.php:');
+		expect($nav)->toHaveKey('topx_sources.php:edit');
+		expect($nav)->toHaveKey('topx_sources.php:import');
+		expect($nav)->toHaveKey('topx_sources.php:actions');
+		expect($nav['topx_sources.php:']['url'])->toBe('topx_sources.php');
+	});
+});
+
 describe('plugin_topx_uninstall', function (): void {
 	it('clears the version and drops both plugin tables', function (): void {
 		$GLOBALS['__test_db_calls']               = [];

@@ -328,8 +328,8 @@ function topx_sources_import_save(): void {
 	$summary = topx_import_apply($parsed['sources']);
 
 	raise_message('topx_import',
-		sprintf(__('Import complete: %1$d inserted, %2$d updated, %3$d skipped (no matching Data Template on this install).', 'topx'),
-			$summary['inserted'], $summary['updated'], $summary['skipped']),
+		__('Import complete: %1$d inserted, %2$d updated, %3$d skipped (no matching Data Template on this install).',
+			$summary['inserted'], $summary['updated'], $summary['skipped'], 'topx'),
 		$summary['skipped'] > 0 ? MESSAGE_LEVEL_WARN : MESSAGE_LEVEL_INFO);
 
 	header('Location: topx_sources.php');
