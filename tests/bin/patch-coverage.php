@@ -167,6 +167,11 @@ $unmeasured_allowlist = [
 	// that renders the TopX view at load, so it cannot load in the isolated
 	// unit process. Its pure helpers live in includes/ and are unit tested.
 	'topx.php',
+
+	// Management UI entry point: same top-level chdir + include of
+	// ../../include/auth.php, so it cannot load in the isolated unit process.
+	// Its pure helpers live in includes/sources.php and are unit tested.
+	'topx_sources.php',
 ];
 $unmeasured            = array_values(array_diff(array_keys($changed), array_keys($measured)));
 $unexpected_unmeasured = array_values(array_diff($unmeasured, $unmeasured_allowlist));
