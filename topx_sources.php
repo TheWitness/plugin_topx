@@ -144,6 +144,27 @@ function topx_sources_form_save(): void {
 		$save['dt_name'] = (string) db_fetch_cell_prepared('SELECT name FROM data_template WHERE hash = ?', array($hash));
 	}
 
+	// A single-data-source template needs a "field=field" expression to rank at
+	// all; default it so a new mapping produces data without the administrator
+	// having to discover the requirement.
+	if ($save['operation'] === '') {
+		$save['operation'] = topx_default_operation($hash);
+	}
+
+	$range_error = topx_range_validation_error($save);
+
+	if ($range_error !== '') {
+		raise_message('topx_range', $range_error, MESSAGE_LEVEL_ERROR);
+
+		if ((int) $save['id'] > 0) {
+			header('Location: topx_sources.php?action=edit&id=' . (int) $save['id']);
+		} else {
+			header('Location: topx_sources.php?action=edit&hash=' . $hash);
+		}
+
+		return;
+	}
+
 	$id = topx_source_save($save);
 
 	if ($id) {
@@ -429,8 +450,9 @@ function topx_sources_tokens_ajax(): string {
 	}
 
 	return json_encode([
-		'operation'   => topx_tokens_operation_html($hash),
-		'chart_label' => topx_tokens_label_html($hash),
+		'operation'    => topx_tokens_operation_html($hash),
+		'chart_label'  => topx_tokens_label_html($hash),
+		'default_operation' => topx_default_operation($hash),
 	], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 }
 
@@ -461,9 +483,10 @@ function topx_sources_edit(): void {
 		$template_name = (string) db_fetch_cell_prepared('SELECT name FROM data_template WHERE hash = ?', array($hash));
 
 		if ($template_name !== '') {
-			$source['hash']    = $hash;
-			$source['dt_name'] = $template_name;
-			$header_label      = __esc('Data Source [new: %s]', $template_name, 'topx');
+			$source['hash']      = $hash;
+			$source['dt_name']   = $template_name;
+			$source['operation'] = topx_default_operation($hash);
+			$header_label        = __esc('Data Source [new: %s]', $template_name, 'topx');
 		} else {
 			$header_label = __('Data Source [new]', 'topx');
 		}
@@ -650,6 +673,15 @@ function topx_sources_edit(): void {
 			$.get('topx_sources.php?action=tokens&hash=' + encodeURIComponent(hash), function(data) {
 				$('#operation_tokens').html(data.operation);
 				$('#chart_label_tokens').html(data.chart_label);
+
+				// Seed a single-data-source template's expression so it ranks
+				// out of the box, without clobbering anything already typed.
+				var op = $('#operation');
+
+				if (op.length && (op.val() || '') === '' && data.default_operation) {
+					op.val(data.default_operation);
+				}
+
 				topxBindTokens();
 			}, 'json');
 		}

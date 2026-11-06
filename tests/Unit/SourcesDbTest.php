@@ -84,6 +84,66 @@ describe('topx_token_help', function (): void {
 	});
 });
 
+describe('topx_default_operation', function (): void {
+	it('defaults a single-field template to field=field', function (): void {
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [['field' => 'users']];
+		};
+
+		expect(topx_default_operation('6632e1e0b58a565c135d7ff90440c335'))->toBe('users=users');
+	});
+
+	it('returns an empty string for a multi-field template', function (): void {
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [['field' => 'traffic_in'], ['field' => 'traffic_out']];
+		};
+
+		expect(topx_default_operation('6632e1e0b58a565c135d7ff90440c335'))->toBe('');
+	});
+});
+
+describe('topx_range_validation_error', function (): void {
+	it('accepts a valid increasing set', function (): void {
+		expect(topx_range_validation_error([
+			'range_type' => 0, 'range_normal' => 50, 'range_warning' => 75, 'range_alert' => 90,
+		]))->toBe('');
+	});
+
+	it('rejects an increasing set that is not ascending', function (): void {
+		expect(topx_range_validation_error([
+			'range_type' => 0, 'range_normal' => 50, 'range_warning' => 40, 'range_alert' => 90,
+		]))->not->toBe('');
+	});
+
+	it('accepts a valid decreasing set', function (): void {
+		expect(topx_range_validation_error([
+			'range_type' => 1, 'range_normal' => 90, 'range_warning' => 50, 'range_alert' => 10,
+		]))->toBe('');
+	});
+
+	it('rejects a decreasing set that is not descending', function (): void {
+		expect(topx_range_validation_error([
+			'range_type' => 1, 'range_normal' => 10, 'range_warning' => 50, 'range_alert' => 90,
+		]))->not->toBe('');
+	});
+
+	it('skips blank thresholds and orders only the set ones', function (): void {
+		// normal and alert only: 50 < 90 is valid for increasing.
+		expect(topx_range_validation_error([
+			'range_type' => 0, 'range_normal' => 50, 'range_warning' => '', 'range_alert' => 90,
+		]))->toBe('');
+
+		// normal and alert only: 90 then 50 violates increasing.
+		expect(topx_range_validation_error([
+			'range_type' => 0, 'range_normal' => 90, 'range_warning' => null, 'range_alert' => 50,
+		]))->not->toBe('');
+	});
+
+	it('accepts a set with no thresholds', function (): void {
+		expect(topx_range_validation_error(['range_type' => 0]))->toBe('');
+	});
+});
+
 describe('topx_get_source', function (): void {
 	it('returns the row when found', function (): void {
 		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {

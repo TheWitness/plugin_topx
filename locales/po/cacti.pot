@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-06 13:42-0500\n"
+"POT-Creation-Date: 2026-11-06 13:59-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -58,7 +58,7 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: includes/arrays.php
+#: includes/arrays.php includes/sources.php
 msgid "Normal"
 msgstr ""
 
@@ -367,6 +367,24 @@ msgstr ""
 
 #: includes/sources.php
 msgid "(unused)"
+msgstr ""
+
+#: includes/sources.php
+msgid "Warning"
+msgstr ""
+
+#: includes/sources.php
+msgid "Alert"
+msgstr ""
+
+#: includes/sources.php
+#, php-format
+msgid "For an increasing range, the %1$s threshold must be less than the %2$s threshold."
+msgstr ""
+
+#: includes/sources.php
+#, php-format
+msgid "For a decreasing range, the %1$s threshold must be greater than the %2$s threshold."
 msgstr ""
 
 #: setup.php

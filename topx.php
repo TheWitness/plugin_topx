@@ -66,14 +66,14 @@ switch (get_request_var('action')) {
 
 		break;
 	case 'view':
-		top_header();
+		general_header();
 		topx_drilldown_dashboard();
 		bottom_footer();
 
 		break;
 	case 'dashboard':
 	default:
-		top_header();
+		general_header();
 		topx_overview_dashboard();
 		bottom_footer();
 

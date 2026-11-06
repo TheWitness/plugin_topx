@@ -511,6 +511,74 @@ function topx_token_help(string $hash): array {
 }
 
 /**
+ * Returns a sensible default Metric Expression for a template when setting up a
+ * new mapping. A template with a single RRD data source needs a "field=field"
+ * expression to rank at all (as the user discovered with users=users), so that
+ * is defaulted automatically. Multi-field templates return '' because the
+ * administrator must choose how to combine or pick the fields.
+ *
+ * @param string $hash The portable Data Template hash.
+ *
+ * @return string The default expression, or '' when it cannot be inferred.
+ */
+function topx_default_operation(string $hash): string {
+	$fields = topx_source_rrd_fields($hash);
+
+	if (cacti_sizeof($fields) === 1) {
+		return $fields[0] . '=' . $fields[0];
+	}
+
+	return '';
+}
+
+/**
+ * Validates a definition's range thresholds against its direction and returns a
+ * human readable error (empty string when valid). For an increasing range the
+ * set thresholds must ascend Normal < Warning < Alert; for a decreasing range
+ * they must descend Normal > Warning > Alert. Blank thresholds are skipped, so
+ * only the thresholds that are actually set are ordered. Kept free of database
+ * access so it can be unit tested directly.
+ *
+ * @param array $save A prepared row carrying range_type and range_* thresholds.
+ *
+ * @return string The validation error, or '' when the thresholds are consistent.
+ */
+function topx_range_validation_error(array $save): string {
+	$decreasing = (int) ($save['range_type'] ?? 0) === 1;
+
+	$order = [
+		'range_normal'  => __('Normal', 'topx'),
+		'range_warning' => __('Warning', 'topx'),
+		'range_alert'   => __('Alert', 'topx'),
+	];
+
+	$points = [];
+
+	foreach ($order as $key => $label) {
+		$value = $save[$key] ?? null;
+
+		if ($value !== null && $value !== '') {
+			$points[] = ['label' => $label, 'value' => (float) $value];
+		}
+	}
+
+	for ($i = 1; $i < cacti_sizeof($points); $i++) {
+		$prev = $points[$i - 1];
+		$cur  = $points[$i];
+
+		if (!$decreasing && $prev['value'] >= $cur['value']) {
+			return __('For an increasing range, the %1$s threshold must be less than the %2$s threshold.', $prev['label'], $cur['label'], 'topx');
+		}
+
+		if ($decreasing && $prev['value'] <= $cur['value']) {
+			return __('For a decreasing range, the %1$s threshold must be greater than the %2$s threshold.', $prev['label'], $cur['label'], 'topx');
+		}
+	}
+
+	return '';
+}
+
+/**
  * Resolves the chart-label substitution tokens for a single ranked data source
  * instance. Returns host-level tokens (host_description, host_hostname,
  * host_id) plus one query_<field> token per SNMP data-query field cached for
