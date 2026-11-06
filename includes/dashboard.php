@@ -224,7 +224,8 @@ function topx_dashboard_gauge(?float $current, ?float $min, ?float $max, float $
  *                            labels are shortened (same order as $labels).
  * @param array  $peaks       Optional per-bar peak values (same order as
  *                            $values); when present a rotated chart renders a
- *                            stacked average+peak bar.
+ *                            bullet-style bar (a thin average measure bar nested
+ *                            inside a thicker peak band).
  *
  * @return string The chart placeholder HTML.
  */

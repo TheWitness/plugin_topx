@@ -415,31 +415,37 @@ function topxDashRenderCharts(root) {
 			}
 		};
 
-		// When per-bar peaks are supplied, render each bar as a stacked
-		// average+headroom pair: the solid segment is the average and a lighter
-		// segment extends it out to the peak (headroom = peak - average), so one
-		// bar shows both values. The tooltip reports the real peak, not the
-		// headroom.
+		// When per-bar peaks are supplied, render each bar as a bullet-style
+		// overlay: a thick, light background bar for the peak with a thinner,
+		// solid bar for the average nested inside it. billboard's bar.overlap
+		// draws the two series at the same category position (instead of side by
+		// side) and per-series bar.width makes the average bar thinner, so the
+		// average reads as a measure bar inside the peak range band.
 		var dual = cfg.rotated && cfg.peaks && cfg.peaks.length === cfg.values.length;
 
 		if (dual) {
-			var headroom = cfg.values.map(function(v, i) {
-				var h = (cfg.peaks[i] || 0) - (v || 0);
-				return h > 0 ? h : 0;
-			});
-
 			options.data.columns = [
-				[cfg.averageLabel].concat(cfg.values),
-				[cfg.peakLabel].concat(headroom)
+				[cfg.peakLabel].concat(cfg.peaks),
+				[cfg.averageLabel].concat(cfg.values)
 			];
-			options.data.groups = [[cfg.averageLabel, cfg.peakLabel]];
-			options.data.order  = null;
-			options.data.color  = function(inColor, d) {
+
+			options.bar = {
+				overlap: true,
+				width: {}
+			};
+			options.bar.width[cfg.peakLabel]    = {ratio: 0.82};
+			options.bar.width[cfg.averageLabel] = {ratio: 0.40};
+
+			options.data.color = function(inColor, d) {
 				if (d && typeof d === 'object' && d.id === cfg.peakLabel) {
-					return 'rgba(160,160,160,0.30)';
+					return 'rgba(130,130,130,0.28)';
 				}
 
 				if (d && typeof d === 'object' && typeof d.index === 'number') {
+					if (cfg.barColors && cfg.barColors.length) {
+						return cfg.barColors[d.index % cfg.barColors.length];
+					}
+
 					return palette[d.index % palette.length];
 				}
 
@@ -447,14 +453,6 @@ function topxDashRenderCharts(root) {
 			};
 
 			options.legend = {show: true};
-
-			options.tooltip.format.value = function(value, ratio, id, index) {
-				if (id === cfg.peakLabel) {
-					return topxFormatNumber((cfg.values[index] || 0) + (value || 0));
-				}
-
-				return topxFormatNumber(value);
-			};
 		}
 
 		// Horizontal (rotated) ranking charts grow with the record count so Top
