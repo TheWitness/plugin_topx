@@ -34,9 +34,9 @@ describe('topx_range_class', function (): void {
 
 describe('topx_range_color', function (): void {
 	it('maps each band to a colour', function (): void {
-		expect(topx_range_color('normal'))->toBe('#3fa796');
-		expect(topx_range_color('warning'))->toBe('#e0a800');
-		expect(topx_range_color('alert'))->toBe('#d9534f');
+		expect(topx_range_color('normal'))->toBe('#2ecc71');
+		expect(topx_range_color('warning'))->toBe('#f0932b');
+		expect(topx_range_color('alert'))->toBe('#eb4d4b');
 	});
 
 	it('returns an empty string for an unknown band', function (): void {

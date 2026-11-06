@@ -348,7 +348,7 @@ function topxDashRenderCharts(root) {
 		// and distinct on every Cacti theme. Flat grey (#555) was invisible on
 		// dark themes.
 		var palette = (cfg.barColors && cfg.barColors.length) ? cfg.barColors : [
-			'#3c9a5f', '#2e86de', '#8e5bd0', '#d9830f',
+			'#2ecc71', '#2e86de', '#8e5bd0', '#f0932b',
 			'#17a2a2', '#c9b03a', '#c0556f', '#5aa0c9'
 		];
 
@@ -414,6 +414,48 @@ function topxDashRenderCharts(root) {
 				}
 			}
 		};
+
+		// When per-bar peaks are supplied, render each bar as a stacked
+		// average+headroom pair: the solid segment is the average and a lighter
+		// segment extends it out to the peak (headroom = peak - average), so one
+		// bar shows both values. The tooltip reports the real peak, not the
+		// headroom.
+		var dual = cfg.rotated && cfg.peaks && cfg.peaks.length === cfg.values.length;
+
+		if (dual) {
+			var headroom = cfg.values.map(function(v, i) {
+				var h = (cfg.peaks[i] || 0) - (v || 0);
+				return h > 0 ? h : 0;
+			});
+
+			options.data.columns = [
+				[cfg.averageLabel].concat(cfg.values),
+				[cfg.peakLabel].concat(headroom)
+			];
+			options.data.groups = [[cfg.averageLabel, cfg.peakLabel]];
+			options.data.order  = null;
+			options.data.color  = function(inColor, d) {
+				if (d && typeof d === 'object' && d.id === cfg.peakLabel) {
+					return 'rgba(160,160,160,0.30)';
+				}
+
+				if (d && typeof d === 'object' && typeof d.index === 'number') {
+					return palette[d.index % palette.length];
+				}
+
+				return palette[0];
+			};
+
+			options.legend = {show: true};
+
+			options.tooltip.format.value = function(value, ratio, id, index) {
+				if (id === cfg.peakLabel) {
+					return topxFormatNumber((cfg.values[index] || 0) + (value || 0));
+				}
+
+				return topxFormatNumber(value);
+			};
+		}
 
 		// Horizontal (rotated) ranking charts grow with the record count so Top
 		// 10/20/50 stay readable instead of squeezing bars into a fixed height.

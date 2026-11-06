@@ -202,9 +202,9 @@ function topx_range_class(float $value, array $source): string {
  */
 function topx_range_color(string $class): string {
 	$colors = [
-		'normal'  => '#3fa796',
-		'warning' => '#e0a800',
-		'alert'   => '#d9534f',
+		'normal'  => '#2ecc71',
+		'warning' => '#f0932b',
+		'alert'   => '#eb4d4b',
 	];
 
 	return $colors[$class] ?? '';

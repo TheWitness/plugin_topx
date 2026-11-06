@@ -222,18 +222,23 @@ function topx_dashboard_gauge(?float $current, ?float $min, ?float $max, float $
  *                           empty js/topx_dashboard.js uses its default palette.
  * @param array  $full_labels Optional full labels shown on hover when the axis
  *                            labels are shortened (same order as $labels).
+ * @param array  $peaks       Optional per-bar peak values (same order as
+ *                            $values); when present a rotated chart renders a
+ *                            stacked average+peak bar.
  *
  * @return string The chart placeholder HTML.
  */
-function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = []): string {
+function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = [], array $peaks = []): string {
 	$payload = [
 		'series'  => __('Value', 'topx'),
 		'labels'  => array_values($labels),
 		'values'  => array_map('floatval', array_values($values)),
+		'peaks'   => array_map('floatval', array_values($peaks)),
 		'title'   => $title,
 		'rotated' => $rotated,
 		'average' => $average,
 		'averageLabel' => __('Average', 'topx'),
+		'peakLabel'    => __('Peak', 'topx'),
 		'barColors'    => array_values($bar_colors),
 		'fullLabels'   => array_values($full_labels),
 	];
@@ -1026,12 +1031,14 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			$labels = [];
 			$full   = [];
 			$values = [];
+			$peaks  = [];
 			$colors = [];
 
 			$pattern = ($ds['supported'] && isset($source['chart_label'])) ? (string) $source['chart_label'] : '';
 
 			foreach ($rows as $row) {
 				$value = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
+				$peak  = is_null($row['xpeak']) ? 0 : (float) $row['xpeak'];
 				$label = '';
 
 				if ($pattern !== '' && isset($row['ldid'])) {
@@ -1045,6 +1052,7 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 				$labels[] = $label;
 				$full[]   = (string) $row['name'];
 				$values[] = $value;
+				$peaks[]  = $peak;
 
 				if ($ds['supported']) {
 					$class = topx_range_class($value, $source);
@@ -1066,7 +1074,7 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			// axis is left unlabelled rather than repeating a generic word.
 			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : '';
 
-			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], $colors, $full);
+			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], $colors, $full, $peaks);
 
 			break;
 		case 'tiles':
