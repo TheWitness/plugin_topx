@@ -517,7 +517,7 @@ function topx_sources_edit(): void {
 		'operation' => [
 			'method'        => 'textbox',
 			'friendly_name' => __('Metric Expression', 'topx'),
-			'description'   => __('How the RRD data source fields are combined, e.g. "cpu=cpu" (single field), "traffic_in+traffic_out" (sum), "hdd_total%hdd_used" (percentage) or "uptime/100" (scaled).', 'topx'),
+			'description'   => __('How the RRD data source fields are combined, e.g. "cpu=cpu" (single field), "traffic_in+traffic_out" (sum) or "hdd_total%hdd_used" (percentage). Append "/N" to divide a single field by a constant so the chart and ranking use the scaled value, e.g. "uptime=uptime/8640000" to convert SNMP uptime timeticks to days.', 'topx'),
 			'value'         => '|arg1:operation|',
 			'max_length'    => 100,
 			'size'          => 40,

@@ -445,6 +445,30 @@ function topx_overview_stats(): array {
 }
 
 /**
+ * Parses the optional trailing constant divisor from a single-field Metric
+ * Expression. A single-field source may be written "field/N" or
+ * "field=field/N" to scale the raw metric uniformly by N (for example SNMP
+ * uptime timeticks to days with /8640000), so the ranking, table and chart axis
+ * all use the scaled value rather than only the display formatter. Combined and
+ * percentage expressions carry no trailing /N and return 1. A zero or missing
+ * divisor is treated as 1 so values are never divided by zero. Kept free of
+ * database access so it can be unit tested directly.
+ *
+ * @param string $operation The Metric Expression.
+ *
+ * @return float The positive divisor, or 1.0 when none is specified.
+ */
+function topx_operation_divisor(string $operation): float {
+	if (preg_match('~/\s*([0-9]*\.?[0-9]+)\s*$~', $operation, $matches)) {
+		$divisor = (float) $matches[1];
+
+		return $divisor != 0.0 ? $divisor : 1.0;
+	}
+
+	return 1.0;
+}
+
+/**
  * Computes the ranked rows and overall average for a single data source over a
  * whitelisted dsstats table, reproducing every per-operation branch of the
  * classic TopX view (single value, value/number, hdd percentage and the
@@ -500,25 +524,23 @@ function topx_compute_ranking(int $ds_key, bool $supported, string $table, strin
 	$id = (int) db_fetch_cell_prepared('SELECT id FROM data_template WHERE hash = ?', array($source['hash'] ?? ''));
 
 	$operation = $source['operation'] ?? '';
+	$divisor   = topx_operation_divisor($operation);
 
-	if (strpos($operation, '=') !== false) {
+	// Single-field source: "field=field", or "field/N" / "field=field/N" with a
+	// trailing constant divisor N that scales the raw metric uniformly (e.g.
+	// timeticks to days), so the ranking, table and chart axis all use the
+	// scaled value. Combined and percentage sources fall through to the branches
+	// below.
+	$single = (strpos($operation, '=') !== false) || preg_match('~^[a-z0-9_]+/[0-9.]+$~i', $operation);
+
+	if ($single) {
 		$from = " FROM data_template_data AS t1
 			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
 			WHERE t1.data_template_id = ?";
 
-		$avg    = db_fetch_cell_prepared("SELECT AVG(average)$from", array($id));
-		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak
-			$from ORDER BY t2.$order $dir$limit_clause", array($id));
-	}
-
-	if (strpos($operation, '/') !== false) {
-		$from = " FROM data_template_data AS t1
-			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
-			WHERE t1.data_template_id = ?";
-
-		$avg    = db_fetch_cell_prepared("SELECT AVG(average)$from", array($id));
-		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak
-			$from ORDER BY t2.$order $dir$limit_clause", array($id));
+		$avg    = db_fetch_cell_prepared("SELECT AVG(average) / ?$from", array($divisor, $id));
+		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average / ? AS xvalue, t2.peak / ? AS xpeak
+			$from ORDER BY t2.$order $dir$limit_clause", array($divisor, $divisor, $id));
 	} elseif (strpos($operation, '%') !== false) {
 		$columns = "name_cache AS name, t2.local_data_id AS ldid,
 			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xvalue,

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-06 13:59-0500\n"
+"POT-Creation-Date: 2026-11-06 14:41-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -529,7 +529,7 @@ msgid "Metric Expression"
 msgstr ""
 
 #: topx_sources.php
-msgid "How the RRD data source fields are combined, e.g. \"cpu=cpu\" (single field), \"traffic_in+traffic_out\" (sum), \"hdd_total%hdd_used\" (percentage) or \"uptime/100\" (scaled)."
+msgid "How the RRD data source fields are combined, e.g. \"cpu=cpu\" (single field), \"traffic_in+traffic_out\" (sum) or \"hdd_total%hdd_used\" (percentage). Append \"/N\" to divide a single field by a constant so the chart and ranking use the scaled value, e.g. \"uptime=uptime/8640000\" to convert SNMP uptime timeticks to days."
 msgstr ""
 
 #: topx_sources.php

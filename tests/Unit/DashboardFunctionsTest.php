@@ -153,4 +153,44 @@ describe('topx_compute_ranking', function (): void {
 
 		unset($GLOBALS['__test_db_fetch_row_prepared'], $GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
 	});
+
+	it('applies a trailing divisor from the metric expression to the value queries', function (): void {
+		$captured = [];
+
+		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
+			if (strpos($sql, 'FROM plugin_topx_source WHERE id') !== false) {
+				return ['id' => 8, 'hash' => 'abc', 'operation' => 'uptime=uptime/8640000'];
+			}
+
+			return [];
+		};
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) use (&$captured) {
+			if (strpos($sql, 'FROM data_template WHERE hash') !== false) {
+				return 12;
+			}
+
+			$captured['avg'] = ['sql' => $sql, 'params' => $p];
+
+			return 3;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) use (&$captured) {
+			$captured['rows'] = ['sql' => $sql, 'params' => $p];
+
+			return [['ldid' => 1, 'name' => 'uptime', 'xvalue' => 24, 'xpeak' => 25]];
+		};
+
+		$out = topx_compute_ranking(-8, true, 'data_source_stats_hourly', 'average', 'DESC', 5, 'xvalue');
+
+		// The divisor (8640000) is bound into the AVG and the per-row value/peak.
+		expect($captured['avg']['sql'])->toContain('AVG(average) / ?');
+		expect($captured['avg']['params'][0])->toBe(8640000.0);
+		expect($captured['rows']['sql'])->toContain('t2.average / ?');
+		expect($captured['rows']['sql'])->toContain('t2.peak / ?');
+		expect($captured['rows']['params'])->toBe([8640000.0, 8640000.0, 12]);
+		expect($out['rows'])->toHaveCount(1);
+
+		unset($GLOBALS['__test_db_fetch_row_prepared'], $GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
 });

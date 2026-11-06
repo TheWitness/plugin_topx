@@ -64,3 +64,27 @@ describe('topx_average_rows', function (): void {
 		expect(topx_average_rows([]))->toBe(0.0);
 	});
 });
+
+describe('topx_operation_divisor', function (): void {
+	it('returns 1 when no divisor is present', function (): void {
+		expect(topx_operation_divisor('cpu=cpu'))->toBe(1.0);
+		expect(topx_operation_divisor('traffic_in+traffic_out'))->toBe(1.0);
+		expect(topx_operation_divisor('hdd_total%hdd_used'))->toBe(1.0);
+	});
+
+	it('parses a trailing divisor from the field/N form', function (): void {
+		expect(topx_operation_divisor('uptime/100'))->toBe(100.0);
+	});
+
+	it('parses a trailing divisor from the field=field/N form', function (): void {
+		expect(topx_operation_divisor('uptime=uptime/8640000'))->toBe(8640000.0);
+	});
+
+	it('parses a decimal divisor', function (): void {
+		expect(topx_operation_divisor('load=load/1.5'))->toBe(1.5);
+	});
+
+	it('never returns zero', function (): void {
+		expect(topx_operation_divisor('x=x/0'))->toBe(1.0);
+	});
+});
