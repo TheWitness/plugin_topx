@@ -499,12 +499,6 @@ function topx_sources_edit(): void {
 			'max_length'    => 100,
 			'size'          => 40,
 		],
-		'operation_help' => [
-			'method'        => 'custom',
-			'friendly_name' => __('Data Sources', 'topx'),
-			'description'   => __('The data sources in this template\'s RRD files. Click one to append it to the Metric Expression.', 'topx'),
-			'value'         => "<div id='operation_tokens' class='topxTokens'>" . topx_tokens_operation_html((string) $source['hash']) . '</div>',
-		],
 		'unit' => [
 			'method'        => 'textbox',
 			'friendly_name' => __('Metric Label', 'topx'),
@@ -589,9 +583,19 @@ function topx_sources_edit(): void {
 			'max_length'    => 128,
 			'size'          => 60,
 		],
+		'replacement_objects' => [
+			'method'        => 'spacer',
+			'friendly_name' => __('Replacement Objects', 'topx'),
+		],
+		'operation_help' => [
+			'method'        => 'custom',
+			'friendly_name' => __('Available Data Sources', 'topx'),
+			'description'   => __('The data sources in this template\'s RRD files. Click one to append it to the Metric Expression.', 'topx'),
+			'value'         => "<div id='operation_tokens' class='topxTokens'>" . topx_tokens_operation_html((string) $source['hash']) . '</div>',
+		],
 		'chart_label_help' => [
 			'method'        => 'custom',
-			'friendly_name' => __('Replacements', 'topx'),
+			'friendly_name' => __('Chart Label Replacements', 'topx'),
 			'description'   => __('Click a replacement to append it to the Chart Label Pattern.', 'topx'),
 			'value'         => "<div id='chart_label_tokens' class='topxTokens'>" . topx_tokens_label_html((string) $source['hash']) . '</div>',
 		],

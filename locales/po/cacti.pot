@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti\n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-06 13:19-0500\n"
+"POT-Creation-Date: 2026-11-06 13:29-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -507,10 +507,6 @@ msgid "How the RRD data source fields are combined, e.g. \"cpu=cpu\" (single fie
 msgstr ""
 
 #: topx_sources.php
-msgid "The data sources in this template's RRD files. Click one to append it to the Metric Expression."
-msgstr ""
-
-#: topx_sources.php
 msgid "Metric Label"
 msgstr ""
 
@@ -615,7 +611,19 @@ msgid "How each ranked item is named on the chart, using |token| substitution: |
 msgstr ""
 
 #: topx_sources.php
-msgid "Replacements"
+msgid "Replacement Objects"
+msgstr ""
+
+#: topx_sources.php
+msgid "Available Data Sources"
+msgstr ""
+
+#: topx_sources.php
+msgid "The data sources in this template's RRD files. Click one to append it to the Metric Expression."
+msgstr ""
+
+#: topx_sources.php
+msgid "Chart Label Replacements"
 msgstr ""
 
 #: topx_sources.php
