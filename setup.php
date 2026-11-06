@@ -204,7 +204,7 @@ function plugin_topx_check_config(): bool {
 function plugin_topx_upgrade() {
 	$files = ['index.php', 'plugins.php'];
 
-	if (!in_array(get_current_page(), $files, true) && strpos(get_current_page(), 'topx.php') === false) {
+	if (!in_array(get_current_page(), $files, true) && strpos(get_current_page(), 'topx') === false) {
 		return null;
 	}
 
@@ -240,12 +240,49 @@ function plugin_topx_upgrade() {
 		api_plugin_register_hook('topx', 'draw_navigation_text', 'topx_draw_navigation_text', 'setup.php', true);
 	}
 
-	// Register the management realm for installations that predate it.
-	if (!db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx_sources.php'")) {
-		api_plugin_register_realm('topx', 'topx_sources.php', 'Manage TopX Data Sources', 1);
-	}
+	// Make sure the management realm exists and that everyone who can already
+	// view TopX can also manage its Data Sources. Without this, administrators
+	// upgrading from a version before the management UI existed cannot reach the
+	// new page until someone grants the realm by hand.
+	topx_reconcile_management_realm();
 
 	return false;
+}
+
+/**
+ * Ensures the management realm exists and grants it to every user and group
+ * that already holds the TopX view realm. api_plugin_register_realm() only
+ * grants the admin when it first inserts a realm, so on an in-place upgrade the
+ * newly added management realm would otherwise be registered but ungranted,
+ * giving a "401 Permission Denied" to admins who upgraded. This reconciles the
+ * grant and is idempotent (INSERT IGNORE), so it is safe to run on every
+ * relevant page load. Called from plugin_topx_upgrade().
+ *
+ * @return void
+ */
+function topx_reconcile_management_realm(): void {
+	$mgmt_realm = db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx_sources.php'");
+
+	if (empty($mgmt_realm)) {
+		api_plugin_register_realm('topx', 'topx_sources.php', 'Manage TopX Data Sources', 1);
+
+		$mgmt_realm = db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx_sources.php'");
+	}
+
+	$view_realm = db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx.php'");
+
+	if (empty($mgmt_realm) || empty($view_realm)) {
+		return;
+	}
+
+	// Realm ids are stored offset by 100 in the user/group grant tables.
+	db_execute_prepared('INSERT IGNORE INTO user_auth_realm (user_id, realm_id)
+		SELECT user_id, ? FROM user_auth_realm WHERE realm_id = ?',
+		[$mgmt_realm + 100, $view_realm + 100]);
+
+	db_execute_prepared('INSERT IGNORE INTO user_auth_group_realm (group_id, realm_id)
+		SELECT group_id, ? FROM user_auth_group_realm WHERE realm_id = ?',
+		[$mgmt_realm + 100, $view_realm + 100]);
 }
 
 /**

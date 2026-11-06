@@ -311,6 +311,20 @@ if (!function_exists('cacti_sizeof')) {
 
 if (!function_exists('is_realm_allowed')) {
 	function is_realm_allowed($r) {
+		if (isset($GLOBALS['__test_is_realm_allowed']) && is_callable($GLOBALS['__test_is_realm_allowed'])) {
+			return ($GLOBALS['__test_is_realm_allowed'])($r);
+		}
+
+		return true;
+	}
+}
+
+if (!function_exists('api_user_realm_auth')) {
+	function api_user_realm_auth($f = '') {
+		if (isset($GLOBALS['__test_api_user_realm_auth']) && is_callable($GLOBALS['__test_api_user_realm_auth'])) {
+			return ($GLOBALS['__test_api_user_realm_auth'])($f);
+		}
+
 		return true;
 	}
 }

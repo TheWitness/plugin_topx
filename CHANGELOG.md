@@ -11,6 +11,10 @@ All notable changes to the TopX plugin are documented in this file.
   each template (in-use vs unused), and provides add/edit/delete plus XML
   **Import/Export** keyed on the portable Data Template hash, mirroring Cacti's
   own template import/export.
+- Upgrades now grant the new management realm to everyone who can already view
+  TopX (users and groups), and the upgrade runs from the `config_arrays` hook on
+  every page, so administrators upgrading in place no longer get a "401
+  Permission Denied" on the new management page.
 - Extended the `plugin_topx_source` schema with range semantics the original
   design lacked: `range_type` (increasing vs decreasing), optional
   `range_normal` / `range_warning` / `range_alert` health thresholds, and a

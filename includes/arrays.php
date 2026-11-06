@@ -74,6 +74,13 @@ function topx_filter_arrays(): array {
 function topx_config_arrays(): void {
 	global $topx_filter_arrays, $menu;
 
+	// Keep the plugin's schema/realm registration current on every page load
+	// (not just at install/enable time), so upgrades apply promptly. Guarded so
+	// the pure arrays can still be unit tested without loading setup.php.
+	if (function_exists('plugin_topx_upgrade')) {
+		plugin_topx_upgrade();
+	}
+
 	$topx_filter_arrays = topx_filter_arrays();
 
 	if (is_realm_allowed(1) || api_user_realm_auth('topx_sources.php')) {

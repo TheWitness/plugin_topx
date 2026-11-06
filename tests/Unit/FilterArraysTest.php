@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../bootstrap-unit.php';
 require_once dirname(__DIR__, 2) . '/includes/functions.php';
 require_once dirname(__DIR__, 2) . '/includes/arrays.php';
+require_once dirname(__DIR__, 2) . '/setup.php';
 
 describe('topx_filter_arrays', function (): void {
 	it('exposes the age, records, sort and what option sets', function (): void {
@@ -18,6 +19,10 @@ describe('topx_filter_arrays', function (): void {
 
 describe('topx_config_arrays', function (): void {
 	it('publishes the filter arrays as a global', function (): void {
+		// Keep the upgrade trigger a no-op off relevant pages so this unit test
+		// stays focused on the published arrays.
+		test_set_current_page('graph_view.php');
+
 		unset($GLOBALS['topx_filter_arrays']);
 
 		topx_config_arrays();

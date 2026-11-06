@@ -150,6 +150,105 @@ describe('topx_draw_navigation_text', function (): void {
 	});
 });
 
+describe('topx_show_tab', function (): void {
+	afterEach(function (): void {
+		unset($GLOBALS['__test_is_realm_allowed'], $GLOBALS['__test_api_user_realm_auth']);
+	});
+
+	it('renders the TopX console tab link', function (): void {
+		$_SERVER['PHP_SELF'] = '/plugins/topx/topx.php';
+
+		ob_start();
+		topx_show_tab();
+		$html = (string) ob_get_clean();
+
+		expect($html)->toContain('plugins/topx/topx.php');
+	});
+
+	it('renders nothing for a user without the realm', function (): void {
+		$GLOBALS['__test_is_realm_allowed']    = function ($r) { return false; };
+		$GLOBALS['__test_api_user_realm_auth'] = function ($f) { return false; };
+
+		ob_start();
+		topx_show_tab();
+		$html = (string) ob_get_clean();
+
+		expect($html)->toBe('');
+	});
+});
+
+describe('topx_reconcile_management_realm', function (): void {
+	afterEach(function (): void {
+		unset($GLOBALS['__test_db_fetch_cell']);
+
+		$GLOBALS['__test_db_calls']          = [];
+		$GLOBALS['__test_registered_realms'] = [];
+	});
+
+	it('registers the management realm when it is missing', function (): void {
+		$GLOBALS['__test_registered_realms'] = [];
+
+		// No management realm yet; the view realm exists.
+		$GLOBALS['__test_db_fetch_cell'] = function ($sql) {
+			if (strpos($sql, "file = 'topx.php'") !== false) {
+				return 3;
+			}
+
+			return '';
+		};
+
+		topx_reconcile_management_realm();
+
+		$files = array_column($GLOBALS['__test_registered_realms'], 'file');
+		expect($files)->toContain('topx_sources.php');
+	});
+
+	it('grants the management realm to existing view-realm holders', function (): void {
+		$GLOBALS['__test_db_calls'] = [];
+
+		$GLOBALS['__test_db_fetch_cell'] = function ($sql) {
+			if (strpos($sql, "file = 'topx_sources.php'") !== false) {
+				return 5;
+			}
+
+			if (strpos($sql, "file = 'topx.php'") !== false) {
+				return 3;
+			}
+
+			return '';
+		};
+
+		topx_reconcile_management_realm();
+
+		$grants = array_values(array_filter($GLOBALS['__test_db_calls'], function ($call) {
+			return $call['fn'] === 'db_execute_prepared' && strpos($call['sql'], 'INSERT IGNORE INTO user_auth_realm') !== false;
+		}));
+
+		expect($grants)->toHaveCount(1);
+		expect($grants[0]['params'])->toBe([105, 103]);
+	});
+
+	it('does nothing when the view realm is absent', function (): void {
+		$GLOBALS['__test_db_calls'] = [];
+
+		$GLOBALS['__test_db_fetch_cell'] = function ($sql) {
+			if (strpos($sql, "file = 'topx_sources.php'") !== false) {
+				return 5;
+			}
+
+			return '';
+		};
+
+		topx_reconcile_management_realm();
+
+		$grants = array_values(array_filter($GLOBALS['__test_db_calls'], function ($call) {
+			return $call['fn'] === 'db_execute_prepared' && strpos($call['sql'], 'user_auth_realm') !== false;
+		}));
+
+		expect($grants)->toBe([]);
+	});
+});
+
 describe('plugin_topx_uninstall', function (): void {
 	it('clears the version and drops both plugin tables', function (): void {
 		$GLOBALS['__test_db_calls']               = [];
