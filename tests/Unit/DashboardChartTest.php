@@ -36,16 +36,6 @@ describe('topx_drilldown_card_body chart', function (): void {
 				];
 			}
 
-			if (strpos($sql, 'data_local') !== false) {
-				return [
-					'host_description' => 'Router1',
-					'host_hostname'    => '10.0.0.1',
-					'host_id'          => 7,
-					'snmp_query_id'    => 0,
-					'snmp_index'       => '',
-				];
-			}
-
 			return false;
 		};
 
@@ -56,6 +46,13 @@ describe('topx_drilldown_card_body chart', function (): void {
 		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
 			if (strpos($sql, 'host_snmp_cache') !== false) {
 				return [];
+			}
+
+			if (strpos($sql, 'data_local') !== false) {
+				return [
+					['ldid' => 1, 'host_description' => 'Router1', 'host_hostname' => '10.0.0.1', 'host_id' => 7, 'snmp_query_id' => 0, 'snmp_index' => ''],
+					['ldid' => 2, 'host_description' => 'Router1', 'host_hostname' => '10.0.0.1', 'host_id' => 7, 'snmp_query_id' => 0, 'snmp_index' => ''],
+				];
 			}
 
 			return [

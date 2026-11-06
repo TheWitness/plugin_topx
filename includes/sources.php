@@ -162,11 +162,14 @@ function topx_apply_chart_label(string $pattern, array $tokens): string {
  * Classifies a value against a source's absolute health thresholds, returning
  * the band it falls in: 'alert', 'warning' or 'normal'. Respects range_type so
  * a decreasing source (lower is worse, e.g. free space) is compared with the
- * sense inverted. Returns '' when the source defines no thresholds, so callers
- * can fall back to a neutral colour. This is deliberately separate from the
- * dashboard's "% of peak" distribution, which is relative to the live peak of
- * the returned set; thresholds express an absolute, operator-defined health
- * band instead. Kept free of database access so it can be unit tested.
+ * sense inverted. The Normal threshold is the edge of the healthy band: for an
+ * increasing source a value above it (for a decreasing source, below it) is at
+ * least a warning, even when no Warning/Alert threshold is set. Returns '' when
+ * the source defines no thresholds, so callers can fall back to a neutral
+ * colour. This is deliberately separate from the dashboard's "% of peak"
+ * distribution, which is relative to the live peak of the returned set;
+ * thresholds express an absolute, operator-defined health band instead. Kept
+ * free of database access so it can be unit tested.
  *
  * @param float $value  The value to classify.
  * @param array $source A source row carrying range_type and range_* thresholds.
@@ -197,6 +200,11 @@ function topx_range_class(float $value, array $source): string {
 			return 'warning';
 		}
 
+		// Below the healthy floor (Normal) is at least a warning.
+		if ($has($normal) && $value < (float) $normal) {
+			return 'warning';
+		}
+
 		return 'normal';
 	}
 
@@ -205,6 +213,11 @@ function topx_range_class(float $value, array $source): string {
 	}
 
 	if ($has($warning) && $value >= (float) $warning) {
+		return 'warning';
+	}
+
+	// Above the healthy ceiling (Normal) is at least a warning.
+	if ($has($normal) && $value > (float) $normal) {
 		return 'warning';
 	}
 
@@ -375,14 +388,35 @@ function topx_get_source(int $id): array {
 /**
  * Writes a prepared source row to plugin_topx_source, inserting when id is 0
  * and updating otherwise. Uses Cacti's sql_save so the column/value mapping is
- * bound, never concatenated.
+ * bound, never concatenated. Cacti's sql_save() coerces an empty nullable
+ * numeric column to 0 rather than SQL NULL, so the optional range_* thresholds
+ * are restored to NULL afterwards; otherwise a blank threshold would read back
+ * as 0 and classify every non-negative value as alert.
  *
  * @param array $save A row produced by topx_source_prepare_save().
  *
  * @return int|false The affected row id, or false on failure.
  */
 function topx_source_save(array $save) {
-	return sql_save($save, 'plugin_topx_source');
+	$id = sql_save($save, 'plugin_topx_source');
+
+	if ($id) {
+		$nulls = [];
+
+		foreach (['range_normal', 'range_warning', 'range_alert'] as $column) {
+			$value = $save[$column] ?? null;
+
+			if ($value === null || $value === '') {
+				$nulls[] = "`$column` = NULL";
+			}
+		}
+
+		if (cacti_sizeof($nulls) > 0) {
+			db_execute_prepared('UPDATE plugin_topx_source SET ' . implode(', ', $nulls) . ' WHERE id = ?', array($id));
+		}
+	}
+
+	return $id;
 }
 
 /**
@@ -552,6 +586,42 @@ function topx_default_operation(string $hash): string {
 }
 
 /**
+ * Whether a Metric Expression is one the ranking engine can actually execute,
+ * so the editor and importer can reject gibberish that would otherwise save but
+ * return no ranked rows. The executable shapes are: a single field ("field",
+ * "field=field", "field/N" or "field=field/N"), a two-field sum ("A+B") and a
+ * two-field percentage ("A%B"). Kept free of database access so it can be unit
+ * tested directly.
+ *
+ * @param string $operation The Metric Expression.
+ *
+ * @return bool True when the engine can execute the expression.
+ */
+function topx_operation_is_executable(string $operation): bool {
+	$operation = trim($operation);
+
+	if ($operation === '') {
+		return false;
+	}
+
+	$field = '[A-Za-z0-9_]+';
+
+	$patterns = array(
+		"~^{$field}(={$field})?(/[0-9]*\.?[0-9]+)?$~",
+		"~^{$field}\+{$field}$~",
+		"~^{$field}%{$field}$~",
+	);
+
+	foreach ($patterns as $pattern) {
+		if (preg_match($pattern, $operation)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Validates a definition's range thresholds against its direction and returns a
  * human readable error (empty string when valid). For an increasing range the
  * set thresholds must ascend Normal < Warning < Alert; for a decreasing range
@@ -599,46 +669,95 @@ function topx_range_validation_error(array $save): string {
 }
 
 /**
+ * Resolves the chart-label substitution tokens for a set of ranked data source
+ * instances in bulk, in two queries regardless of how many rows are supplied
+ * (instead of a query per row). Returns host-level tokens (host_description,
+ * host_hostname, host_id) plus one query_<field> token per SNMP data-query
+ * field cached for each instance. Thin database wrapper.
+ *
+ * @param array $local_data_ids The Cacti local data source ids of the rows.
+ *
+ * @return array<int,array<string,string>> Token map keyed by local_data_id.
+ */
+function topx_chart_label_tokens_bulk(array $local_data_ids): array {
+	$ids = array_values(array_unique(array_filter(array_map('intval', $local_data_ids))));
+
+	if (cacti_sizeof($ids) === 0) {
+		return [];
+	}
+
+	$placeholders = implode(', ', array_fill(0, cacti_sizeof($ids), '?'));
+
+	$meta = db_fetch_assoc_prepared("SELECT dl.id AS ldid, h.description AS host_description,
+		h.hostname AS host_hostname, h.id AS host_id, dl.snmp_query_id, dl.snmp_index
+		FROM data_local AS dl
+		LEFT JOIN host AS h ON dl.host_id = h.id
+		WHERE dl.id IN ($placeholders)",
+		$ids);
+
+	$tokens      = [];
+	$query_ldids = [];
+	$tuples      = [];
+
+	foreach ($meta as $row) {
+		$ldid = (int) $row['ldid'];
+
+		$tokens[$ldid] = [
+			'host_description' => (string) ($row['host_description'] ?? ''),
+			'host_hostname'    => (string) ($row['host_hostname'] ?? ''),
+			'host_id'          => (string) ($row['host_id'] ?? ''),
+		];
+
+		if (!empty($row['snmp_query_id']) && isset($row['snmp_index']) && $row['snmp_index'] !== '') {
+			$key = $row['host_id'] . '|' . $row['snmp_query_id'] . '|' . $row['snmp_index'];
+
+			if (!isset($tuples[$key])) {
+				$tuples[$key] = [$row['host_id'], $row['snmp_query_id'], $row['snmp_index']];
+			}
+
+			$query_ldids[$key][] = $ldid;
+		}
+	}
+
+	if (cacti_sizeof($tuples) > 0) {
+		$row_values = implode(', ', array_fill(0, cacti_sizeof($tuples), '(?, ?, ?)'));
+		$params     = [];
+
+		foreach ($tuples as $tuple) {
+			$params[] = $tuple[0];
+			$params[] = $tuple[1];
+			$params[] = $tuple[2];
+		}
+
+		$fields = db_fetch_assoc_prepared("SELECT host_id, snmp_query_id, snmp_index, field_name, field_value
+			FROM host_snmp_cache
+			WHERE (host_id, snmp_query_id, snmp_index) IN ($row_values)",
+			$params);
+
+		foreach ($fields as $field) {
+			$key = $field['host_id'] . '|' . $field['snmp_query_id'] . '|' . $field['snmp_index'];
+
+			foreach (($query_ldids[$key] ?? []) as $ldid) {
+				$tokens[$ldid]['query_' . $field['field_name']] = (string) $field['field_value'];
+			}
+		}
+	}
+
+	return $tokens;
+}
+
+/**
  * Resolves the chart-label substitution tokens for a single ranked data source
- * instance. Returns host-level tokens (host_description, host_hostname,
- * host_id) plus one query_<field> token per SNMP data-query field cached for
- * the instance, so patterns can name the chart by interface, storage volume,
- * CPU index, etc. Thin database wrapper around topx_apply_chart_label().
+ * instance. Thin wrapper around topx_chart_label_tokens_bulk().
  *
  * @param int $local_data_id The Cacti local data source id of the ranked row.
  *
  * @return array<string,string> The token map for topx_apply_chart_label().
  */
 function topx_chart_label_tokens(int $local_data_id): array {
-	$tokens = [];
+	$map = topx_chart_label_tokens_bulk(array($local_data_id));
 
-	$meta = db_fetch_row_prepared('SELECT h.description AS host_description,
-		h.hostname AS host_hostname, h.id AS host_id, dl.snmp_query_id, dl.snmp_index
-		FROM data_local AS dl
-		LEFT JOIN host AS h ON dl.host_id = h.id
-		WHERE dl.id = ?',
-		array($local_data_id));
-
-	if (!is_array($meta)) {
-		return $tokens;
-	}
-
-	$tokens['host_description'] = (string) ($meta['host_description'] ?? '');
-	$tokens['host_hostname']    = (string) ($meta['host_hostname'] ?? '');
-	$tokens['host_id']          = (string) ($meta['host_id'] ?? '');
-
-	if (!empty($meta['snmp_query_id']) && isset($meta['snmp_index']) && $meta['snmp_index'] !== '') {
-		$fields = db_fetch_assoc_prepared('SELECT field_name, field_value
-			FROM host_snmp_cache
-			WHERE host_id = ? AND snmp_query_id = ? AND snmp_index = ?',
-			array($meta['host_id'], $meta['snmp_query_id'], $meta['snmp_index']));
-
-		foreach ($fields as $field) {
-			$tokens['query_' . $field['field_name']] = (string) $field['field_value'];
-		}
-	}
-
-	return $tokens;
+	return $map[$local_data_id] ?? [];
 }
 
 /**

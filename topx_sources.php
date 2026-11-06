@@ -40,10 +40,18 @@ set_default_action();
 
 switch (get_request_var('action')) {
 	case 'save':
-		topx_sources_form_save();
+		topx_sources_require_post();
+
+		if (isset_request_var('save_component_import')) {
+			topx_sources_import_save();
+		} else {
+			topx_sources_form_save();
+		}
 
 		break;
 	case 'actions':
+		topx_sources_require_post();
+
 		topx_sources_form_actions();
 
 		break;
@@ -66,11 +74,9 @@ switch (get_request_var('action')) {
 
 		break;
 	case 'import_save':
-		top_header();
+		topx_sources_require_post();
 
 		topx_sources_import_save();
-
-		bottom_footer();
 
 		break;
 	case 'edit':
@@ -89,6 +95,24 @@ switch (get_request_var('action')) {
 		bottom_footer();
 
 		break;
+}
+
+/**
+ * Rejects a state-changing request that did not arrive as a POST. Cacti's
+ * csrf-magic validates the token on every POST before dispatch, so requiring
+ * POST ensures these mutating handlers cannot be driven by a crafted GET link.
+ *
+ * @return void
+ */
+function topx_sources_require_post(): void {
+	if (function_exists('csrf_require_post')) {
+		csrf_require_post();
+	} elseif (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+		header('Allow: POST');
+		http_response_code(405);
+
+		exit;
+	}
 }
 
 /**
@@ -150,6 +174,20 @@ function topx_sources_form_save(): void {
 	// having to discover the requirement.
 	if ($save['operation'] === '') {
 		$save['operation'] = topx_default_operation($hash);
+	}
+
+	// Reject an expression the ranking engine cannot execute, rather than saving
+	// a definition that would silently return no ranked rows.
+	if (!topx_operation_is_executable($save['operation'])) {
+		raise_message('topx_operation', __('The Metric Expression is not valid. Use a single field ("field=field"), a sum ("A+B"), a percentage ("A%B"), or append "/N" to scale a single field.', 'topx'), MESSAGE_LEVEL_ERROR);
+
+		if ((int) $save['id'] > 0) {
+			header('Location: topx_sources.php?action=edit&id=' . (int) $save['id']);
+		} else {
+			header('Location: topx_sources.php?action=edit&hash=' . $hash);
+		}
+
+		return;
 	}
 
 	$range_error = topx_range_validation_error($save);
@@ -257,7 +295,11 @@ function topx_sources_form_actions(): void {
 
 	html_end_box();
 
-	form_end();
+	// Export streams a file attachment, so its confirmation must submit as a
+	// normal POST (the browser downloads the response) rather than Cacti's
+	// default AJAX submit, which would consume the XML as an XHR response.
+	// Delete keeps the AJAX submit.
+	form_end(get_nfilter_request_var('drp_action') != '2');
 
 	bottom_footer();
 }
@@ -313,6 +355,10 @@ function topx_sources_import(): void {
 			'method'        => 'file',
 			'friendly_name' => __('Import File', 'topx'),
 			'description'   => __('A TopX Data Source XML export file to import.', 'topx'),
+		],
+		'save_component_import' => [
+			'method' => 'hidden',
+			'value'  => '1',
 		],
 	];
 
@@ -892,7 +938,7 @@ function topx_sources(): void {
 
 	$list = db_fetch_assoc_prepared("SELECT * FROM ($base) AS rs $sql_where $sql_order $sql_limit", $sql_params);
 
-	$nav = html_nav_bar('topx_sources.php?filter=' . get_request_var('filter'), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, 8, __('Data Sources', 'topx'), 'page', 'main');
+	$nav = html_nav_bar('topx_sources.php?filter=' . urlencode(get_request_var('filter')), MAX_DISPLAY_PAGES, get_request_var('page'), $rows, $total_rows, 8, __('Data Sources', 'topx'), 'page', 'main');
 
 	form_start('topx_sources.php', 'chk');
 
@@ -1060,7 +1106,7 @@ function topx_sources_filter(): void {
 			<script type='text/javascript' <?php print plugin_topx_csp_nonce(); ?>>
 				function applyFilter() {
 					strURL  = 'topx_sources.php?header=false';
-					strURL += '&filter='+$('#filter').val();
+					strURL += '&filter='+encodeURIComponent($('#filter').val());
 					strURL += '&supported='+$('#supported').val();
 					strURL += '&has_data='+$('#has_data').is(':checked');
 					strURL += '&rows='+$('#rows').val();

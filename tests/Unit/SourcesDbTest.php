@@ -174,6 +174,127 @@ describe('topx_source_save', function (): void {
 
 		expect(topx_source_save(['id' => 0, 'hash' => 'x']))->toBe(42);
 		expect($captured)->toBe('plugin_topx_source');
+
+		unset($GLOBALS['__test_sql_save']);
+	});
+
+	it('restores blank range thresholds to NULL after sql_save', function (): void {
+		$captured = null;
+
+		$GLOBALS['__test_sql_save'] = function ($a, $t, $k) {
+			return 42;
+		};
+
+		$GLOBALS['__test_db_execute_prepared'] = function ($sql, $p) use (&$captured) {
+			$captured = ['sql' => $sql, 'params' => $p];
+
+			return true;
+		};
+
+		topx_source_save([
+			'id'            => 0,
+			'hash'          => 'x',
+			'range_normal'  => '',
+			'range_warning' => 50,
+			'range_alert'   => '',
+		]);
+
+		// Only the blank columns are NULLed, scoped to the saved id.
+		expect($captured['sql'])->toContain('`range_normal` = NULL');
+		expect($captured['sql'])->toContain('`range_alert` = NULL');
+		expect($captured['sql'])->not->toContain('range_warning');
+		expect($captured['params'])->toBe([42]);
+
+		unset($GLOBALS['__test_sql_save'], $GLOBALS['__test_db_execute_prepared']);
+	});
+
+	it('does not issue a NULL-restore update when all thresholds are set', function (): void {
+		$called = false;
+
+		$GLOBALS['__test_sql_save'] = function ($a, $t, $k) {
+			return 42;
+		};
+
+		$GLOBALS['__test_db_execute_prepared'] = function ($sql, $p) use (&$called) {
+			$called = true;
+
+			return true;
+		};
+
+		topx_source_save([
+			'id'            => 0,
+			'hash'          => 'x',
+			'range_normal'  => 25,
+			'range_warning' => 50,
+			'range_alert'   => 90,
+		]);
+
+		expect($called)->toBeFalse();
+
+		unset($GLOBALS['__test_sql_save'], $GLOBALS['__test_db_execute_prepared']);
+	});
+});
+
+describe('topx_operation_is_executable', function (): void {
+	it('accepts the executable single-field shapes', function (): void {
+		expect(topx_operation_is_executable('cpu'))->toBeTrue();
+		expect(topx_operation_is_executable('cpu=cpu'))->toBeTrue();
+		expect(topx_operation_is_executable('uptime/8640000'))->toBeTrue();
+		expect(topx_operation_is_executable('uptime=uptime/8640000'))->toBeTrue();
+	});
+
+	it('accepts the two-field sum and percentage shapes', function (): void {
+		expect(topx_operation_is_executable('reads+writes'))->toBeTrue();
+		expect(topx_operation_is_executable('used%total'))->toBeTrue();
+	});
+
+	it('rejects empty or unparseable expressions', function (): void {
+		expect(topx_operation_is_executable(''))->toBeFalse();
+		expect(topx_operation_is_executable('   '))->toBeFalse();
+		expect(topx_operation_is_executable('a+b+c'))->toBeFalse();
+		expect(topx_operation_is_executable('a-b'))->toBeFalse();
+		expect(topx_operation_is_executable('not an expression'))->toBeFalse();
+	});
+});
+
+describe('topx_chart_label_tokens_bulk', function (): void {
+	it('returns an empty map for no ids without querying', function (): void {
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			throw new RuntimeException('should not query');
+		};
+
+		expect(topx_chart_label_tokens_bulk([]))->toBe([]);
+
+		unset($GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
+
+	it('resolves host and data-query tokens for many ids in two queries', function (): void {
+		$queries = 0;
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) use (&$queries) {
+			$queries++;
+
+			if (strpos($sql, 'data_local') !== false) {
+				return [
+					['ldid' => 1, 'host_description' => 'R1', 'host_hostname' => '10.0.0.1', 'host_id' => 7, 'snmp_query_id' => 5, 'snmp_index' => '2'],
+					['ldid' => 2, 'host_description' => 'R2', 'host_hostname' => '10.0.0.2', 'host_id' => 8, 'snmp_query_id' => 0, 'snmp_index' => ''],
+				];
+			}
+
+			return [
+				['host_id' => 7, 'snmp_query_id' => 5, 'snmp_index' => '2', 'field_name' => 'ifName', 'field_value' => 'eth0'],
+			];
+		};
+
+		$map = topx_chart_label_tokens_bulk([1, 2, 1]);
+
+		expect($queries)->toBe(2);
+		expect($map[1]['host_description'])->toBe('R1');
+		expect($map[1]['query_ifName'])->toBe('eth0');
+		expect($map[2]['host_description'])->toBe('R2');
+		expect($map[2])->not->toHaveKey('query_ifName');
+
+		unset($GLOBALS['__test_db_fetch_assoc_prepared']);
 	});
 });
 
@@ -219,22 +340,29 @@ describe('topx_source_template_choices', function (): void {
 
 describe('topx_chart_label_tokens', function (): void {
 	it('returns an empty map when the data source is unknown', function (): void {
-		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
-			return false;
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [];
 		};
 
 		expect(topx_chart_label_tokens(1))->toBe([]);
 	});
 
 	it('returns host tokens without query fields when there is no data query', function (): void {
-		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
-			return [
-				'host_description' => 'Router1',
-				'host_hostname'    => '10.0.0.1',
-				'host_id'          => 7,
-				'snmp_query_id'    => 0,
-				'snmp_index'       => '',
-			];
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			if (strpos($sql, 'data_local') !== false) {
+				return [
+					[
+						'ldid'             => 1,
+						'host_description' => 'Router1',
+						'host_hostname'    => '10.0.0.1',
+						'host_id'          => 7,
+						'snmp_query_id'    => 0,
+						'snmp_index'       => '',
+					],
+				];
+			}
+
+			return [];
 		};
 
 		$tokens = topx_chart_label_tokens(1);
@@ -246,19 +374,22 @@ describe('topx_chart_label_tokens', function (): void {
 	});
 
 	it('adds a query_<field> token per cached data-query field', function (): void {
-		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
-			return [
-				'host_description' => 'Router1',
-				'host_hostname'    => '10.0.0.1',
-				'host_id'          => 7,
-				'snmp_query_id'    => 5,
-				'snmp_index'       => '2',
-			];
-		};
-
 		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			if (strpos($sql, 'data_local') !== false) {
+				return [
+					[
+						'ldid'             => 1,
+						'host_description' => 'Router1',
+						'host_hostname'    => '10.0.0.1',
+						'host_id'          => 7,
+						'snmp_query_id'    => 5,
+						'snmp_index'       => '2',
+					],
+				];
+			}
+
 			return [
-				['field_name' => 'ifName', 'field_value' => 'eth0'],
+				['host_id' => 7, 'snmp_query_id' => 5, 'snmp_index' => '2', 'field_name' => 'ifName', 'field_value' => 'eth0'],
 			];
 		};
 

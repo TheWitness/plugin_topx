@@ -24,6 +24,24 @@ describe('topx_range_class', function (): void {
 		expect(topx_range_class(50.0, $source))->toBe('normal');
 	});
 
+	it('treats Normal as a boundary for an increasing source', function (): void {
+		// Above the Normal ceiling but below Warning is still a warning band.
+		$source = ['range_type' => 0, 'range_normal' => 50, 'range_warning' => 75, 'range_alert' => 90];
+
+		expect(topx_range_class(60.0, $source))->toBe('warning');
+		expect(topx_range_class(50.0, $source))->toBe('normal');
+		expect(topx_range_class(40.0, $source))->toBe('normal');
+	});
+
+	it('treats Normal as a boundary for a decreasing source', function (): void {
+		// Below the Normal floor but above Warning is still a warning band.
+		$source = ['range_type' => 1, 'range_normal' => 50, 'range_warning' => 25, 'range_alert' => 10];
+
+		expect(topx_range_class(40.0, $source))->toBe('warning');
+		expect(topx_range_class(50.0, $source))->toBe('normal');
+		expect(topx_range_class(60.0, $source))->toBe('normal');
+	});
+
 	it('ignores blank thresholds', function (): void {
 		$source = ['range_type' => 0, 'range_warning' => '', 'range_alert' => 90];
 

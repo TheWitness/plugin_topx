@@ -859,11 +859,16 @@ function topx_dashboard_resolve_ds(): ?array {
 
 /**
  * The persisted drilldown filter (records, sort, what), validated and stored in
- * the session. A validated request value wins and is remembered.
+ * the session. A validated request value wins and is remembered. When no sort
+ * has been chosen yet, the source's own Default Sort is used so a decreasing
+ * source opens lowest-first rather than always defaulting to descending.
+ *
+ * @param string $default_sort The source's Default Sort ('asc' or 'desc') used
+ *                             when the session has no stored sort yet.
  *
  * @return array{records: int, sort: string, what: string}
  */
-function topx_dashboard_drill_filter(): array {
+function topx_dashboard_drill_filter(string $default_sort = 'desc'): array {
 	$filters = topx_filter_arrays();
 
 	if (isset_request_var('records') && array_key_exists(get_nfilter_request_var('records'), $filters['records'])) {
@@ -879,7 +884,7 @@ function topx_dashboard_drill_filter(): array {
 	}
 
 	if (!isset($_SESSION['sess_topx_sort'])) {
-		$_SESSION['sess_topx_sort'] = 'desc';
+		$_SESSION['sess_topx_sort'] = ($default_sort === 'asc') ? 'asc' : 'desc';
 	}
 
 	if (isset_request_var('what') && array_key_exists(get_nfilter_request_var('what'), $filters['what'])) {
@@ -984,7 +989,7 @@ function topx_drilldown_format(float $value, array $source, bool $supported): st
 function topx_drilldown_card_body(string $key, array $ds): string {
 	global $config;
 
-	$filter  = topx_dashboard_drill_filter();
+	$filter  = topx_dashboard_drill_filter((string) ($ds['entry']['sorting'] ?? 'desc'));
 	$payload = topx_drilldown_payload($ds, $filter);
 	$source  = $payload['source'];
 	$rows    = $payload['rows'];
@@ -1037,13 +1042,24 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 
 			$pattern = ($ds['supported'] && isset($source['chart_label'])) ? (string) $source['chart_label'] : '';
 
+			// Resolve all chart-label tokens in bulk (two queries) rather than
+			// one query per bar, so an All-records ranking with many rows does
+			// not fan out into thousands of per-row lookups.
+			$token_map = [];
+
+			if ($pattern !== '') {
+				$token_map = topx_chart_label_tokens_bulk(array_map(static function ($row) {
+					return isset($row['ldid']) ? (int) $row['ldid'] : 0;
+				}, $rows));
+			}
+
 			foreach ($rows as $row) {
 				$value = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
 				$peak  = is_null($row['xpeak']) ? 0 : (float) $row['xpeak'];
 				$label = '';
 
 				if ($pattern !== '' && isset($row['ldid'])) {
-					$label = topx_apply_chart_label($pattern, topx_chart_label_tokens((int) $row['ldid']));
+					$label = topx_apply_chart_label($pattern, $token_map[(int) $row['ldid']] ?? []);
 				}
 
 				if ($label === '') {
@@ -1255,7 +1271,12 @@ function topx_drilldown_dashboard(): void {
 		return;
 	}
 
-	$filter  = topx_dashboard_drill_filter();
+	// View glue: the source's Default Sort seeds the session sort on first open.
+	// topx_drilldown_dashboard() cannot be unit-tested (it includes Cacti's
+	// timespan library); topx_dashboard_drill_filter() is covered directly.
+	// @codeCoverageIgnoreStart
+	$filter  = topx_dashboard_drill_filter((string) ($ds['entry']['sorting'] ?? 'desc'));
+	// @codeCoverageIgnoreEnd
 	$filters = topx_filter_arrays();
 	$list    = topx_get_ds_list();
 

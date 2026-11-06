@@ -216,6 +216,7 @@ function topx_build_ds_list(array $supported, array $unsupported): array {
 			'count'       => $ds['dscount'],
 			'supported'   => $ds['sup'],
 			'template_id' => isset($ds['tplid']) ? (int) $ds['tplid'] : (int) $ds['dsid'],
+			'sorting'     => isset($ds['sorting']) && $ds['sorting'] === 'asc' ? 'asc' : 'desc',
 		];
 	}
 
@@ -234,11 +235,11 @@ function topx_get_ds_list(): array {
 	// (local_data_id > 0); the data_template_data row with local_data_id = 0 is
 	// the template master itself, so a template that is defined but not used on
 	// any device is excluded rather than shown with a misleading count.
-	$supported = db_fetch_assoc("SELECT t3.dt_name AS dsname, t3.id AS dsid, t1.id AS tplid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'true' AS sup
+	$supported = db_fetch_assoc("SELECT t3.dt_name AS dsname, t3.id AS dsid, t1.id AS tplid, t3.sorting AS sorting, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'true' AS sup
 		FROM data_template AS t1
 		INNER JOIN data_template_data AS dtd ON t1.id = dtd.data_template_id AND dtd.local_data_id > 0
 		INNER JOIN plugin_topx_source AS t3 ON t1.hash = t3.hash
-		GROUP BY t3.id, t3.dt_name, t1.id
+		GROUP BY t3.id, t3.dt_name, t1.id, t3.sorting
 		ORDER BY dsname");
 
 	$unsupported = db_fetch_assoc("SELECT CONCAT('unsupported - ', t1.name) AS dsname, t1.id AS dsid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'false' AS sup
@@ -289,6 +290,29 @@ function topx_combined_sum_average(string $table, int $id, string $base_rrd, str
 		LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
 		WHERE t1.data_template_id = ? AND rrd_name = ?",
 		array($base_rrd, $id, $where_rrd));
+
+	return topx_average_rows($rows);
+}
+
+/**
+ * Computes the mean of the two-field sum (A+B) across the instances of a data
+ * template, for the generic "A+B" ranking expression. The field names are bound,
+ * never concatenated.
+ *
+ * @param string $table   Whitelisted dsstats table name.
+ * @param int    $id      The data template id to aggregate.
+ * @param string $field_a The first rrd_name (the outer WHERE filter).
+ * @param string $field_b The second rrd_name (the correlated sub-select).
+ *
+ * @return float The mean of (A+B) across the matching data sources.
+ */
+function topx_combined_sum_mean(string $table, int $id, string $field_a, string $field_b): float {
+	$rows = db_fetch_assoc_prepared("SELECT t2.local_data_id AS ldid,
+		(average + (SELECT average FROM $table WHERE local_data_id = t2.local_data_id AND rrd_name = ?)) AS xvalue
+		FROM data_template_data AS t1
+		LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
+		WHERE t1.data_template_id = ? AND rrd_name = ?",
+		array($field_b, $id, $field_a));
 
 	return topx_average_rows($rows);
 }
@@ -547,19 +571,23 @@ function topx_compute_ranking(int $ds_key, bool $supported, string $table, strin
 		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average / ? AS xvalue, t2.peak / ? AS xpeak
 			$from ORDER BY t2.$order $dir$limit_clause", array($divisor, $divisor, $id));
 	} elseif (strpos($operation, '%') !== false) {
+		// Percentage "A%B": rank each instance by 100 * B / A. The field names
+		// come from the saved expression, so they are bound, never concatenated.
+		list($denom_rrd, $numer_rrd) = array_pad(explode('%', $operation, 2), 2, '');
+
 		$columns = "name_cache AS name, t2.local_data_id AS ldid,
-			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xvalue,
-			100 * peak / (SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xpeak";
+			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = ?) AS xvalue,
+			100 * peak / (SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name = ?) AS xpeak";
 
 		$from = " FROM data_template_data AS t1
 			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
-			WHERE t1.data_template_id = ? AND rrd_name = 'hdd_used'";
+			WHERE t1.data_template_id = ? AND rrd_name = ?";
 
-		$result = db_fetch_assoc_prepared("SELECT $columns $from ORDER BY $computed_order $dir$limit_clause", array($id));
+		$result = db_fetch_assoc_prepared("SELECT $columns $from ORDER BY $computed_order $dir$limit_clause", array($denom_rrd, $denom_rrd, $id, $numer_rrd));
 
 		$xavg = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid,
-			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xvalue
-			$from", array($id));
+			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = ?) AS xvalue
+			$from", array($denom_rrd, $id, $numer_rrd));
 
 		$avg = topx_average_rows($xavg);
 	} elseif ($operation === 'discards_in+errors_in') {
@@ -571,6 +599,14 @@ function topx_compute_ranking(int $ds_key, bool $supported, string $table, strin
 	} elseif ($operation === 'traffic_in+traffic_out') {
 		$avg    = 8 * topx_combined_sum_average($table, $id, 'traffic_in', 'traffic_out');
 		$result = topx_combined_result($table, $id, 'traffic_in', 'traffic_out', 8, $computed_order, $dir, $limit_clause);
+	} elseif (strpos($operation, '+') !== false) {
+		// Generic two-field sum "A+B": rank by A+B and average the sums across
+		// the instances. Field names come from the saved expression and are
+		// bound inside the helpers, never concatenated.
+		list($field_a, $field_b) = array_pad(explode('+', $operation, 2), 2, '');
+
+		$avg    = topx_combined_sum_mean($table, $id, $field_a, $field_b);
+		$result = topx_combined_result($table, $id, $field_a, $field_b, 1, $computed_order, $dir, $limit_clause);
 	}
 
 	return ['source' => $source, 'rows' => $result, 'avg' => (float) $avg];

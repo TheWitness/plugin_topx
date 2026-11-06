@@ -81,6 +81,17 @@ All notable changes to the TopX plugin are documented in this file.
 - The "Values by % of Peak" distribution remains computed relative to the live
   peak of the returned set; absolute thresholds are a separate, operator-defined
   health signal.
+- Review hardening: the management page requires POST (CSRF) for all save,
+  bulk-action and import operations; the **Normal** threshold is treated as a
+  real health boundary (a value past Normal but short of Warning now reads as a
+  warning band in both directions); chart-label tokens for a ranked set are
+  resolved in two bulk queries instead of one query per row; generic two-field
+  **A+B** sum and **A%B** percentage Metric Expressions are now executed (and the
+  editor/importer reject expressions the engine cannot run); blank range
+  thresholds are stored as SQL `NULL` rather than `0`; the bulk **Import** posts
+  through the save dispatcher; the **Export** confirmation downloads as a normal
+  POST; the dashboard seeds its sort from the source's **Default Sort**; and the
+  grid's search filter is URL-encoded in paging links and AJAX reloads.
 
 ## 1.1
 
