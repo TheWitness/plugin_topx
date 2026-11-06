@@ -177,12 +177,19 @@ describe('topx_show_tab', function (): void {
 	});
 });
 
-describe('topx_reconcile_management_realm', function (): void {
+describe('topx_upgrade_management_realm', function (): void {
 	afterEach(function (): void {
 		unset($GLOBALS['__test_db_fetch_cell']);
 
 		$GLOBALS['__test_db_calls']          = [];
 		$GLOBALS['__test_registered_realms'] = [];
+	});
+
+	it('is named so Cacti api_plugin_valid_entrypoint permits realm registration', function (): void {
+		// Cacti only allows api_plugin_register_realm() when the directly-calling
+		// function name matches this regex; renaming the function would make the
+		// realm registration silently fail (the cause of the upgrade 401).
+		expect(preg_match('/(install|upgrade|setup)/i', 'topx_upgrade_management_realm'))->toBe(1);
 	});
 
 	it('registers the management realm when it is missing', function (): void {
@@ -197,7 +204,7 @@ describe('topx_reconcile_management_realm', function (): void {
 			return '';
 		};
 
-		topx_reconcile_management_realm();
+		topx_upgrade_management_realm();
 
 		$files = array_column($GLOBALS['__test_registered_realms'], 'file');
 		expect($files)->toContain('topx_sources.php');
@@ -218,7 +225,7 @@ describe('topx_reconcile_management_realm', function (): void {
 			return '';
 		};
 
-		topx_reconcile_management_realm();
+		topx_upgrade_management_realm();
 
 		$grants = array_values(array_filter($GLOBALS['__test_db_calls'], function ($call) {
 			return $call['fn'] === 'db_execute_prepared' && strpos($call['sql'], 'INSERT IGNORE INTO user_auth_realm') !== false;
@@ -239,7 +246,7 @@ describe('topx_reconcile_management_realm', function (): void {
 			return '';
 		};
 
-		topx_reconcile_management_realm();
+		topx_upgrade_management_realm();
 
 		$grants = array_values(array_filter($GLOBALS['__test_db_calls'], function ($call) {
 			return $call['fn'] === 'db_execute_prepared' && strpos($call['sql'], 'user_auth_realm') !== false;

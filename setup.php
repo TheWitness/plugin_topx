@@ -244,7 +244,7 @@ function plugin_topx_upgrade() {
 	// view TopX can also manage its Data Sources. Without this, administrators
 	// upgrading from a version before the management UI existed cannot reach the
 	// new page until someone grants the realm by hand.
-	topx_reconcile_management_realm();
+	topx_upgrade_management_realm();
 
 	return false;
 }
@@ -258,9 +258,14 @@ function plugin_topx_upgrade() {
  * grant and is idempotent (INSERT IGNORE), so it is safe to run on every
  * relevant page load. Called from plugin_topx_upgrade().
  *
+ * The 'upgrade' in the name is required: Cacti's api_plugin_valid_entrypoint()
+ * only permits api_plugin_register_realm() when the directly-calling function's
+ * name matches /(install|upgrade|setup)/i, so renaming this function would make
+ * the realm registration silently fail.
+ *
  * @return void
  */
-function topx_reconcile_management_realm(): void {
+function topx_upgrade_management_realm(): void {
 	$mgmt_realm = db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx_sources.php'");
 
 	if (empty($mgmt_realm)) {
