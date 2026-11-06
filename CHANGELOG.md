@@ -26,6 +26,9 @@ All notable changes to the TopX plugin are documented in this file.
   TopX (users and groups), and the upgrade runs from the `config_arrays` hook on
   every page, so administrators upgrading in place no longer get a "401
   Permission Denied" on the new management page.
+- The `plugin_topx_source` table gains an `id` primary key (added automatically
+  on upgrade, backfilled on legacy tables that never had one), which the
+  management grid and import/export use to address individual definitions.
 - Extended the `plugin_topx_source` schema with range semantics the original
   design lacked: `range_type` (increasing vs decreasing), optional
   `range_normal` / `range_warning` / `range_alert` health thresholds, and a

@@ -55,6 +55,7 @@ function plugin_topx_install(): void {
 function topx_setup_database(): void {
 	$data = [
 		'columns' => [
+			['name' => 'id',              'type' => 'int(11)', 'unsigned' => true, 'auto_increment' => true, 'NULL' => false],
 			['name' => 'sorting',         'type' => "enum('asc','desc')", 'default' => 'asc',   'NULL' => false],
 			['name' => 'dt_name',         'type' => 'varchar(200)',       'default' => '',      'NULL' => false],
 			['name' => 'hash',            'type' => 'varchar(32)',        'default' => '',      'NULL' => false],
@@ -70,11 +71,21 @@ function topx_setup_database(): void {
 			['name' => 'range_alert',     'type' => 'double',             'default' => null,    'NULL' => true],
 			['name' => 'chart_label',     'type' => 'varchar(128)',       'default' => '',      'NULL' => false],
 		],
+		'primary' => 'id',
 		'type'    => 'InnoDB',
 		'comment' => 'sources',
 	];
 
 	api_plugin_db_table_create('topx', 'plugin_topx_source', $data);
+
+	// Backfill the surrogate key on installs created before the management UI,
+	// whose plugin_topx_source table had no 'id' column. db_update_table (via the
+	// table-create call above) adds it from the definition, but add it explicitly
+	// too so the primary key is guaranteed even if a server rejects the combined
+	// alter, since the whole management interface keys rows by id.
+	if (!db_column_exists('plugin_topx_source', 'id')) {
+		db_execute('ALTER TABLE plugin_topx_source ADD COLUMN id int(11) unsigned NOT NULL auto_increment PRIMARY KEY FIRST');
+	}
 
 	// Add the range/label columns on installs that predate them. Each call is a
 	// safe no-op when the column already exists, so this runs unconditionally

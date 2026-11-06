@@ -41,6 +41,39 @@ describe('plugin_topx_install', function (): void {
 		expect($tables)->toContain('plugin_topx_source');
 		expect($tables)->toContain('plugin_topx_average');
 	});
+
+	it('defines plugin_topx_source with an id primary key', function (): void {
+		plugin_topx_install();
+
+		$create = null;
+
+		foreach ($GLOBALS['__test_db_calls'] as $call) {
+			if (($call['fn'] ?? '') === 'api_plugin_db_table_create' && ($call['table'] ?? '') === 'plugin_topx_source') {
+				$create = $call['data'];
+			}
+		}
+
+		expect($create)->not->toBeNull();
+		expect($create['primary'])->toBe('id');
+
+		$names = array_column($create['columns'], 'name');
+		expect($names)->toContain('id');
+	});
+
+	it('backfills the id column when a legacy table lacks it', function (): void {
+		$GLOBALS['__test_db_calls'] = [];
+
+		// bootstrap db_column_exists() returns false, i.e. a pre-UI table.
+		plugin_topx_install();
+
+		$alters = array_values(array_filter($GLOBALS['__test_db_calls'], function ($call) {
+			return ($call['fn'] ?? '') === 'db_execute'
+				&& strpos($call['sql'] ?? '', 'ADD COLUMN id') !== false
+				&& strpos($call['sql'] ?? '', 'auto_increment') !== false;
+		}));
+
+		expect($alters)->toHaveCount(1);
+	});
 });
 
 describe('topx_seed_sources', function (): void {
