@@ -53,6 +53,13 @@ function plugin_topx_install(): void {
  * @return void
  */
 function topx_setup_database(): void {
+	// Capture, before the schema refresh, whether this install predates the
+	// separate decimal-places column, so the one-time value migration below runs
+	// exactly once (on upgrade) and never on a fresh install or a re-run. Guard
+	// the column probe with db_table_exists so a fresh install (no table yet)
+	// does not log a "table doesn't exist" error.
+	$had_decimals = db_table_exists('plugin_topx_source') && db_column_exists('plugin_topx_source', 'final_decimals');
+
 	$data = [
 		'columns' => [
 			['name' => 'id',              'type' => 'int(11)', 'unsigned' => true, 'auto_increment' => true, 'NULL' => false],
@@ -64,6 +71,7 @@ function topx_setup_database(): void {
 			['name' => 'final_operation', 'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
 			['name' => 'final_unit',      'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
 			['name' => 'final_number',    'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
+			['name' => 'final_decimals',  'type' => 'varchar(4)',         'default' => '',      'NULL' => false],
 			['name' => 'system',          'type' => 'varchar(20)',        'default' => 'bits',  'NULL' => false],
 			['name' => 'range_type',      'type' => 'tinyint(1)',         'default' => '0',     'NULL' => false],
 			['name' => 'range_normal',    'type' => 'double',             'default' => null,    'NULL' => true],
@@ -100,6 +108,19 @@ function topx_setup_database(): void {
 		['name' => 'range_alert',   'type' => 'double',       'default' => null, 'NULL' => true,  'after' => 'range_warning']);
 	api_plugin_db_add_column('topx', 'plugin_topx_source',
 		['name' => 'chart_label',   'type' => 'varchar(128)', 'default' => '',   'NULL' => false, 'after' => 'range_alert']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'final_decimals', 'type' => 'varchar(4)',  'default' => '',   'NULL' => false, 'after' => 'final_number']);
+
+	// One-time migration of the decimal-places setting out of the dual-purpose
+	// final_number column. Before this release final_number held the rounding
+	// precision for "strip" scaling and the divisor ladder for "/" (Divide)
+	// scaling; now final_decimals holds the places for both modes and
+	// final_number holds only the Divide ladder. Runs once, when final_decimals
+	// is first added.
+	if (!$had_decimals && db_column_exists('plugin_topx_source', 'final_decimals')) {
+		db_execute("UPDATE plugin_topx_source SET final_decimals = final_number, final_number = '' WHERE final_operation = 'strip'");
+		db_execute("UPDATE plugin_topx_source SET final_decimals = '2' WHERE final_operation = '/'");
+	}
 
 	$data = [
 		'columns' => [
@@ -141,22 +162,22 @@ function topx_seed_sources(): void {
 	}
 
 	$defaults = [
-		['desc', 'ucd/net - Load Average - 1 Minute', '9b82d44eb563027659683765f92c9757', 'load_1min=load_1min', 'Load', 'strip', 'load', '2', 'decimal', 0, 1, 2, 4, '|host_description|'],
-		['desc', 'Host MIB - CPU Utilization', 'f6e7d21c19434666bbdac00ccef9932f', 'cpu=cpu', 'Utilization', 'strip', '%', '1', 'decimal', 0, 50, 75, 90, '|host_description|'],
-		['desc', 'Host MIB - Hard Drive Space', 'd814fa3b79bd0f8933b6e0834d3f16d0', 'hdd_total%hdd_used', 'Used', 'strip', '%', '1', 'decimal', 0, 70, 85, 95, '|host_description|'],
-		['desc', 'Interface - Errors_in + Discards_in', '36335cd98633963a575b70639cd2fdad', 'discards_in+errors_in', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
-		['desc', 'Interface - Errors_out + Discards_out', '36335cd98633963a575b70639cd2fdad', 'discards_out+errors_out', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
-		['desc', 'Mikrotik - System - Uptime', '0d8804fbc44a6ab9db89f8d83d050627', 'uptime/100', 'Uptime in seconds', '/', 'sec/min/hour/days', '1/60/3600/86400', 'decimal', 1, null, null, null, '|host_description|'],
-		['desc', 'APC load', 'be63bc4946561a274ace2c982548f255', 'load=load', 'Load', 'strip', '%', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
-		['desc', 'MultiCPU AVG', '9561518147a2423734394410bcd241b4', 'load=load', 'Utilization', 'strip', '%', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
-		['desc', 'Interface - Traffic_in+Traffic_out', '6632e1e0b58a565c135d7ff90440c335', 'traffic_in+traffic_out', 'Bits', '/', 'bit/Kbit/Mbit/Gbit/Tbit', '1/1024/1048576/1073741824/1099511627776', 'bits', 0, null, null, null, '|host_description| - |query_ifName|'],
+		['desc', 'ucd/net - Load Average - 1 Minute', '9b82d44eb563027659683765f92c9757', 'load_1min=load_1min', 'Load', 'strip', 'load', '', '2', 'decimal', 0, 1, 2, 4, '|host_description|'],
+		['desc', 'Host MIB - CPU Utilization', 'f6e7d21c19434666bbdac00ccef9932f', 'cpu=cpu', 'Utilization', 'strip', '%', '', '1', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'Host MIB - Hard Drive Space', 'd814fa3b79bd0f8933b6e0834d3f16d0', 'hdd_total%hdd_used', 'Used', 'strip', '%', '', '1', 'decimal', 0, 70, 85, 95, '|host_description|'],
+		['desc', 'Interface - Errors_in + Discards_in', '36335cd98633963a575b70639cd2fdad', 'discards_in+errors_in', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', '2', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
+		['desc', 'Interface - Errors_out + Discards_out', '36335cd98633963a575b70639cd2fdad', 'discards_out+errors_out', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', '2', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
+		['desc', 'Mikrotik - System - Uptime', '0d8804fbc44a6ab9db89f8d83d050627', 'uptime/100', 'Uptime in seconds', '/', 'sec/min/hour/days', '1/60/3600/86400', '2', 'decimal', 1, null, null, null, '|host_description|'],
+		['desc', 'APC load', 'be63bc4946561a274ace2c982548f255', 'load=load', 'Load', 'strip', '%', '', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'MultiCPU AVG', '9561518147a2423734394410bcd241b4', 'load=load', 'Utilization', 'strip', '%', '', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'Interface - Traffic_in+Traffic_out', '6632e1e0b58a565c135d7ff90440c335', 'traffic_in+traffic_out', 'Bits', '/', 'bit/Kbit/Mbit/Gbit/Tbit', '1/1024/1048576/1073741824/1099511627776', '2', 'bits', 0, null, null, null, '|host_description| - |query_ifName|'],
 	];
 
 	foreach ($defaults as $row) {
 		db_execute_prepared('INSERT INTO plugin_topx_source
-			(sorting, dt_name, hash, operation, unit, final_operation, final_unit, final_number, system,
+			(sorting, dt_name, hash, operation, unit, final_operation, final_unit, final_number, final_decimals, system,
 			range_type, range_normal, range_warning, range_alert, chart_label)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 			$row);
 	}
 }

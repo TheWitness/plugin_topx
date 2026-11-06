@@ -74,6 +74,43 @@ describe('plugin_topx_install', function (): void {
 
 		expect($alters)->toHaveCount(1);
 	});
+
+	it('migrates the decimal places out of final_number on first upgrade', function (): void {
+		$GLOBALS['__test_db_calls'] = [];
+
+		// The table already exists (an upgrade), final_decimals is absent on the
+		// pre-check (so a migration is needed) and present afterwards (added by
+		// the schema refresh); every other column already exists so the id
+		// backfill is skipped.
+		$GLOBALS['__test_table_exists'] = ['plugin_topx_source' => true];
+
+		$seen = 0;
+		$GLOBALS['__test_db_column_exists'] = function ($t, $c) use (&$seen) {
+			if ($c === 'final_decimals') {
+				$seen++;
+
+				return $seen > 1;
+			}
+
+			return true;
+		};
+
+		// Sources already exist, so seeding is skipped.
+		$GLOBALS['__test_db_fetch_cell'] = function ($sql) {
+			return 9;
+		};
+
+		topx_setup_database();
+
+		$migrations = array_values(array_filter($GLOBALS['__test_db_calls'], function ($call) {
+			return ($call['fn'] ?? '') === 'db_execute'
+				&& strpos($call['sql'] ?? '', 'final_decimals = final_number') !== false;
+		}));
+
+		expect($migrations)->toHaveCount(1);
+
+		unset($GLOBALS['__test_db_column_exists'], $GLOBALS['__test_db_fetch_cell'], $GLOBALS['__test_table_exists']);
+	});
 });
 
 describe('topx_seed_sources', function (): void {

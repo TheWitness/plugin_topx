@@ -34,7 +34,7 @@
 function topx_source_columns(): array {
 	return [
 		'sorting', 'dt_name', 'hash', 'operation', 'unit',
-		'final_operation', 'final_unit', 'final_number', 'system',
+		'final_operation', 'final_unit', 'final_number', 'final_decimals', 'system',
 		'range_type', 'range_normal', 'range_warning', 'range_alert', 'chart_label',
 	];
 }
@@ -55,7 +55,8 @@ function topx_source_blank(): array {
 		'unit'            => '',
 		'final_operation' => 'strip',
 		'final_unit'      => '',
-		'final_number'    => '0',
+		'final_number'    => '',
+		'final_decimals'  => '',
 		'system'          => 'decimal',
 		'range_type'      => 0,
 		'range_normal'    => '',
@@ -92,6 +93,24 @@ function topx_source_system_labels(): array {
 		'decimal' => __('Decimal (SI, base 1000)', 'topx'),
 		'binary'  => __('Binary (base 1024)', 'topx'),
 		'bits'    => __('Bits', 'topx'),
+	];
+}
+
+/**
+ * Returns the translated Decimal Places options for the editor dropdown. The
+ * empty key is "Auto" (two places); 0-4 are explicit decimal places. Kept free
+ * of database access so it can be unit tested directly.
+ *
+ * @return array<string,string> Map of decimal-places token to translated label.
+ */
+function topx_source_decimal_labels(): array {
+	return [
+		''  => __('Auto', 'topx'),
+		'0' => __('0', 'topx'),
+		'1' => __('1', 'topx'),
+		'2' => __('2', 'topx'),
+		'3' => __('3', 'topx'),
+		'4' => __('4', 'topx'),
 	];
 }
 
@@ -232,7 +251,8 @@ function topx_source_prepare_save(array $input): array {
 		'unit'            => trim((string) ($input['unit'] ?? '')),
 		'final_operation' => (($input['final_operation'] ?? 'strip') === '/') ? '/' : 'strip',
 		'final_unit'      => trim((string) ($input['final_unit'] ?? '')),
-		'final_number'    => trim((string) ($input['final_number'] ?? '0')),
+		'final_number'    => trim((string) ($input['final_number'] ?? '')),
+		'final_decimals'  => in_array((string) ($input['final_decimals'] ?? ''), ['0', '1', '2', '3', '4'], true) ? (string) $input['final_decimals'] : '',
 		'system'          => isset($systems[$input['system'] ?? '']) ? (string) $input['system'] : 'decimal',
 		'range_type'      => ((int) ($input['range_type'] ?? 0) === 1) ? 1 : 0,
 		'chart_label'     => trim((string) ($input['chart_label'] ?? '')),

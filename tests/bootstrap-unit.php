@@ -127,6 +127,10 @@ if (!function_exists('db_index_exists')) {
 
 if (!function_exists('db_column_exists')) {
 	function db_column_exists($t, $c) {
+		if (isset($GLOBALS['__test_db_column_exists']) && is_callable($GLOBALS['__test_db_column_exists'])) {
+			return ($GLOBALS['__test_db_column_exists'])($t, $c);
+		}
+
 		return false;
 	}
 }

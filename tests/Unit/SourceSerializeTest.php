@@ -45,6 +45,24 @@ describe('topx_source_prepare_save', function (): void {
 		expect($save['range_warning'])->toBe(75.0);
 		expect($save['range_alert'])->toBe(90.5);
 	});
+
+	it('clamps final_decimals to the allowed set, Auto otherwise', function (): void {
+		expect(topx_source_prepare_save(['final_decimals' => '2'])['final_decimals'])->toBe('2');
+		expect(topx_source_prepare_save(['final_decimals' => '0'])['final_decimals'])->toBe('0');
+		expect(topx_source_prepare_save(['final_decimals' => '9'])['final_decimals'])->toBe('');
+		expect(topx_source_prepare_save(['final_decimals' => 'x'])['final_decimals'])->toBe('');
+		expect(topx_source_prepare_save([])['final_decimals'])->toBe('');
+	});
+});
+
+describe('topx_source_decimal_labels', function (): void {
+	it('offers Auto plus 0 to 4', function (): void {
+		$labels = topx_source_decimal_labels();
+
+		expect($labels)->toHaveKey('');
+		// PHP coerces the numeric string keys '0'-'4' to integers.
+		expect(array_keys($labels))->toBe(['', 0, 1, 2, 3, 4]);
+	});
 });
 
 describe('topx_source export/import round-trip', function (): void {
@@ -59,6 +77,7 @@ describe('topx_source export/import round-trip', function (): void {
 			'final_operation' => '/',
 			'final_unit'      => 'bit/Kbit/Mbit',
 			'final_number'    => '1/1024/1048576',
+			'final_decimals'  => '2',
 			'system'          => 'bits',
 			'range_type'      => 0,
 			'range_normal'    => null,
@@ -79,6 +98,7 @@ describe('topx_source export/import round-trip', function (): void {
 		expect($imported['operation'])->toBe($row['operation']);
 		expect($imported['chart_label'])->toBe($row['chart_label']);
 		expect($imported['final_unit'])->toBe($row['final_unit']);
+		expect($imported['final_decimals'])->toBe($row['final_decimals']);
 		// The install-local id is never exported.
 		expect($imported['id'])->toBe(0);
 	});

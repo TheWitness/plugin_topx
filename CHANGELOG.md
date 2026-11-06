@@ -4,6 +4,13 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.2
 
+- Clearer display-formatting fields on the Data Source editor: **Display Format**
+  (renamed from "Display Scaling") with the options **Static Unit** (default) and
+  **Division by Unit Ladder**; a dedicated **Decimal Places** dropdown (Auto, 0-4)
+  that rounds in both formats; and the divisor ladder as **Display Unit Ladder**,
+  hidden unless the Division format is selected. The old dual-purpose
+  "Precision / Divisors" field is split — decimal places now live in their own
+  column, migrated automatically on upgrade.
 - The Metric Expression now actually applies a trailing `/N` divisor
   (e.g. `uptime=uptime/8640000` to turn SNMP uptime timeticks into days):
   previously the division was ignored and the raw value was charted and ranked.

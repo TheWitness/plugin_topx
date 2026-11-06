@@ -128,6 +128,7 @@ function topx_sources_form_save(): void {
 		'final_operation' => get_nfilter_request_var('final_operation'),
 		'final_unit'      => get_nfilter_request_var('final_unit'),
 		'final_number'    => get_nfilter_request_var('final_number'),
+		'final_decimals'  => get_nfilter_request_var('final_decimals'),
 		'system'          => get_nfilter_request_var('system'),
 		'sorting'         => get_nfilter_request_var('sorting'),
 		'range_type'      => get_nfilter_request_var('range_type'),
@@ -546,23 +547,30 @@ function topx_sources_edit(): void {
 		],
 		'final_operation' => [
 			'method'        => 'drop_array',
-			'friendly_name' => __('Display Scaling', 'topx'),
-			'description'   => __('How computed values are formatted for display. "Strip" rounds to the precision and appends the unit; "Divide" walks a slash-delimited unit/divisor ladder (e.g. bit/Kbit/Mbit).', 'topx'),
+			'friendly_name' => __('Display Format', 'topx'),
+			'description'   => __('How a computed value is formatted for display. "Static Unit" rounds to the Decimal Places and appends a single, fixed Display Unit (e.g. "%", "days"). "Division by Unit Ladder" steps a value through a ladder of divisors and units, showing it in the largest unit whose divided value is at least one (e.g. bits → Kbit → Mbit).', 'topx'),
 			'value'         => '|arg1:final_operation|',
-			'array'         => ['strip' => __('Strip (round + unit)', 'topx'), '/' => __('Divide (unit ladder)', 'topx')],
+			'array'         => ['strip' => __('Static Unit', 'topx'), '/' => __('Division by Unit Ladder', 'topx')],
+		],
+		'final_decimals' => [
+			'method'        => 'drop_array',
+			'friendly_name' => __('Decimal Places', 'topx'),
+			'description'   => __('How many decimal places the displayed value is rounded to. "Auto" uses two places. Applies to both Display Formats.', 'topx'),
+			'value'         => '|arg1:final_decimals|',
+			'array'         => topx_source_decimal_labels(),
 		],
 		'final_unit' => [
 			'method'        => 'textbox',
 			'friendly_name' => __('Display Unit(s)', 'topx'),
-			'description'   => __('The display unit, or a slash-delimited ladder for the Divide scaling (e.g. "bit/Kbit/Mbit/Gbit").', 'topx'),
+			'description'   => __('The unit shown after the value. For "Static Unit" a single label such as "%" or "days". For "Division by Unit Ladder" a slash-delimited list of unit names, from smallest to largest, paired position-for-position with the Display Unit Ladder divisors (e.g. "bit/Kbit/Mbit/Gbit").', 'topx'),
 			'value'         => '|arg1:final_unit|',
 			'max_length'    => 100,
 			'size'          => 40,
 		],
 		'final_number' => [
 			'method'        => 'textbox',
-			'friendly_name' => __('Precision / Divisors', 'topx'),
-			'description'   => __('For Strip scaling, the number of decimal places. For Divide scaling, the slash-delimited divisor ladder (e.g. "1/1024/1048576").', 'topx'),
+			'friendly_name' => __('Display Unit Ladder', 'topx'),
+			'description'   => __('Only used by "Division by Unit Ladder". A slash-delimited list of divisors, one per unit in Display Unit(s) and in the same order, from smallest to largest (e.g. units "bit/Kbit/Mbit" with divisors "1/1000/1000000", or binary "1/1024/1048576"). The value is shown in the largest unit whose divided result is at least one.', 'topx'),
 			'value'         => '|arg1:final_number|',
 			'max_length'    => 100,
 			'size'          => 40,
@@ -685,9 +693,19 @@ function topx_sources_edit(): void {
 			}, 'json');
 		}
 
+		// Hide the Display Unit Ladder (divisors) unless the Display Format is
+		// "Division by Unit Ladder"; it has no meaning for the Static Unit
+		// format. Toggles the whole form row drawn by draw_edit_form.
+		function topxToggleDisplayFormat() {
+			var ladder = ($('#final_operation').val() === '/');
+			$('#row_final_number').toggle(ladder);
+		}
+
 		$(function() {
 			topxBindTokens();
 			$('#hash').on('change', function() { topxRefreshTokens(); });
+			topxToggleDisplayFormat();
+			$('#final_operation').on('change', function() { topxToggleDisplayFormat(); });
 		});
 	</script>
 	<?php

@@ -967,7 +967,7 @@ function topx_drilldown_payload(array $ds, array $filter): array {
  */
 function topx_drilldown_format(float $value, array $source, bool $supported): string {
 	if ($supported && isset($source['final_operation'])) {
-		return topx_final_operation($value, (string) $source['final_operation'], (string) $source['final_unit'], (string) $source['final_number']);
+		return topx_final_operation($value, (string) $source['final_operation'], (string) $source['final_unit'], (string) $source['final_number'], (string) ($source['final_decimals'] ?? ''));
 	}
 
 	return topx_human_readable($value);

@@ -143,20 +143,25 @@ function topx_human_readable($bytes, bool $decimal = false): string {
 /**
  * Applies a data source's "final operation" to a computed value, producing
  * the display string shown in the TopX table. 'strip' simply rounds to the
- * configured precision and appends the unit; '/' walks a slash-delimited set
- * of divisors/suffixes (e.g. bit/Kbit/Mbit) and picks the largest unit whose
- * scaled value is greater than one.
+ * configured number of decimal places and appends the unit; '/' walks a
+ * slash-delimited set of divisors/suffixes (e.g. bit/Kbit/Mbit) and picks the
+ * largest unit whose scaled value is greater than one. Both modes round to
+ * $final_decimals places (an empty value means "Auto", i.e. two places).
  *
  * @param float|int|string $value           The computed value to format.
  * @param string           $final_operation The operation token (strip or /).
  * @param string           $final_unit      Unit label, or slash-delimited set.
- * @param string           $final_number    Rounding precision, or slash set.
+ * @param string           $final_number    Divisor ladder for the '/' mode
+ *                                        (ignored by 'strip').
+ * @param string           $final_decimals  Decimal places (0-4), or '' for Auto.
  *
  * @return string The formatted, unit-suffixed display string.
  */
-function topx_final_operation($value, string $final_operation, string $final_unit, string $final_number): string {
+function topx_final_operation($value, string $final_operation, string $final_unit, string $final_number, string $final_decimals = ''): string {
+	$places = ($final_decimals === '') ? 2 : (int) $final_decimals;
+
 	if ($final_operation === 'strip') {
-		$value = round((float) $value, (int) $final_number) . ' ' . $final_unit;
+		$value = round((float) $value, $places) . ' ' . $final_unit;
 	} elseif ($final_operation === '/') {
 		$num = array_reverse(explode('/', $final_number), true);
 		$suf = array_reverse(explode('/', $final_unit), true);
@@ -169,7 +174,7 @@ function topx_final_operation($value, string $final_operation, string $final_uni
 			$xvalue = $value / $num[$f];
 
 			if ($xvalue > 1) {
-				$value = round($xvalue, 2) . ' ' . $suf[$f];
+				$value = round($xvalue, $places) . ' ' . $suf[$f];
 
 				break;
 			}
