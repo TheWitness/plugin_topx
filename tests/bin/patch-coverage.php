@@ -57,7 +57,10 @@ if (!is_readable($clover_path)) {
  * @return array<string, array<int, bool>>
  */
 function changed_lines($base_ref) {
-	$command = 'git diff --no-ext-diff --unified=0 --no-color --diff-filter=AM ' . escapeshellarg($base_ref) . '...HEAD -- "*.php"';
+	// --ignore-cr-at-eol: a line that differs only by CRLF vs LF (e.g. after the
+	// repository's one-time normalization to LF via .gitattributes) is not a
+	// content change, so it must not count towards changed-line coverage.
+	$command = 'git diff --ignore-cr-at-eol --no-ext-diff --unified=0 --no-color --diff-filter=AM ' . escapeshellarg($base_ref) . '...HEAD -- "*.php"';
 	$output  = [];
 	$status  = 0;
 
