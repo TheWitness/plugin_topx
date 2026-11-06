@@ -55,7 +55,13 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4']
-        os: [ubuntu-latest]
+        # Pinned to ubuntu-22.04 (temporarily): ubuntu-latest migrated to Ubuntu
+        # 26, whose newer MySQL/MariaDB client forwards the long-standing stray
+        # `DELIMITER //` in Cacti 1.2.x's cacti.sql to the server (ERROR 1064)
+        # instead of tolerating it like the 22.04/24.04 client does. Cacti core's
+        # own CI pins ubuntu-22.04 for the same reason. Revert to ubuntu-latest
+        # once the stray DELIMITER is fixed upstream in Cacti/cacti.
+        os: [ubuntu-22.04]
     
     services:
       mariadb:
@@ -150,12 +156,7 @@ jobs:
         mysql "$MYSQL_AUTH_USR" -e "GRANT SELECT ON mysql.time_zone_name TO 'cactiuser'@'localhost';"
         mysql "$MYSQL_AUTH_USR" -e "GRANT SELECT ON mysql.time_zone_name TO 'cactiuser'@'127.0.0.1';"
         mysql "$MYSQL_AUTH_USR" -e "FLUSH PRIVILEGES;"
-        # Cacti 1.2.x's cacti.sql ships a stray `DELIMITER //` directive with no
-        # matching `//` terminator or `DELIMITER ;` reset. The mysql client
-        # forwards it to the server, which rejects it (ERROR 1064). The schema
-        # itself uses only standard ';'-terminated statements, so drop any
-        # DELIMITER directive before importing.
-        sed '/^DELIMITER/d' "${{ github.workspace }}/cacti/cacti.sql" | mysql "$MYSQL_AUTH_USR" cacti
+        mysql "$MYSQL_AUTH_USR" cacti < ${{ github.workspace }}/cacti/cacti.sql
         mysql "$MYSQL_AUTH_USR" -e "INSERT INTO settings (name, value) VALUES ('path_php_binary', '/usr/bin/php')" cacti
     
     # Core's release archives exclude .github and tests. Fetch these paths
