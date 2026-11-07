@@ -1,6 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group, Inc.                           |
  | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
@@ -56,7 +57,7 @@ switch (get_request_var('action')) {
 
 		break;
 	case 'export':
-		topx_sources_export();
+		topx_sources_export_action();
 
 		break;
 	case 'tokens':
@@ -232,7 +233,7 @@ function topx_sources_form_actions(): void {
 			if (get_nfilter_request_var('drp_action') == '1') {
 				topx_source_remove($selected_items);
 			} elseif (get_nfilter_request_var('drp_action') == '2') {
-				topx_sources_export($selected_items);
+				topx_sources_export_redirect(get_nfilter_request_var('selected_items'));
 
 				return;
 			}
@@ -295,11 +296,11 @@ function topx_sources_form_actions(): void {
 
 	html_end_box();
 
-	// Export streams a file attachment, so its confirmation must submit as a
-	// normal POST (the browser downloads the response) rather than Cacti's
-	// default AJAX submit, which would consume the XML as an XHR response.
-	// Delete keeps the AJAX submit.
-	form_end(get_nfilter_request_var('drp_action') != '2');
+	// Both actions submit via Cacti's standard AJAX form. Delete applies the
+	// change; Export returns a small page that triggers the file download in a
+	// hidden iframe and then returns to the list (see topx_sources_export_redirect),
+	// so the XML is never consumed as an XHR response.
+	form_end();
 
 	bottom_footer();
 }
@@ -328,6 +329,65 @@ function topx_sources_export(?array $ids = null): void {
 	header('Content-Length: ' . strlen($xml));
 
 	print $xml;
+}
+
+/**
+ * GET entry point for the export download (action=export). Streams every
+ * definition for the "Export All" button, or only the selected definitions when
+ * the download iframe supplies a validated selected_items list. Read-only, so it
+ * is reached by a plain GET (the hidden iframe's src), like Cacti's own
+ * template exports.
+ *
+ * @return void
+ */
+function topx_sources_export_action(): void {
+	$ids = null;
+
+	if (isset_request_var('selected_items')) {
+		$selected = sanitize_unserialize_selected_items(get_nfilter_request_var('selected_items'));
+
+		if ($selected !== false) {
+			$ids = $selected;
+		}
+	}
+
+	topx_sources_export($ids);
+}
+
+/**
+ * Renders the small page that drives the export download from the bulk-action
+ * confirmation, mirroring Cacti's (and plugin_thold's) template export flow:
+ * point a hidden iframe at the action=export GET URL so the browser downloads
+ * the XML attachment, then return to the list page. This keeps the confirmation
+ * form on Cacti's standard AJAX submit while giving a natural flow (the user
+ * lands back on the grid with the file downloaded) instead of being left on a
+ * raw XML response.
+ *
+ * @param string $selected_items The serialized selected_items list to export.
+ *
+ * @return void
+ */
+function topx_sources_export_redirect(string $selected_items): void {
+	top_header();
+
+	$url = 'topx_sources.php?action=export&selected_items=' . urlencode($selected_items);
+
+	print '<script type="text/javascript" ' . plugin_topx_csp_nonce() . '>
+		function topxDownloadStart(url) {
+			document.getElementById("topx_download_iframe").src = url;
+
+			setTimeout(function() {
+				document.location = "topx_sources.php";
+			}, 500);
+		}
+
+		$(function() {
+			topxDownloadStart(' . json_encode($url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ');
+		});
+	</script>
+	<iframe id="topx_download_iframe" style="display:none;"></iframe>';
+
+	bottom_footer();
 }
 
 /**
