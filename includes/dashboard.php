@@ -577,8 +577,8 @@ function topx_overview_card_meta(): array {
 	return [
 		'summary'      => ['title' => __('Catalogue Summary', 'topx'),  'span' => 4, 'expandable' => false],
 		'distribution' => ['title' => __('Source Distribution', 'topx'), 'span' => 4, 'expandable' => false],
-		'uptime'       => ['title' => __('Uptime by Host', 'topx'),      'span' => 8, 'expandable' => false],
-		'types'        => ['title' => __('Data Sources', 'topx'),        'span' => 8, 'expandable' => true],
+		'uptime'       => ['title' => __('Uptime by Host', 'topx'),      'span' => 4, 'expandable' => false],
+		'types'        => ['title' => __('Data Sources', 'topx'),        'span' => 4, 'expandable' => true],
 	];
 }
 
