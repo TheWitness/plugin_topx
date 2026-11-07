@@ -78,6 +78,55 @@ describe('topx_drilldown_card_body chart', function (): void {
 		expect($html)->toContain('Peak Alert');
 		expect($html)->toContain('Avg Normal');
 	});
+
+	it('falls back to a plain Peak/Average bullet when the source defines no range', function (): void {
+		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
+			if (strpos($sql, 'plugin_topx_source') !== false) {
+				return [
+					'id'              => 8,
+					'dt_name'         => 'Uptime',
+					'hash'            => 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6',
+					'operation'       => 'uptime=uptime',
+					'unit'            => 'Days',
+					'final_operation' => 'strip',
+					'final_unit'      => 'days',
+					'final_number'    => '1',
+					'system'          => 'decimal',
+					'sorting'         => 'desc',
+					'range_type'      => 0,
+					'range_normal'    => 0,
+					'range_warning'   => 0,
+					'range_alert'     => 0,
+					'chart_label'     => '',
+				];
+			}
+
+			return false;
+		};
+
+		$GLOBALS['__test_db_fetch_cell_prepared']  = function ($sql, $p) { return 20; };
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [
+				['ldid' => 1, 'name' => 'ciscosw1 - Uptime - uptime', 'xvalue' => 238, 'xpeak' => 240],
+				['ldid' => 2, 'name' => 'dadspc - Uptime - uptime',   'xvalue' => 9,   'xpeak' => 10],
+			];
+		};
+
+		$ds = ['key' => -8, 'supported' => true, 'entry' => []];
+
+		$html = topx_drilldown_card_body('chart', $ds);
+
+		expect($html)->toBeString();
+		expect($html)->toContain('topx-bb-chart');
+		// Plain, theme-legible Average/Peak colours rather than threshold bands.
+		expect($html)->toContain(topx_chart_plain_avg_color());
+		expect($html)->toContain(topx_chart_plain_peak_color());
+		// A two-swatch Peak/Average legend, not the six-swatch threshold legend.
+		expect($html)->not->toContain('Avg Normal');
+		expect($html)->not->toContain('Peak Alert');
+		// None of the health band colours leak into a no-range chart.
+		expect($html)->not->toContain(topx_range_color('alert'));
+	});
 });
 
 describe('topx_drilldown_card_body rankings', function (): void {

@@ -1240,6 +1240,12 @@ function topx_drilldown_card_body(string $key, array $ds, ?array $filter = null)
 			$peak_colors = [];
 			$legend = [];
 
+			// Threshold colouring only applies when the source actually defines a
+			// Normal/Warning/Alert range. A source with no bands (e.g. an uptime
+			// ranking) shows a plain Peak/Average bullet instead of painting every
+			// bar as an alert.
+			$has_range = $ds['supported'] && topx_source_has_range($source);
+
 			$pattern = ($ds['supported'] && isset($source['chart_label'])) ? (string) $source['chart_label'] : '';
 
 			// Resolve all chart-label tokens in bulk (two queries) rather than
@@ -1271,7 +1277,7 @@ function topx_drilldown_card_body(string $key, array $ds, ?array $filter = null)
 				$values[] = $value;
 				$peaks[]  = $peak;
 
-				if ($ds['supported']) {
+				if ($has_range) {
 					$avg_class  = topx_range_class($value, $source);
 					$peak_class = topx_range_class($peak, $source);
 
@@ -1282,17 +1288,12 @@ function topx_drilldown_card_body(string $key, array $ds, ?array $filter = null)
 				}
 			}
 
-			// Only colour the bars when every bar resolved a band, so the
-			// per-bar colour arrays stay aligned with the values.
-			if (cacti_sizeof($colors) !== cacti_sizeof($values)) {
-				$colors      = [];
-				$peak_colors = [];
-			}
+			$ranged = $has_range && cacti_sizeof($values) > 0 && cacti_sizeof($colors) === cacti_sizeof($values);
 
-			// With thresholds in play, show a six-swatch legend keyed to the two
-			// series: the solid average bar (full band colour) and the muted
-			// peak range band behind it (a darker tint of the same band).
-			if (cacti_sizeof($colors) > 0) {
+			if ($ranged) {
+				// Six-swatch legend keyed to the two series: the solid average bar
+				// (full band colour) and the muted peak range band behind it (a
+				// darker tint of the same band).
 				$legend = [
 					['label' => __('Peak Normal', 'topx'),  'color' => topx_range_peak_color('normal')],
 					['label' => __('Peak Warning', 'topx'), 'color' => topx_range_peak_color('warning')],
@@ -1300,6 +1301,15 @@ function topx_drilldown_card_body(string $key, array $ds, ?array $filter = null)
 					['label' => __('Avg Normal', 'topx'),    'color' => topx_range_color('normal')],
 					['label' => __('Avg Warning', 'topx'),   'color' => topx_range_color('warning')],
 					['label' => __('Avg Alert', 'topx'),     'color' => topx_range_color('alert')],
+				];
+			} else {
+				// No usable health range: a plain, theme-legible Peak/Average
+				// bullet with uniform colours and a two-swatch legend.
+				$colors      = array_fill(0, cacti_sizeof($values), topx_chart_plain_avg_color());
+				$peak_colors = array_fill(0, cacti_sizeof($values), topx_chart_plain_peak_color());
+				$legend      = [
+					['label' => __('Peak', 'topx'),    'color' => topx_chart_plain_peak_color()],
+					['label' => __('Average', 'topx'), 'color' => topx_chart_plain_avg_color()],
 				];
 			}
 

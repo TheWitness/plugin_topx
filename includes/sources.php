@@ -270,6 +270,54 @@ function topx_range_peak_color(string $class): string {
 }
 
 /**
+ * Whether a source defines a usable health range, i.e. at least one of its
+ * Normal/Warning/Alert thresholds is set to a non-blank, non-zero value. A
+ * source with no thresholds (or all left blank/zero) has no health bands, so the
+ * ranking chart should fall back to a plain Peak/Average bullet rather than
+ * colouring every bar as an alert. Kept free of database access so it can be
+ * unit tested.
+ *
+ * @param array $source A source row carrying range_* thresholds.
+ *
+ * @return bool True when at least one threshold carries a usable value.
+ */
+function topx_source_has_range(array $source): bool {
+	foreach (['range_normal', 'range_warning', 'range_alert'] as $key) {
+		$value = $source[$key] ?? null;
+
+		if ($value !== null && $value !== '' && (float) $value != 0.0) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * The solid measure-bar colour used for the ranking chart's Average series when
+ * a source has no health range. A neutral, theme-legible blue that avoids the
+ * green/orange/red health connotation. Kept free of database access so it can be
+ * unit tested.
+ *
+ * @return string A CSS colour.
+ */
+function topx_chart_plain_avg_color(): string {
+	return '#4a9fe0';
+}
+
+/**
+ * The background range-band colour used for the ranking chart's Peak series when
+ * a source has no health range: a darker tint of the plain Average colour so the
+ * peak band stays visible behind the Average measure bar on every theme. Kept
+ * free of database access so it can be unit tested.
+ *
+ * @return string A CSS colour.
+ */
+function topx_chart_plain_peak_color(): string {
+	return '#285f8f';
+}
+
+/**
  * Normalises raw request/import input into a validated source row ready to be
  * written to plugin_topx_source. Clamps enumerated fields to their allowlists,
  * coerces range_type to 0/1 and converts empty thresholds to SQL NULL. Kept

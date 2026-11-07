@@ -87,3 +87,24 @@ describe('topx_range_peak_color', function (): void {
 		expect(topx_range_peak_color('nope'))->toBe('');
 	});
 });
+
+describe('topx_source_has_range', function (): void {
+	it('is true when any threshold carries a usable value', function (): void {
+		expect(topx_source_has_range(['range_normal' => 10]))->toBeTrue();
+		expect(topx_source_has_range(['range_warning' => 28]))->toBeTrue();
+		expect(topx_source_has_range(['range_alert' => 80]))->toBeTrue();
+	});
+
+	it('is false when thresholds are blank, null or zero', function (): void {
+		expect(topx_source_has_range([]))->toBeFalse();
+		expect(topx_source_has_range(['range_normal' => '', 'range_warning' => null, 'range_alert' => 0]))->toBeFalse();
+		expect(topx_source_has_range(['range_normal' => '0', 'range_warning' => '0', 'range_alert' => '0']))->toBeFalse();
+	});
+});
+
+describe('plain ranking-chart colours', function (): void {
+	it('returns theme-legible Average and Peak colours', function (): void {
+		expect(topx_chart_plain_avg_color())->toBe('#4a9fe0');
+		expect(topx_chart_plain_peak_color())->toBe('#285f8f');
+	});
+});

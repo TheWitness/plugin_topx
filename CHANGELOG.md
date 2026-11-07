@@ -40,6 +40,13 @@ All notable changes to the TopX plugin are documented in this file.
   flat grey), the average measure bar keeps the full band colour, and the chart
   carries a six-swatch legend: Peak Normal/Warning/Alert and Avg
   Normal/Warning/Alert.
+- A source that defines no health range (its Normal/Warning/Alert thresholds are
+  all blank or zero, e.g. an uptime ranking) no longer paints every bar as an
+  alert. Its Ranking Chart falls back to a plain, theme-legible **Peak/Average**
+  bullet (a blue average measure bar inside a darker blue peak band) with a
+  two-swatch Peak/Average legend, so the peak band stays visible on dark themes
+  like Deepness. Sources that do define a range keep the six-swatch health
+  colouring.
 - The TopX tab pages (`topx.php`) now render with `general_header()` so they show
   as a tab without the Console left-hand menu.
 - New mappings default the **Metric Expression** to `field=field` for a template
