@@ -21,6 +21,15 @@ All notable changes to the TopX plugin are documented in this file.
   lighter peak band, via billboard's `bar.overlap`), and the good/warning/alert
   colours are a more vivid, theme-appropriate green/orange/red so the "good"
   state actually reads as green on dark themes like Deepness.
+- Ranking Chart health banding corrected: the healthy (green) band now runs from
+  the best end up to the **Warning** threshold, so a value between the Normal
+  target and Warning reads green (e.g. a 26% CPU with ranges 10/28/80 is no
+  longer shown as warning). The Normal threshold still acts as the warning
+  boundary when no explicit Warning threshold is set. The peak "range band" is
+  now mildly colourised with a darker tint of the peak's own band (instead of a
+  flat grey), the average measure bar keeps the full band colour, and the chart
+  carries a six-swatch legend: Peak Normal/Warning/Alert and Avg
+  Normal/Warning/Alert.
 - The TopX tab pages (`topx.php`) now render with `general_header()` so they show
   as a tab without the Console left-hand menu.
 - New mappings default the **Metric Expression** to `field=field` for a template

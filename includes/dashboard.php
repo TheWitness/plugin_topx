@@ -226,10 +226,16 @@ function topx_dashboard_gauge(?float $current, ?float $min, ?float $max, float $
  *                            $values); when present a rotated chart renders a
  *                            bullet-style bar (a thin average measure bar nested
  *                            inside a thicker peak band).
+ * @param array  $peak_colors Optional per-bar colours for the peak range band
+ *                            (same order as $peaks); a muted tint of the peak's
+ *                            own health band.
+ * @param array  $legend      Optional custom legend entries ([{label, color}]);
+ *                            when present js/topx_dashboard.js renders its own
+ *                            swatch legend instead of billboard's series legend.
  *
  * @return string The chart placeholder HTML.
  */
-function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = [], array $peaks = []): string {
+function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = [], array $peaks = [], array $peak_colors = [], array $legend = []): string {
 	$payload = [
 		'series'  => __('Value', 'topx'),
 		'labels'  => array_values($labels),
@@ -241,6 +247,8 @@ function topx_dashboard_chart(array $labels, array $values, string $title, bool 
 		'averageLabel' => __('Average', 'topx'),
 		'peakLabel'    => __('Peak', 'topx'),
 		'barColors'    => array_values($bar_colors),
+		'peakColors'   => array_values($peak_colors),
+		'legend'       => array_values($legend),
 		'fullLabels'   => array_values($full_labels),
 	];
 
@@ -1039,6 +1047,8 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			$values = [];
 			$peaks  = [];
 			$colors = [];
+			$peak_colors = [];
+			$legend = [];
 
 			$pattern = ($ds['supported'] && isset($source['chart_label'])) ? (string) $source['chart_label'] : '';
 
@@ -1072,18 +1082,35 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 				$peaks[]  = $peak;
 
 				if ($ds['supported']) {
-					$class = topx_range_class($value, $source);
+					$avg_class  = topx_range_class($value, $source);
+					$peak_class = topx_range_class($peak, $source);
 
-					if ($class !== '') {
-						$colors[] = topx_range_color($class);
+					if ($avg_class !== '' && $peak_class !== '') {
+						$colors[]      = topx_range_color($avg_class);
+						$peak_colors[] = topx_range_peak_color($peak_class);
 					}
 				}
 			}
 
 			// Only colour the bars when every bar resolved a band, so the
-			// per-bar colour array stays aligned with the values.
+			// per-bar colour arrays stay aligned with the values.
 			if (cacti_sizeof($colors) !== cacti_sizeof($values)) {
-				$colors = [];
+				$colors      = [];
+				$peak_colors = [];
+			}
+
+			// With thresholds in play, show a six-swatch legend keyed to the two
+			// series: the solid average bar (full band colour) and the muted
+			// peak range band behind it (a darker tint of the same band).
+			if (cacti_sizeof($colors) > 0) {
+				$legend = [
+					['label' => __('Peak Normal', 'topx'),  'color' => topx_range_peak_color('normal')],
+					['label' => __('Peak Warning', 'topx'), 'color' => topx_range_peak_color('warning')],
+					['label' => __('Peak Alert', 'topx'),   'color' => topx_range_peak_color('alert')],
+					['label' => __('Avg Normal', 'topx'),    'color' => topx_range_color('normal')],
+					['label' => __('Avg Warning', 'topx'),   'color' => topx_range_color('warning')],
+					['label' => __('Avg Alert', 'topx'),     'color' => topx_range_color('alert')],
+				];
 			}
 
 			// The value axis is labelled with the data source's own unit
@@ -1091,7 +1118,7 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			// axis is left unlabelled rather than repeating a generic word.
 			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : '';
 
-			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], $colors, $full, $peaks);
+			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], $colors, $full, $peaks, $peak_colors, $legend);
 
 			break;
 		case 'tiles':

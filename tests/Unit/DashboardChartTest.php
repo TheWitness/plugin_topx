@@ -69,8 +69,14 @@ describe('topx_drilldown_card_body chart', function (): void {
 		expect($html)->toContain('topx-bb-chart');
 		// The chart_label pattern resolved to the host description.
 		expect($html)->toContain('Router1');
-		// A threshold-based bar colour was emitted (warning band for 80).
+		// The average bar carries its own band colour (warning band for 80).
 		expect($html)->toContain(topx_range_color('warning'));
+		// The peak range band carries a muted tint of the peak's own band
+		// (peak 90 hits the alert threshold).
+		expect($html)->toContain(topx_range_peak_color('alert'));
+		// A six-swatch Peak/Avg legend is emitted alongside the colours.
+		expect($html)->toContain('Peak Alert');
+		expect($html)->toContain('Avg Normal');
 	});
 });
 

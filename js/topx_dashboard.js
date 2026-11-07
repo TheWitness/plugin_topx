@@ -438,6 +438,12 @@ function topxDashRenderCharts(root) {
 
 			options.data.color = function(inColor, d) {
 				if (d && typeof d === 'object' && d.id === cfg.peakLabel) {
+					// Mild, darker tint of the peak's own band; falls back to the
+					// previous neutral grey band when no thresholds are defined.
+					if (cfg.peakColors && cfg.peakColors.length) {
+						return cfg.peakColors[d.index % cfg.peakColors.length];
+					}
+
 					return 'rgba(130,130,130,0.28)';
 				}
 
@@ -452,7 +458,9 @@ function topxDashRenderCharts(root) {
 				return palette[0];
 			};
 
-			options.legend = {show: true};
+			// A custom swatch legend (Peak/Avg x Normal/Warning/Alert) replaces
+			// billboard's series legend, which would only show "Peak"/"Average".
+			options.legend = {show: !(cfg.legend && cfg.legend.length)};
 		}
 
 		// Horizontal (rotated) ranking charts grow with the record count so Top
@@ -474,7 +482,58 @@ function topxDashRenderCharts(root) {
 		}
 
 		bb.generate(options);
+
+		if (cfg.legend && cfg.legend.length) {
+			topxDashRenderChartLegend(node, cfg.legend);
+		}
 	});
+}
+
+/**
+ * Render a custom swatch legend beneath a chart from [{label, color}] entries.
+ * Styles are set as DOM properties (not inline style attributes or scripts) so
+ * nothing trips the Content-Security-Policy. Replaces any prior legend so a
+ * card refresh does not stack duplicates.
+ */
+function topxDashRenderChartLegend(node, items) {
+	if (!node || !node.parentNode) {
+		return;
+	}
+
+	var prior = node.parentNode.querySelector('.topxDashChartLegend');
+	if (prior) {
+		prior.parentNode.removeChild(prior);
+	}
+
+	var wrap = document.createElement('div');
+	wrap.className = 'topxDashChartLegend';
+	wrap.style.display = 'flex';
+	wrap.style.flexWrap = 'wrap';
+	wrap.style.gap = '3px 14px';
+	wrap.style.justifyContent = 'center';
+	wrap.style.margin = '4px 0 2px';
+	wrap.style.fontSize = '11px';
+	wrap.style.lineHeight = '14px';
+
+	items.forEach(function(it) {
+		var entry = document.createElement('span');
+		entry.style.display = 'inline-flex';
+		entry.style.alignItems = 'center';
+		entry.style.gap = '5px';
+
+		var swatch = document.createElement('span');
+		swatch.style.display = 'inline-block';
+		swatch.style.width = '11px';
+		swatch.style.height = '11px';
+		swatch.style.borderRadius = '2px';
+		swatch.style.backgroundColor = it.color;
+
+		entry.appendChild(swatch);
+		entry.appendChild(document.createTextNode(it.label));
+		wrap.appendChild(entry);
+	});
+
+	node.parentNode.insertBefore(wrap, node.nextSibling);
 }
 
 /** Wire a single card's drag handle (mouse + keyboard) and drag events. */

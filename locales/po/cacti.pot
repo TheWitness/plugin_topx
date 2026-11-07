@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-06 16:43-0500\n"
+"POT-Creation-Date: 2026-11-07 09:40-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -282,6 +282,30 @@ msgstr ""
 
 #: includes/dashboard.php
 msgid "No data for this source over the selected timespan."
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Peak Normal"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Peak Warning"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Peak Alert"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Avg Normal"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Avg Warning"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "Avg Alert"
 msgstr ""
 
 #: includes/dashboard.php

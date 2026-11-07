@@ -162,9 +162,13 @@ function topx_apply_chart_label(string $pattern, array $tokens): string {
  * Classifies a value against a source's absolute health thresholds, returning
  * the band it falls in: 'alert', 'warning' or 'normal'. Respects range_type so
  * a decreasing source (lower is worse, e.g. free space) is compared with the
- * sense inverted. The Normal threshold is the edge of the healthy band: for an
- * increasing source a value above it (for a decreasing source, below it) is at
- * least a warning, even when no Warning/Alert threshold is set. Returns '' when
+ * sense inverted. The healthy (normal) band runs from the best end up to the
+ * Warning threshold: for an increasing source every value below Warning is
+ * green, for a decreasing source every value above Warning is green, so a value
+ * sitting between the Normal target and the Warning threshold reads as healthy.
+ * The Normal threshold is the healthy target and only acts as the warning
+ * boundary when no explicit Warning threshold is configured, so it still has an
+ * effect on its own without overriding a Warning that is set. Returns '' when
  * the source defines no thresholds, so callers can fall back to a neutral
  * colour. This is deliberately separate from the dashboard's "% of peak"
  * distribution, which is relative to the live peak of the returned set;
@@ -200,8 +204,9 @@ function topx_range_class(float $value, array $source): string {
 			return 'warning';
 		}
 
-		// Below the healthy floor (Normal) is at least a warning.
-		if ($has($normal) && $value < (float) $normal) {
+		// Normal is the warning boundary only when no Warning threshold is set;
+		// otherwise everything above Warning stays healthy (green).
+		if (!$has($warning) && $has($normal) && $value < (float) $normal) {
 			return 'warning';
 		}
 
@@ -216,8 +221,9 @@ function topx_range_class(float $value, array $source): string {
 		return 'warning';
 	}
 
-	// Above the healthy ceiling (Normal) is at least a warning.
-	if ($has($normal) && $value > (float) $normal) {
+	// Normal is the warning boundary only when no Warning threshold is set;
+	// otherwise everything below Warning stays healthy (green).
+	if (!$has($warning) && $has($normal) && $value > (float) $normal) {
 		return 'warning';
 	}
 
@@ -237,6 +243,27 @@ function topx_range_color(string $class): string {
 		'normal'  => '#2ecc71',
 		'warning' => '#f0932b',
 		'alert'   => '#eb4d4b',
+	];
+
+	return $colors[$class] ?? '';
+}
+
+/**
+ * Maps a health band to a muted, darker tint of its topx_range_color() so the
+ * dashboard's peak "range band" is mildly colourised by the peak's own band
+ * (normal/warning/alert) instead of a flat grey, while staying subtle enough to
+ * read as a background behind the solid average measure bar. Kept free of
+ * database access so it can be unit tested.
+ *
+ * @param string $class The band: 'normal', 'warning' or 'alert'.
+ *
+ * @return string A CSS colour, or '' for an unknown band.
+ */
+function topx_range_peak_color(string $class): string {
+	$colors = [
+		'normal'  => '#19703e',
+		'warning' => '#845118',
+		'alert'   => '#812a29',
 	];
 
 	return $colors[$class] ?? '';
