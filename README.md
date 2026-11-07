@@ -24,9 +24,17 @@ for details.
 Originally written by Petr Macek (petr.macek@kostax.cz). Maintained by the
 Cacti Group.
 
-## Screenshot
+## Screenshots
 
-![TopX](screenshots/cacti_topx.png)
+The all-source **Overview** tab — a composable dashboard of catalogue stats,
+an Uptime-by-Host chart and per-Data-Source ranking cards:
+
+![TopX Overview dashboard](screenshots/topx_overview.png)
+
+The per-source **Data Source** drilldown — rankings, a health-coloured ranking
+chart, summary tiles, average/peak gauges and a value distribution:
+
+![TopX Data Source drilldown](screenshots/topx_data_source.png)
 
 ## Installation
 
@@ -50,7 +58,7 @@ Data Template (configured or not), filter by **Supported: All / Yes / No**, and
 add, edit, delete, import or export the definitions — no PHP editing required.
 Each definition points at a Data Template by its portable hash, describes how its
 RRD fields combine (the metric expression) and how values are scaled and named
-on the charts. See [HOW_TO_ADD_YOUR_DATA.txt](HOW_TO_ADD_YOUR_DATA.txt) for a
+on the charts. See [HOW_TO_ADD_YOUR_DATA.md](HOW_TO_ADD_YOUR_DATA.md) for a
 field-by-field description of the `plugin_topx_source` definition.
 
 ## Possible bugs or ideas?

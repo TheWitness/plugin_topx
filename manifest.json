@@ -2,11 +2,13 @@
     "tombstones": [
         "themes/",
         "js/chartjs-plugin-annotation.min.js",
-        "js/topx.js"
+        "js/topx.js",
+        "HOW_TO_ADD_YOUR_DATA.txt",
+        "screenshots/cacti_topx.png"
     ],
     "expected": [
         "CHANGELOG.md",
-        "HOW_TO_ADD_YOUR_DATA.txt",
+        "HOW_TO_ADD_YOUR_DATA.md",
         "INFO",
         "LICENSE",
         "README.md",
