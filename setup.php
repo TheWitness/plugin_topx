@@ -1,6 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group, Inc.                           |
  | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
@@ -18,7 +19,6 @@
  | This code is designed, written, and maintained by the Cacti Group. See  |
  | about.php and/or the AUTHORS file for specific developer information.   |
  +-------------------------------------------------------------------------+
- | https://github.com/xmacan/plugin_topx                                   |
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */
@@ -40,6 +40,7 @@ function plugin_topx_install(): void {
 	api_plugin_register_hook('topx', 'draw_navigation_text',   'topx_draw_navigation_text',    'setup.php');
 
 	api_plugin_register_realm('topx', 'topx.php', 'Plugin TopX - View', 1);
+	api_plugin_register_realm('topx', 'topx_sources.php', 'Manage TopX Data Sources', 1);
 
 	topx_setup_database();
 }
@@ -52,8 +53,16 @@ function plugin_topx_install(): void {
  * @return void
  */
 function topx_setup_database(): void {
+	// Capture, before the schema refresh, whether this install predates the
+	// separate decimal-places column, so the one-time value migration below runs
+	// exactly once (on upgrade) and never on a fresh install or a re-run. Guard
+	// the column probe with db_table_exists so a fresh install (no table yet)
+	// does not log a "table doesn't exist" error.
+	$had_decimals = db_table_exists('plugin_topx_source') && db_column_exists('plugin_topx_source', 'final_decimals');
+
 	$data = [
 		'columns' => [
+			['name' => 'id',              'type' => 'int(11)', 'unsigned' => true, 'auto_increment' => true, 'NULL' => false],
 			['name' => 'sorting',         'type' => "enum('asc','desc')", 'default' => 'asc',   'NULL' => false],
 			['name' => 'dt_name',         'type' => 'varchar(200)',       'default' => '',      'NULL' => false],
 			['name' => 'hash',            'type' => 'varchar(32)',        'default' => '',      'NULL' => false],
@@ -62,13 +71,56 @@ function topx_setup_database(): void {
 			['name' => 'final_operation', 'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
 			['name' => 'final_unit',      'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
 			['name' => 'final_number',    'type' => 'varchar(100)',       'default' => '',      'NULL' => false],
+			['name' => 'final_decimals',  'type' => 'varchar(4)',         'default' => '',      'NULL' => false],
 			['name' => 'system',          'type' => 'varchar(20)',        'default' => 'bits',  'NULL' => false],
+			['name' => 'range_type',      'type' => 'tinyint(1)',         'default' => '0',     'NULL' => false],
+			['name' => 'range_normal',    'type' => 'double',             'default' => null,    'NULL' => true],
+			['name' => 'range_warning',   'type' => 'double',             'default' => null,    'NULL' => true],
+			['name' => 'range_alert',     'type' => 'double',             'default' => null,    'NULL' => true],
+			['name' => 'chart_label',     'type' => 'varchar(128)',       'default' => '',      'NULL' => false],
 		],
+		'primary' => 'id',
 		'type'    => 'InnoDB',
 		'comment' => 'sources',
 	];
 
 	api_plugin_db_table_create('topx', 'plugin_topx_source', $data);
+
+	// Backfill the surrogate key on installs created before the management UI,
+	// whose plugin_topx_source table had no 'id' column. db_update_table (via the
+	// table-create call above) adds it from the definition, but add it explicitly
+	// too so the primary key is guaranteed even if a server rejects the combined
+	// alter, since the whole management interface keys rows by id.
+	if (!db_column_exists('plugin_topx_source', 'id')) {
+		db_execute('ALTER TABLE plugin_topx_source ADD COLUMN id int(11) unsigned NOT NULL auto_increment PRIMARY KEY FIRST');
+	}
+
+	// Add the range/label columns on installs that predate them. Each call is a
+	// safe no-op when the column already exists, so this runs unconditionally
+	// from both the install and upgrade paths.
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_type',    'type' => 'tinyint(1)',   'default' => '0',  'NULL' => false, 'after' => 'system']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_normal',  'type' => 'double',       'default' => null, 'NULL' => true,  'after' => 'range_type']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_warning', 'type' => 'double',       'default' => null, 'NULL' => true,  'after' => 'range_normal']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'range_alert',   'type' => 'double',       'default' => null, 'NULL' => true,  'after' => 'range_warning']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'chart_label',   'type' => 'varchar(128)', 'default' => '',   'NULL' => false, 'after' => 'range_alert']);
+	api_plugin_db_add_column('topx', 'plugin_topx_source',
+		['name' => 'final_decimals', 'type' => 'varchar(4)',  'default' => '',   'NULL' => false, 'after' => 'final_number']);
+
+	// One-time migration of the decimal-places setting out of the dual-purpose
+	// final_number column. Before this release final_number held the rounding
+	// precision for "strip" scaling and the divisor ladder for "/" (Divide)
+	// scaling; now final_decimals holds the places for both modes and
+	// final_number holds only the Divide ladder. Runs once, when final_decimals
+	// is first added.
+	if (!$had_decimals && db_column_exists('plugin_topx_source', 'final_decimals')) {
+		db_execute("UPDATE plugin_topx_source SET final_decimals = final_number, final_number = '' WHERE final_operation = 'strip'");
+		db_execute("UPDATE plugin_topx_source SET final_decimals = '2' WHERE final_operation = '/'");
+	}
 
 	$data = [
 		'columns' => [
@@ -110,21 +162,22 @@ function topx_seed_sources(): void {
 	}
 
 	$defaults = [
-		['desc', 'ucd/net - Load Average - 1 Minute', '9b82d44eb563027659683765f92c9757', 'load_1min=load_1min', 'Load', 'strip', 'load', '2', 'decimal'],
-		['desc', 'Host MIB - CPU Utilization', 'f6e7d21c19434666bbdac00ccef9932f', 'cpu=cpu', 'Utilization', 'strip', '%', '1', 'decimal'],
-		['desc', 'Host MIB - Hard Drive Space', 'd814fa3b79bd0f8933b6e0834d3f16d0', 'hdd_total%hdd_used', 'Used', 'strip', '%', '1', 'decimal'],
-		['desc', 'Interface - Errors_in + Discards_in', '36335cd98633963a575b70639cd2fdad', 'discards_in+errors_in', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal'],
-		['desc', 'Interface - Errors_out + Discards_out', '36335cd98633963a575b70639cd2fdad', 'discards_out+errors_out', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', 'decimal'],
-		['desc', 'Mikrotik - System - Uptime', '0d8804fbc44a6ab9db89f8d83d050627', 'uptime/100', 'Uptime in seconds', '/', 'sec/min/hour/days', '1/60/3600/86400', 'decimal'],
-		['desc', 'APC load', 'be63bc4946561a274ace2c982548f255', 'load=load', 'Load', 'strip', '%', '0', 'decimal'],
-		['desc', 'MultiCPU AVG', '9561518147a2423734394410bcd241b4', 'load=load', 'Utilization', 'strip', '%', '0', 'decimal'],
-		['desc', 'Interface - Traffic_in+Traffic_out', '6632e1e0b58a565c135d7ff90440c335', 'traffic_in+traffic_out', 'Bits', '/', 'bit/Kbit/Mbit/Gbit/Tbit', '1/1024/1048576/1073741824/1099511627776', 'bits'],
+		['desc', 'ucd/net - Load Average - 1 Minute', '9b82d44eb563027659683765f92c9757', 'load_1min=load_1min', 'Load', 'strip', 'load', '', '2', 'decimal', 0, 1, 2, 4, '|host_description|'],
+		['desc', 'Host MIB - CPU Utilization', 'f6e7d21c19434666bbdac00ccef9932f', 'cpu=cpu', 'Utilization', 'strip', '%', '', '1', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'Host MIB - Hard Drive Space', 'd814fa3b79bd0f8933b6e0834d3f16d0', 'hdd_total%hdd_used', 'Used', 'strip', '%', '', '1', 'decimal', 0, 70, 85, 95, '|host_description|'],
+		['desc', 'Interface - Errors_in + Discards_in', '36335cd98633963a575b70639cd2fdad', 'discards_in+errors_in', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', '2', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
+		['desc', 'Interface - Errors_out + Discards_out', '36335cd98633963a575b70639cd2fdad', 'discards_out+errors_out', 'Errors+Discard', '/', 'errors/Kerrors/Merrors', '1/1000/1000000', '2', 'decimal', 0, null, null, null, '|host_description| - |query_ifName|'],
+		['desc', 'Mikrotik - System - Uptime', '0d8804fbc44a6ab9db89f8d83d050627', 'uptime/100', 'Uptime in seconds', '/', 'sec/min/hour/days', '1/60/3600/86400', '2', 'decimal', 1, null, null, null, '|host_description|'],
+		['desc', 'APC load', 'be63bc4946561a274ace2c982548f255', 'load=load', 'Load', 'strip', '%', '', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'MultiCPU AVG', '9561518147a2423734394410bcd241b4', 'load=load', 'Utilization', 'strip', '%', '', '0', 'decimal', 0, 50, 75, 90, '|host_description|'],
+		['desc', 'Interface - Traffic_in+Traffic_out', '6632e1e0b58a565c135d7ff90440c335', 'traffic_in+traffic_out', 'Bits', '/', 'bit/Kbit/Mbit/Gbit/Tbit', '1/1024/1048576/1073741824/1099511627776', '2', 'bits', 0, null, null, null, '|host_description| - |query_ifName|'],
 	];
 
 	foreach ($defaults as $row) {
 		db_execute_prepared('INSERT INTO plugin_topx_source
-			(sorting, dt_name, hash, operation, unit, final_operation, final_unit, final_number, system)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			(sorting, dt_name, hash, operation, unit, final_operation, final_unit, final_number, final_decimals, system,
+			range_type, range_normal, range_warning, range_alert, chart_label)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 			$row);
 	}
 }
@@ -183,7 +236,7 @@ function plugin_topx_check_config(): bool {
 function plugin_topx_upgrade() {
 	$files = ['index.php', 'plugins.php'];
 
-	if (!in_array(get_current_page(), $files, true) && strpos(get_current_page(), 'topx.php') === false) {
+	if (!in_array(get_current_page(), $files, true) && strpos(get_current_page(), 'topx') === false) {
 		return null;
 	}
 
@@ -219,7 +272,54 @@ function plugin_topx_upgrade() {
 		api_plugin_register_hook('topx', 'draw_navigation_text', 'topx_draw_navigation_text', 'setup.php', true);
 	}
 
+	// Make sure the management realm exists and that everyone who can already
+	// view TopX can also manage its Data Sources. Without this, administrators
+	// upgrading from a version before the management UI existed cannot reach the
+	// new page until someone grants the realm by hand.
+	topx_upgrade_management_realm();
+
 	return false;
+}
+
+/**
+ * Ensures the management realm exists and grants it to every user and group
+ * that already holds the TopX view realm. api_plugin_register_realm() only
+ * grants the admin when it first inserts a realm, so on an in-place upgrade the
+ * newly added management realm would otherwise be registered but ungranted,
+ * giving a "401 Permission Denied" to admins who upgraded. This reconciles the
+ * grant and is idempotent (INSERT IGNORE), so it is safe to run on every
+ * relevant page load. Called from plugin_topx_upgrade().
+ *
+ * The 'upgrade' in the name is required: Cacti's api_plugin_valid_entrypoint()
+ * only permits api_plugin_register_realm() when the directly-calling function's
+ * name matches /(install|upgrade|setup)/i, so renaming this function would make
+ * the realm registration silently fail.
+ *
+ * @return void
+ */
+function topx_upgrade_management_realm(): void {
+	$mgmt_realm = db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx_sources.php'");
+
+	if (empty($mgmt_realm)) {
+		api_plugin_register_realm('topx', 'topx_sources.php', 'Manage TopX Data Sources', 1);
+
+		$mgmt_realm = db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx_sources.php'");
+	}
+
+	$view_realm = db_fetch_cell("SELECT id FROM plugin_realms WHERE plugin = 'topx' AND file = 'topx.php'");
+
+	if (empty($mgmt_realm) || empty($view_realm)) {
+		return;
+	}
+
+	// Realm ids are stored offset by 100 in the user/group grant tables.
+	db_execute_prepared('INSERT IGNORE INTO user_auth_realm (user_id, realm_id)
+		SELECT user_id, ? FROM user_auth_realm WHERE realm_id = ?',
+		[$mgmt_realm + 100, $view_realm + 100]);
+
+	db_execute_prepared('INSERT IGNORE INTO user_auth_group_realm (group_id, realm_id)
+		SELECT group_id, ? FROM user_auth_group_realm WHERE realm_id = ?',
+		[$mgmt_realm + 100, $view_realm + 100]);
 }
 
 /**
@@ -267,6 +367,34 @@ function topx_draw_navigation_text($nav) {
 		'mapping' => 'topx.php:dashboard',
 		'url'     => 'topx.php?action=view',
 		'level'   => 1,
+	];
+
+	$nav['topx_sources.php:'] = [
+		'title'   => __('TopX Data Sources', 'topx'),
+		'mapping' => 'index.php:',
+		'url'     => 'topx_sources.php',
+		'level'   => 1,
+	];
+
+	$nav['topx_sources.php:edit'] = [
+		'title'   => __('(Edit)', 'topx'),
+		'mapping' => 'index.php:,topx_sources.php:',
+		'url'     => '',
+		'level'   => 2,
+	];
+
+	$nav['topx_sources.php:import'] = [
+		'title'   => __('Import', 'topx'),
+		'mapping' => 'index.php:,topx_sources.php:',
+		'url'     => '',
+		'level'   => 2,
+	];
+
+	$nav['topx_sources.php:actions'] = [
+		'title'   => __('Actions', 'topx'),
+		'mapping' => 'index.php:,topx_sources.php:',
+		'url'     => '',
+		'level'   => 2,
 	];
 
 	return $nav;

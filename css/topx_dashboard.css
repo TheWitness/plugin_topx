@@ -54,6 +54,33 @@
 	min-width: 180px;
 }
 
+/* The Edit/Add Rule link is themed by Cacti's jQuery UI button classes
+   (ui-button ui-state-active); only the toolbar alignment is set here. */
+.topxDashEdit {
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+/* Live preview below the Data Source editor: cards stacked full-width,
+   independent of the dashboard's draggable columnar layout. */
+.topxPreviewStack {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.topxPreviewCard {
+	padding: 10px 12px;
+	border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+	border-radius: 8px;
+}
+
+.topxPreviewCardTitle {
+	margin: 0 0 8px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
 .topxDashRefresh {
 	display: flex;
 	align-items: center;
@@ -108,7 +135,7 @@
    across light and dark surfaces. */
 .topxDashCardHeader--up         { background: color-mix(in srgb, #94b36b 30%, transparent); }
 .topxDashCardHeader--recovering { background: color-mix(in srgb, #ff8f1e 30%, transparent); }
-.topxDashCardHeader--down       { background: color-mix(in srgb, #cc0000 30%, transparent); }
+.topxDashCardHeader--down       { background: color-mix(in srgb, #eb4d4b 30%, transparent); }
 
 .topxDashCardDrag {
 	flex: 0 0 auto;
@@ -250,7 +277,7 @@
 	white-space: nowrap;
 }
 
-.topxDashPill--up      { background-color: #2e7d32; }
+.topxDashPill--up      { background-color: #27ae60; }
 .topxDashPill--warn    { background-color: #8a6d12; }
 .topxDashPill--down    { background-color: #a12820; }
 .topxDashPill--unknown { background-color: #5f5f57; }
@@ -314,9 +341,9 @@
 	border-radius: 8px;
 }
 
-.topxBulletRange--up         { background: color-mix(in srgb, #3c9a5f 55%, transparent); }
-.topxBulletRange--recovering { background: color-mix(in srgb, #d9830f 55%, transparent); }
-.topxBulletRange--down       { background: color-mix(in srgb, #cc0000 55%, transparent); }
+.topxBulletRange--up         { background: color-mix(in srgb, #2ecc71 55%, transparent); }
+.topxBulletRange--recovering { background: color-mix(in srgb, #f0932b 55%, transparent); }
+.topxBulletRange--down       { background: color-mix(in srgb, #eb4d4b 55%, transparent); }
 .topxBulletRange--none       { background: color-mix(in srgb, currentColor 32%, transparent); }
 
 .topxBulletMarker {
@@ -401,9 +428,9 @@
 	transition: stroke-dasharray 0.4s ease;
 }
 
-.topxGaugeValue--up         { stroke: #3c9a5f; }
-.topxGaugeValue--recovering { stroke: #d9830f; }
-.topxGaugeValue--down       { stroke: #cc0000; }
+.topxGaugeValue--up         { stroke: #2ecc71; }
+.topxGaugeValue--recovering { stroke: #f0932b; }
+.topxGaugeValue--down       { stroke: #eb4d4b; }
 
 .topxGaugeTick {
 	stroke: color-mix(in srgb, currentColor 55%, transparent);
@@ -432,13 +459,13 @@
 
 /* Per-UPS drilldown action glyph in the UPSes list and the fleet table. */
 .topxDashGlyph {
-	color: #3c9a5f;
+	color: #2ecc71;
 	text-decoration: none;
 }
 
 .topxDashGlyph:hover,
 .topxDashGlyph:focus-visible {
-	color: #2e7d32;
+	color: #27ae60;
 }
 
 /* The maximize dialog body. */
@@ -477,12 +504,12 @@
 	color: color-mix(in srgb, currentColor 70%, transparent);
 }
 
-.topxFleetTile--up   { border-color: color-mix(in srgb, #3c9a5f 55%, transparent); }
-.topxFleetTile--rec  { border-color: color-mix(in srgb, #d9830f 55%, transparent); }
-.topxFleetTile--down { border-color: color-mix(in srgb, #cc0000 55%, transparent); }
-.topxFleetTile--up .topxFleetTileValue   { color: #3c9a5f; }
-.topxFleetTile--rec .topxFleetTileValue  { color: #d9830f; }
-.topxFleetTile--down .topxFleetTileValue { color: #cc0000; }
+.topxFleetTile--up   { border-color: color-mix(in srgb, #2ecc71 55%, transparent); }
+.topxFleetTile--rec  { border-color: color-mix(in srgb, #f0932b 55%, transparent); }
+.topxFleetTile--down { border-color: color-mix(in srgb, #eb4d4b 55%, transparent); }
+.topxFleetTile--up .topxFleetTileValue   { color: #2ecc71; }
+.topxFleetTile--rec .topxFleetTileValue  { color: #f0932b; }
+.topxFleetTile--down .topxFleetTileValue { color: #eb4d4b; }
 
 .topxStackBar {
 	display: flex;
@@ -493,9 +520,9 @@
 }
 
 .topxStackSeg { height: 100%; }
-.topxStackSeg--up   { background: #3c9a5f; }
-.topxStackSeg--down { background: #cc0000; }
-.topxStackSeg--rec  { background: #d9830f; }
+.topxStackSeg--up   { background: #2ecc71; }
+.topxStackSeg--down { background: #eb4d4b; }
+.topxStackSeg--rec  { background: #f0932b; }
 .topxStackSeg--dis  { background: color-mix(in srgb, currentColor 35%, transparent); }
 
 .topxStackLegend {
@@ -611,10 +638,10 @@
 
 .bb line.topx-avg-line,
 .topx-avg-line line {
-	stroke: #cc0000;
+	stroke: #eb4d4b;
 	stroke-dasharray: 4 3;
 }
 
 .topx-avg-line text {
-	fill: #cc0000;
+	fill: #eb4d4b;
 }

@@ -1,6 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group, Inc.                           |
  | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
@@ -18,7 +19,6 @@
  | This code is designed, written, and maintained by the Cacti Group. See  |
  | about.php and/or the AUTHORS file for specific developer information.   |
  +-------------------------------------------------------------------------+
- | https://github.com/xmacan/plugin_topx                                   |
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */

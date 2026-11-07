@@ -1,6 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group, Inc.                           |
  | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
@@ -18,7 +19,6 @@
  | This code is designed, written, and maintained by the Cacti Group. See  |
  | about.php and/or the AUTHORS file for specific developer information.   |
  +-------------------------------------------------------------------------+
- | https://github.com/xmacan/plugin_topx                                   |
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */
@@ -29,6 +29,7 @@ include_once('./include/auth.php');
 include_once('./include/global_arrays.php');
 include_once($config['base_path'] . '/plugins/topx/includes/functions.php');
 include_once($config['base_path'] . '/plugins/topx/includes/arrays.php');
+include_once($config['base_path'] . '/plugins/topx/includes/sources.php');
 include_once($config['base_path'] . '/plugins/topx/includes/dashboard.php');
 
 set_default_action();
@@ -65,14 +66,14 @@ switch (get_request_var('action')) {
 
 		break;
 	case 'view':
-		top_header();
+		general_header();
 		topx_drilldown_dashboard();
 		bottom_footer();
 
 		break;
 	case 'dashboard':
 	default:
-		top_header();
+		general_header();
 		topx_overview_dashboard();
 		bottom_footer();
 

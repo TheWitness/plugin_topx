@@ -1,6 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group, Inc.                           |
  | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
@@ -18,7 +19,6 @@
  | This code is designed, written, and maintained by the Cacti Group. See  |
  | about.php and/or the AUTHORS file for specific developer information.   |
  +-------------------------------------------------------------------------+
- | https://github.com/xmacan/plugin_topx                                   |
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */
@@ -222,19 +222,33 @@ function topx_dashboard_gauge(?float $current, ?float $min, ?float $max, float $
  *                           empty js/topx_dashboard.js uses its default palette.
  * @param array  $full_labels Optional full labels shown on hover when the axis
  *                            labels are shortened (same order as $labels).
+ * @param array  $peaks       Optional per-bar peak values (same order as
+ *                            $values); when present a rotated chart renders a
+ *                            bullet-style bar (a thin average measure bar nested
+ *                            inside a thicker peak band).
+ * @param array  $peak_colors Optional per-bar colours for the peak range band
+ *                            (same order as $peaks); a muted tint of the peak's
+ *                            own health band.
+ * @param array  $legend      Optional custom legend entries ([{label, color}]);
+ *                            when present js/topx_dashboard.js renders its own
+ *                            swatch legend instead of billboard's series legend.
  *
  * @return string The chart placeholder HTML.
  */
-function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = []): string {
+function topx_dashboard_chart(array $labels, array $values, string $title, bool $rotated, float $average = 0.0, array $bar_colors = [], array $full_labels = [], array $peaks = [], array $peak_colors = [], array $legend = []): string {
 	$payload = [
 		'series'  => __('Value', 'topx'),
 		'labels'  => array_values($labels),
 		'values'  => array_map('floatval', array_values($values)),
+		'peaks'   => array_map('floatval', array_values($peaks)),
 		'title'   => $title,
 		'rotated' => $rotated,
 		'average' => $average,
 		'averageLabel' => __('Average', 'topx'),
+		'peakLabel'    => __('Peak', 'topx'),
 		'barColors'    => array_values($bar_colors),
+		'peakColors'   => array_values($peak_colors),
+		'legend'       => array_values($legend),
 		'fullLabels'   => array_values($full_labels),
 	];
 
@@ -513,6 +527,60 @@ function topx_dashboard_toolbar_add(array $absent, array $meta): void {
 	print '</select>';
 }
 
+/**
+ * Render the TopX (record-limit) selector used by the Overview. Shares the
+ * "topx_dashboard_records" id/behaviour with the drilldown so the same client
+ * reload wiring applies; on the Overview it governs only the composite Data
+ * Source cards.
+ *
+ * @param int $selected The current record limit (0 means All).
+ *
+ * @return void
+ */
+function topx_dashboard_toolbar_records(int $selected): void {
+	$filters = topx_filter_arrays();
+
+	print '<label class="topxDashToolbarLabel" for="topx_dashboard_records">' . __esc('TopX', 'topx') . '</label>';
+	topx_dashboard_filter_select('topx_dashboard_records', $filters['records'], $selected);
+}
+
+/**
+ * Renders an Edit/Add Rule link in the drilldown toolbar for users who may
+ * manage the TopX Data Sources. For a supported source it links to the editor
+ * for that definition; for an unsupported template it links to the editor
+ * pre-pointed at the template so a rule can be added. Hidden for users without
+ * the management realm.
+ *
+ * @param array $ds The resolved data source (key, supported).
+ *
+ * @return void
+ *
+ * @global array $config Cacti global configuration array; used for URL paths.
+ */
+function topx_dashboard_toolbar_edit(array $ds): void {
+	global $config;
+
+	if (!is_realm_allowed(1) && !api_user_realm_auth('topx_sources.php')) {
+		return;
+	}
+
+	if (!empty($ds['supported'])) {
+		$url   = 'topx_sources.php?action=edit&id=' . (-1 * (int) $ds['key']);
+		$label = __('Edit Rule', 'topx');
+	} else {
+		$hash = db_fetch_cell_prepared('SELECT hash FROM data_template WHERE id = ?', array((int) $ds['key']));
+
+		if (empty($hash)) {
+			return;
+		}
+
+		$url   = 'topx_sources.php?action=edit&hash=' . $hash;
+		$label = __('Add Rule', 'topx');
+	}
+
+	print '<a class="ui-button ui-corner-all ui-widget ui-state-active topxDashEdit" role="button" href="' . html_escape($config['url_path'] . 'plugins/topx/' . $url) . '">' . html_escape($label) . '</a>';
+}
+
 /* ============================================================================
  * Overview scope: aggregate across every TopX data source.
  * ========================================================================== */
@@ -526,18 +594,96 @@ function topx_overview_card_meta(): array {
 	return [
 		'summary'      => ['title' => __('Catalogue Summary', 'topx'),  'span' => 4, 'expandable' => false],
 		'distribution' => ['title' => __('Source Distribution', 'topx'), 'span' => 4, 'expandable' => false],
-		'uptime'       => ['title' => __('Uptime by Host', 'topx'),      'span' => 8, 'expandable' => false],
-		'types'        => ['title' => __('Data Sources', 'topx'),        'span' => 8, 'expandable' => true],
+		'uptime'       => ['title' => __('Uptime by Host', 'topx'),      'span' => 4, 'expandable' => false],
+		'types'        => ['title' => __('Data Sources', 'topx'),        'span' => 4, 'expandable' => true],
 	];
 }
 
 /**
- * The Overview card keys in default order.
+ * The Overview card keys in default order, including one composite entry per
+ * supported Data Source card so the "Add card" dropdown can place a specific
+ * source's drilldown card (e.g. its Rankings or Ranking Chart) straight onto
+ * the Overview. Unsupported Data Sources are intentionally excluded.
  *
  * @return string[]
  */
 function topx_overview_available_cards(): array {
-	return array_keys(topx_overview_card_meta());
+	return array_keys(topx_overview_card_catalog());
+}
+
+/**
+ * Builds a composite Overview card key that pairs a Data Source with one of its
+ * drilldown cards, e.g. "ds-5:chart". The data source key is signed (supported
+ * sources are negative), so it is kept verbatim after the "ds" prefix.
+ *
+ * @param int    $ds_key The signed data source key.
+ * @param string $card   The drilldown card key (rankings, chart, ...).
+ *
+ * @return string The composite card key.
+ */
+function topx_overview_composite_key(int $ds_key, string $card): string {
+	return 'ds' . $ds_key . ':' . $card;
+}
+
+/**
+ * Parses a composite Overview card key back into its data source key and
+ * drilldown card. Returns null for a plain aggregate card key so callers can
+ * fall through to the aggregate handling.
+ *
+ * @param string $key The card key to parse.
+ *
+ * @return array{ds_key: int, card: string}|null The parts, or null when $key is
+ *               not a composite data-source card key.
+ */
+function topx_overview_parse_composite_key(string $key): ?array {
+	if (preg_match('/^ds(-?\d+):([a-z]+)$/', $key, $matches)) {
+		return ['ds_key' => (int) $matches[1], 'card' => $matches[2]];
+	}
+
+	return null;
+}
+
+/**
+ * The composite Overview cards: for every *supported* Data Source, one card per
+ * drilldown card type, keyed by topx_overview_composite_key() and titled
+ * "<Data Source> : <Card>" (e.g. "Device - Uptime : Rankings"). Unsupported
+ * Data Sources are omitted. Each entry carries the span/expandable flags of the
+ * underlying drilldown card plus the parsed ds_key/card for the renderer.
+ *
+ * @return array The composite card metadata keyed by composite card key.
+ */
+function topx_overview_datasource_cards(): array {
+	$cards = [];
+	$meta  = topx_drilldown_card_meta();
+
+	foreach (topx_get_ds_list() as $key => $entry) {
+		if (($entry['supported'] ?? 'false') !== 'true') {
+			continue;
+		}
+
+		foreach ($meta as $card => $def) {
+			$cards[topx_overview_composite_key((int) $key, $card)] = [
+				'title'      => $entry['name'] . ' : ' . $def['title'],
+				'span'       => $def['span'],
+				'expandable' => $def['expandable'],
+				'ds_key'     => (int) $key,
+				'card'       => $card,
+			];
+		}
+	}
+
+	return $cards;
+}
+
+/**
+ * The full Overview card catalogue: the aggregate cards followed by the
+ * composite per-Data-Source cards. Used to populate the "Add card" dropdown,
+ * validate card keys and resolve a card's title/span for rendering.
+ *
+ * @return array The merged card metadata keyed by card key.
+ */
+function topx_overview_card_catalog(): array {
+	return topx_overview_card_meta() + topx_overview_datasource_cards();
 }
 
 /**
@@ -549,6 +695,14 @@ function topx_overview_available_cards(): array {
  */
 function topx_overview_card_body(string $key): string {
 	global $config;
+
+	// Composite "<ds>:<card>" keys render a specific Data Source's drilldown
+	// card right on the Overview; plain keys fall through to the aggregate cards.
+	$composite = topx_overview_parse_composite_key($key);
+
+	if ($composite !== null) {
+		return topx_overview_datasource_card_body($composite['ds_key'], $composite['card']);
+	}
 
 	ob_start();
 
@@ -671,6 +825,78 @@ function topx_overview_card_body(string $key): string {
 }
 
 /**
+ * Renders a supported Data Source's drilldown card as an Overview card body.
+ * Resolves the signed data source key against the live list, guarding against a
+ * source that has since been removed or made unsupported, and drives the card
+ * with the Overview's own TopX (records) selector plus the source's Default
+ * Sort so each composite card ranks the way its definition intends.
+ *
+ * @param int    $ds_key The signed data source key parsed from the card key.
+ * @param string $card   The drilldown card key (rankings, chart, ...).
+ *
+ * @return string The rendered card body, or an empty-state message.
+ */
+function topx_overview_datasource_card_body(int $ds_key, string $card): string {
+	$list = topx_get_ds_list();
+
+	if (!array_key_exists($ds_key, $list) || ($list[$ds_key]['supported'] ?? 'false') !== 'true') {
+		return '<p class="topxDashEmpty">' . __esc('This data source is no longer available.', 'topx') . '</p>';
+	}
+
+	if (!array_key_exists($card, topx_drilldown_card_meta())) {
+		return '<p class="topxDashEmpty">' . __esc('Unknown card.', 'topx') . '</p>';
+	}
+
+	$ds = [
+		'key'       => $ds_key,
+		'supported' => true,
+		'entry'     => $list[$ds_key],
+	];
+
+	return topx_drilldown_card_body($card, $ds, topx_overview_card_filter($list[$ds_key]));
+}
+
+/**
+ * The filter used to render the Overview's composite Data Source cards: the
+ * record limit comes from the Overview's shared TopX selector (so it affects
+ * every data-source card at once), while the sort follows each source's own
+ * Default Sort and the statistic is the average.
+ *
+ * @param array $entry A data source list entry (carries its Default Sort).
+ *
+ * @return array{records: int, sort: string, what: string}
+ */
+function topx_overview_card_filter(array $entry): array {
+	return [
+		'records' => topx_overview_records(),
+		'sort'    => (($entry['sorting'] ?? 'desc') === 'asc') ? 'asc' : 'desc',
+		'what'    => 'average',
+	];
+}
+
+/**
+ * The Overview's shared TopX (record-limit) selection, validated and persisted
+ * in the session. A validated request value wins and is remembered; otherwise
+ * the stored value (default Top 5) is used. Only the composite Data Source cards
+ * honour it - the aggregate cards ignore the record limit.
+ *
+ * @return int The validated record limit (0 means All).
+ */
+function topx_overview_records(): int {
+	$filters = topx_filter_arrays();
+
+	if (isset_request_var('records') && array_key_exists(get_nfilter_request_var('records'), $filters['records'])) {
+		$_SESSION['sess_topx_overview_records'] = get_nfilter_request_var('records');
+	}
+
+	if (!isset($_SESSION['sess_topx_overview_records'])) {
+		$_SESSION['sess_topx_overview_records'] = 5;
+	}
+
+	return topx_record_limit($_SESSION['sess_topx_overview_records']);
+}
+
+/**
  * Render a complete Overview card.
  *
  * @param string $key      The card key.
@@ -679,7 +905,7 @@ function topx_overview_card_body(string $key): string {
  * @return string The card HTML, or '' for an unknown key.
  */
 function topx_overview_render_card(string $key, bool $expanded = false): string {
-	$meta = topx_overview_card_meta();
+	$meta = topx_overview_card_catalog();
 
 	if (!isset($meta[$key])) {
 		return '';
@@ -738,15 +964,21 @@ function topx_overview_dashboard(): void {
 
 	topx_dashboard_print_refresh($current_refresh, $refresh_page);
 
-	$meta   = topx_overview_card_meta();
-	$layout = topx_dashboard_layout('overview', topx_overview_available_cards());
-	$absent = array_values(array_diff(topx_overview_available_cards(), $layout['order']));
+	// View glue: topx_overview_dashboard() includes Cacti's timespan/header
+	// libraries and cannot be unit-tested; the catalogue, records selector and
+	// composite-card wiring are covered directly by their own unit tests.
+	// @codeCoverageIgnoreStart
+	$meta   = topx_overview_card_catalog();
+	$layout = topx_dashboard_layout('overview', array_keys($meta));
+	$absent = array_values(array_diff(array_keys($meta), $layout['order']));
 
 	print '<div class="topxDashToolbar">';
 	topx_dashboard_toolbar_timespan();
+	topx_dashboard_toolbar_records(topx_overview_records());
 	topx_dashboard_toolbar_add($absent, $meta);
 	topx_dashboard_toolbar_refresh($current_refresh);
 	print '</div>';
+	// @codeCoverageIgnoreEnd
 
 	print '<div id="topx_dashboard" class="topxDashGrid"'
 		. ' data-card-action="overview_card" data-layout-action="overview_layout" data-refresh-action="overview_refresh"'
@@ -762,9 +994,11 @@ function topx_overview_dashboard(): void {
 
 	$catalog = [];
 
-	foreach (topx_overview_available_cards() as $key) {
+	// @codeCoverageIgnoreStart
+	foreach (array_keys($meta) as $key) {
 		$catalog[$key] = $meta[$key]['title'];
 	}
+	// @codeCoverageIgnoreEnd
 
 	print '<script type="text/javascript" ' . plugin_topx_csp_nonce() . '>var topxDashCatalog = ' . json_encode($catalog, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . '; initTopxDashboard();</script>';
 }
@@ -816,11 +1050,16 @@ function topx_dashboard_resolve_ds(): ?array {
 
 /**
  * The persisted drilldown filter (records, sort, what), validated and stored in
- * the session. A validated request value wins and is remembered.
+ * the session. A validated request value wins and is remembered. When no sort
+ * has been chosen yet, the source's own Default Sort is used so a decreasing
+ * source opens lowest-first rather than always defaulting to descending.
+ *
+ * @param string $default_sort The source's Default Sort ('asc' or 'desc') used
+ *                             when the session has no stored sort yet.
  *
  * @return array{records: int, sort: string, what: string}
  */
-function topx_dashboard_drill_filter(): array {
+function topx_dashboard_drill_filter(string $default_sort = 'desc'): array {
 	$filters = topx_filter_arrays();
 
 	if (isset_request_var('records') && array_key_exists(get_nfilter_request_var('records'), $filters['records'])) {
@@ -836,7 +1075,7 @@ function topx_dashboard_drill_filter(): array {
 	}
 
 	if (!isset($_SESSION['sess_topx_sort'])) {
-		$_SESSION['sess_topx_sort'] = 'desc';
+		$_SESSION['sess_topx_sort'] = ($default_sort === 'asc') ? 'asc' : 'desc';
 	}
 
 	if (isset_request_var('what') && array_key_exists(get_nfilter_request_var('what'), $filters['what'])) {
@@ -924,7 +1163,7 @@ function topx_drilldown_payload(array $ds, array $filter): array {
  */
 function topx_drilldown_format(float $value, array $source, bool $supported): string {
 	if ($supported && isset($source['final_operation'])) {
-		return topx_final_operation($value, (string) $source['final_operation'], (string) $source['final_unit'], (string) $source['final_number']);
+		return topx_final_operation($value, (string) $source['final_operation'], (string) $source['final_unit'], (string) $source['final_number'], (string) ($source['final_decimals'] ?? ''));
 	}
 
 	return topx_human_readable($value);
@@ -933,15 +1172,22 @@ function topx_drilldown_format(float $value, array $source, bool $supported): st
 /**
  * Render the body of a Drilldown card.
  *
- * @param string $key The card key.
- * @param array  $ds  The resolved data source.
+ * @param string $key    The card key.
+ * @param array  $ds     The resolved data source.
+ * @param array|null $filter An explicit filter (records, sort, what); when null
+ *                           the persisted drilldown filter is used. The Overview
+ *                           passes its own filter so its composite cards honour
+ *                           the Overview TopX selector instead of the drilldown's.
  *
  * @return string The card body HTML.
  */
-function topx_drilldown_card_body(string $key, array $ds): string {
+function topx_drilldown_card_body(string $key, array $ds, ?array $filter = null): string {
 	global $config;
 
-	$filter  = topx_dashboard_drill_filter();
+	if ($filter === null) {
+		$filter = topx_dashboard_drill_filter((string) ($ds['entry']['sorting'] ?? 'desc'));
+	}
+
 	$payload = topx_drilldown_payload($ds, $filter);
 	$source  = $payload['source'];
 	$rows    = $payload['rows'];
@@ -989,11 +1235,82 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			$labels = [];
 			$full   = [];
 			$values = [];
+			$peaks  = [];
+			$colors = [];
+			$peak_colors = [];
+			$legend = [];
+
+			// Threshold colouring only applies when the source actually defines a
+			// Normal/Warning/Alert range. A source with no bands (e.g. an uptime
+			// ranking) shows a plain Peak/Average bullet instead of painting every
+			// bar as an alert.
+			$has_range = $ds['supported'] && topx_source_has_range($source);
+
+			$pattern = ($ds['supported'] && isset($source['chart_label'])) ? (string) $source['chart_label'] : '';
+
+			// Resolve all chart-label tokens in bulk (two queries) rather than
+			// one query per bar, so an All-records ranking with many rows does
+			// not fan out into thousands of per-row lookups.
+			$token_map = [];
+
+			if ($pattern !== '') {
+				$token_map = topx_chart_label_tokens_bulk(array_map(static function ($row) {
+					return isset($row['ldid']) ? (int) $row['ldid'] : 0;
+				}, $rows));
+			}
 
 			foreach ($rows as $row) {
-				$labels[] = topx_short_label((string) $row['name']);
+				$value = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
+				$peak  = is_null($row['xpeak']) ? 0 : (float) $row['xpeak'];
+				$label = '';
+
+				if ($pattern !== '' && isset($row['ldid'])) {
+					$label = topx_apply_chart_label($pattern, $token_map[(int) $row['ldid']] ?? []);
+				}
+
+				if ($label === '') {
+					$label = topx_short_label((string) $row['name']);
+				}
+
+				$labels[] = $label;
 				$full[]   = (string) $row['name'];
-				$values[] = is_null($row['xvalue']) ? 0 : (float) $row['xvalue'];
+				$values[] = $value;
+				$peaks[]  = $peak;
+
+				if ($has_range) {
+					$avg_class  = topx_range_class($value, $source);
+					$peak_class = topx_range_class($peak, $source);
+
+					if ($avg_class !== '' && $peak_class !== '') {
+						$colors[]      = topx_range_color($avg_class);
+						$peak_colors[] = topx_range_peak_color($peak_class);
+					}
+				}
+			}
+
+			$ranged = $has_range && cacti_sizeof($values) > 0 && cacti_sizeof($colors) === cacti_sizeof($values);
+
+			if ($ranged) {
+				// Six-swatch legend keyed to the two series: the solid average bar
+				// (full band colour) and the muted peak range band behind it (a
+				// darker tint of the same band).
+				$legend = [
+					['label' => __('Peak Normal', 'topx'),  'color' => topx_range_peak_color('normal')],
+					['label' => __('Peak Warning', 'topx'), 'color' => topx_range_peak_color('warning')],
+					['label' => __('Peak Alert', 'topx'),   'color' => topx_range_peak_color('alert')],
+					['label' => __('Avg Normal', 'topx'),    'color' => topx_range_color('normal')],
+					['label' => __('Avg Warning', 'topx'),   'color' => topx_range_color('warning')],
+					['label' => __('Avg Alert', 'topx'),     'color' => topx_range_color('alert')],
+				];
+			} else {
+				// No usable health range: a plain, theme-legible Peak/Average
+				// bullet with uniform colours and a two-swatch legend.
+				$colors      = array_fill(0, cacti_sizeof($values), topx_chart_plain_avg_color());
+				$peak_colors = array_fill(0, cacti_sizeof($values), topx_chart_plain_peak_color());
+				$legend      = [
+					['label' => __('Peak', 'topx'),    'color' => topx_chart_plain_peak_color()],
+					['label' => __('Average', 'topx'), 'color' => topx_chart_plain_avg_color()],
+				];
 			}
 
 			// The value axis is labelled with the data source's own unit
@@ -1001,7 +1318,7 @@ function topx_drilldown_card_body(string $key, array $ds): string {
 			// axis is left unlabelled rather than repeating a generic word.
 			$axis = ($ds['supported'] && isset($source['unit']) && $source['unit'] !== '') ? (string) $source['unit'] : '';
 
-			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], [], $full);
+			print topx_dashboard_chart($labels, $values, $axis, true, $payload['avg'], $colors, $full, $peaks, $peak_colors, $legend);
 
 			break;
 		case 'tiles':
@@ -1181,7 +1498,12 @@ function topx_drilldown_dashboard(): void {
 		return;
 	}
 
-	$filter  = topx_dashboard_drill_filter();
+	// View glue: the source's Default Sort seeds the session sort on first open.
+	// topx_drilldown_dashboard() cannot be unit-tested (it includes Cacti's
+	// timespan library); topx_dashboard_drill_filter() is covered directly.
+	// @codeCoverageIgnoreStart
+	$filter  = topx_dashboard_drill_filter((string) ($ds['entry']['sorting'] ?? 'desc'));
+	// @codeCoverageIgnoreEnd
 	$filters = topx_filter_arrays();
 	$list    = topx_get_ds_list();
 
@@ -1218,6 +1540,12 @@ function topx_drilldown_dashboard(): void {
 
 	topx_dashboard_toolbar_timespan();
 	topx_dashboard_toolbar_add($absent, $meta);
+	// View glue: topx_drilldown_dashboard() cannot be unit-tested because it
+	// includes Cacti's timespan library. The button logic is covered directly by
+	// the topx_dashboard_toolbar_edit() unit tests.
+	// @codeCoverageIgnoreStart
+	topx_dashboard_toolbar_edit($ds);
+	// @codeCoverageIgnoreEnd
 	topx_dashboard_toolbar_refresh($current_refresh);
 	print '</div>';
 

@@ -57,7 +57,10 @@ if (!is_readable($clover_path)) {
  * @return array<string, array<int, bool>>
  */
 function changed_lines($base_ref) {
-	$command = 'git diff --no-ext-diff --unified=0 --no-color --diff-filter=AM ' . escapeshellarg($base_ref) . '...HEAD -- "*.php"';
+	// --ignore-cr-at-eol: a line that differs only by CRLF vs LF (e.g. after the
+	// repository's one-time normalization to LF via .gitattributes) is not a
+	// content change, so it must not count towards changed-line coverage.
+	$command = 'git diff --ignore-cr-at-eol --no-ext-diff --unified=0 --no-color --diff-filter=AM ' . escapeshellarg($base_ref) . '...HEAD -- "*.php"';
 	$output  = [];
 	$status  = 0;
 
@@ -167,6 +170,20 @@ $unmeasured_allowlist = [
 	// that renders the TopX view at load, so it cannot load in the isolated
 	// unit process. Its pure helpers live in includes/ and are unit tested.
 	'topx.php',
+
+	// Management UI entry point: same top-level chdir + include of
+	// ../../include/auth.php, so it cannot load in the isolated unit process.
+	// Its pure helpers live in includes/sources.php and are unit tested.
+	'topx_sources.php',
+
+	// Directory index guards: each is the standard Cacti stub that redirects to
+	// the Cacti root and has no testable logic (only a license header + a
+	// header('Location: ...') call executed at load), so they cannot be loaded
+	// in the isolated unit process and carry nothing to measure.
+	'index.php',
+	'css/index.php',
+	'images/index.php',
+	'includes/index.php',
 ];
 $unmeasured            = array_values(array_diff(array_keys($changed), array_keys($measured)));
 $unexpected_unmeasured = array_values(array_diff($unmeasured, $unmeasured_allowlist));

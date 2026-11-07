@@ -348,7 +348,7 @@ function topxDashRenderCharts(root) {
 		// and distinct on every Cacti theme. Flat grey (#555) was invisible on
 		// dark themes.
 		var palette = (cfg.barColors && cfg.barColors.length) ? cfg.barColors : [
-			'#3c9a5f', '#2e86de', '#8e5bd0', '#d9830f',
+			'#2ecc71', '#2e86de', '#8e5bd0', '#f0932b',
 			'#17a2a2', '#c9b03a', '#c0556f', '#5aa0c9'
 		];
 
@@ -374,7 +374,12 @@ function topxDashRenderCharts(root) {
 				rotated: !!cfg.rotated,
 				x: {
 					type: 'category',
-					categories: cfg.labels
+					categories: cfg.labels,
+					tick: {
+						// Keep each ranking label on a single line instead of
+						// wrapping long "host - datasource" names onto two rows.
+						multiline: false
+					}
 				},
 				y: {
 					label: {
@@ -410,6 +415,54 @@ function topxDashRenderCharts(root) {
 			}
 		};
 
+		// When per-bar peaks are supplied, render each bar as a bullet-style
+		// overlay: a thick, light background bar for the peak with a thinner,
+		// solid bar for the average nested inside it. billboard's bar.overlap
+		// draws the two series at the same category position (instead of side by
+		// side) and per-series bar.width makes the average bar thinner, so the
+		// average reads as a measure bar inside the peak range band.
+		var dual = cfg.rotated && cfg.peaks && cfg.peaks.length === cfg.values.length;
+
+		if (dual) {
+			options.data.columns = [
+				[cfg.peakLabel].concat(cfg.peaks),
+				[cfg.averageLabel].concat(cfg.values)
+			];
+
+			options.bar = {
+				overlap: true,
+				width: {}
+			};
+			options.bar.width[cfg.peakLabel]    = {ratio: 0.82};
+			options.bar.width[cfg.averageLabel] = {ratio: 0.40};
+
+			options.data.color = function(inColor, d) {
+				if (d && typeof d === 'object' && d.id === cfg.peakLabel) {
+					// Mild, darker tint of the peak's own band; falls back to the
+					// previous neutral grey band when no thresholds are defined.
+					if (cfg.peakColors && cfg.peakColors.length) {
+						return cfg.peakColors[d.index % cfg.peakColors.length];
+					}
+
+					return 'rgba(130,130,130,0.28)';
+				}
+
+				if (d && typeof d === 'object' && typeof d.index === 'number') {
+					if (cfg.barColors && cfg.barColors.length) {
+						return cfg.barColors[d.index % cfg.barColors.length];
+					}
+
+					return palette[d.index % palette.length];
+				}
+
+				return palette[0];
+			};
+
+			// A custom swatch legend (Peak/Avg x Normal/Warning/Alert) replaces
+			// billboard's series legend, which would only show "Peak"/"Average".
+			options.legend = {show: !(cfg.legend && cfg.legend.length)};
+		}
+
 		// Horizontal (rotated) ranking charts grow with the record count so Top
 		// 10/20/50 stay readable instead of squeezing bars into a fixed height.
 		if (cfg.rotated) {
@@ -429,7 +482,58 @@ function topxDashRenderCharts(root) {
 		}
 
 		bb.generate(options);
+
+		if (cfg.legend && cfg.legend.length) {
+			topxDashRenderChartLegend(node, cfg.legend);
+		}
 	});
+}
+
+/**
+ * Render a custom swatch legend beneath a chart from [{label, color}] entries.
+ * Styles are set as DOM properties (not inline style attributes or scripts) so
+ * nothing trips the Content-Security-Policy. Replaces any prior legend so a
+ * card refresh does not stack duplicates.
+ */
+function topxDashRenderChartLegend(node, items) {
+	if (!node || !node.parentNode) {
+		return;
+	}
+
+	var prior = node.parentNode.querySelector('.topxDashChartLegend');
+	if (prior) {
+		prior.parentNode.removeChild(prior);
+	}
+
+	var wrap = document.createElement('div');
+	wrap.className = 'topxDashChartLegend';
+	wrap.style.display = 'flex';
+	wrap.style.flexWrap = 'wrap';
+	wrap.style.gap = '3px 14px';
+	wrap.style.justifyContent = 'center';
+	wrap.style.margin = '4px 0 2px';
+	wrap.style.fontSize = '11px';
+	wrap.style.lineHeight = '14px';
+
+	items.forEach(function(it) {
+		var entry = document.createElement('span');
+		entry.style.display = 'inline-flex';
+		entry.style.alignItems = 'center';
+		entry.style.gap = '5px';
+
+		var swatch = document.createElement('span');
+		swatch.style.display = 'inline-block';
+		swatch.style.width = '11px';
+		swatch.style.height = '11px';
+		swatch.style.borderRadius = '2px';
+		swatch.style.backgroundColor = it.color;
+
+		entry.appendChild(swatch);
+		entry.appendChild(document.createTextNode(it.label));
+		wrap.appendChild(entry);
+	});
+
+	node.parentNode.insertBefore(wrap, node.nextSibling);
 }
 
 /** Wire a single card's drag handle (mouse + keyboard) and drag events. */

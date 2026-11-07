@@ -1,6 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group, Inc.                           |
  | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
@@ -18,7 +19,6 @@
  | This code is designed, written, and maintained by the Cacti Group. See  |
  | about.php and/or the AUTHORS file for specific developer information.   |
  +-------------------------------------------------------------------------+
- | https://github.com/xmacan/plugin_topx                                   |
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */
@@ -143,20 +143,25 @@ function topx_human_readable($bytes, bool $decimal = false): string {
 /**
  * Applies a data source's "final operation" to a computed value, producing
  * the display string shown in the TopX table. 'strip' simply rounds to the
- * configured precision and appends the unit; '/' walks a slash-delimited set
- * of divisors/suffixes (e.g. bit/Kbit/Mbit) and picks the largest unit whose
- * scaled value is greater than one.
+ * configured number of decimal places and appends the unit; '/' walks a
+ * slash-delimited set of divisors/suffixes (e.g. bit/Kbit/Mbit) and picks the
+ * largest unit whose scaled value is greater than one. Both modes round to
+ * $final_decimals places (an empty value means "Auto", i.e. two places).
  *
  * @param float|int|string $value           The computed value to format.
  * @param string           $final_operation The operation token (strip or /).
  * @param string           $final_unit      Unit label, or slash-delimited set.
- * @param string           $final_number    Rounding precision, or slash set.
+ * @param string           $final_number    Divisor ladder for the '/' mode
+ *                                        (ignored by 'strip').
+ * @param string           $final_decimals  Decimal places (0-4), or '' for Auto.
  *
  * @return string The formatted, unit-suffixed display string.
  */
-function topx_final_operation($value, string $final_operation, string $final_unit, string $final_number): string {
+function topx_final_operation($value, string $final_operation, string $final_unit, string $final_number, string $final_decimals = ''): string {
+	$places = ($final_decimals === '') ? 2 : (int) $final_decimals;
+
 	if ($final_operation === 'strip') {
-		$value = round((float) $value, (int) $final_number) . ' ' . $final_unit;
+		$value = round((float) $value, $places) . ' ' . $final_unit;
 	} elseif ($final_operation === '/') {
 		$num = array_reverse(explode('/', $final_number), true);
 		$suf = array_reverse(explode('/', $final_unit), true);
@@ -169,7 +174,7 @@ function topx_final_operation($value, string $final_operation, string $final_uni
 			$xvalue = $value / $num[$f];
 
 			if ($xvalue > 1) {
-				$value = round($xvalue, 2) . ' ' . $suf[$f];
+				$value = round($xvalue, $places) . ' ' . $suf[$f];
 
 				break;
 			}
@@ -181,18 +186,23 @@ function topx_final_operation($value, string $final_operation, string $final_uni
 
 /**
  * Builds the keyed data source list used to populate the filter dropdown from
- * the raw supported/unsupported rows. Supported sources (those matching a
- * plugin_topx_source hash) are keyed by the negative of their data template id
- * so the two sets never collide. Kept free of database access so it can be
- * unit tested directly.
+ * the raw supported/unsupported rows. Supported sources (each a plugin_topx_source
+ * definition) are keyed by the negative of their *definition* id, so a Data
+ * Template can carry several independent definitions (e.g. traffic_in and
+ * traffic_out ranked separately) and each appears as its own selectable entry.
+ * Unsupported templates are keyed by their positive template id, so the two sets
+ * never collide. Each entry also carries the underlying template_id used to look
+ * up data source instances. Kept free of database access so it can be unit
+ * tested directly.
  *
- * @param array $supported   Rows of supported data templates (dsname, dsid,
+ * @param array $supported   Rows of supported definitions (dsname, dsid [the
+ *                           plugin_topx_source id], tplid [the data template id],
  *                           dscount) flagged sup='true'.
  * @param array $unsupported Rows of unsupported data templates flagged
  *                           sup='false'.
  *
  * @return array The merged list keyed by signed id, each entry holding key,
- *               name, count and supported flags.
+ *               name, count, supported and template_id.
  */
 function topx_build_ds_list(array $supported, array $unsupported): array {
 	$list = [];
@@ -201,10 +211,12 @@ function topx_build_ds_list(array $supported, array $unsupported): array {
 		$key = ($ds['sup'] === 'true') ? -1 * (int) $ds['dsid'] : (int) $ds['dsid'];
 
 		$list[$key] = [
-			'key'       => $key,
-			'name'      => $ds['dsname'],
-			'count'     => $ds['dscount'],
-			'supported' => $ds['sup'],
+			'key'         => $key,
+			'name'        => $ds['dsname'],
+			'count'       => $ds['dscount'],
+			'supported'   => $ds['sup'],
+			'template_id' => isset($ds['tplid']) ? (int) $ds['tplid'] : (int) $ds['dsid'],
+			'sorting'     => isset($ds['sorting']) && $ds['sorting'] === 'asc' ? 'asc' : 'desc',
 		];
 	}
 
@@ -223,11 +235,11 @@ function topx_get_ds_list(): array {
 	// (local_data_id > 0); the data_template_data row with local_data_id = 0 is
 	// the template master itself, so a template that is defined but not used on
 	// any device is excluded rather than shown with a misleading count.
-	$supported = db_fetch_assoc("SELECT t3.dt_name AS dsname, t1.id AS dsid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'true' AS sup
+	$supported = db_fetch_assoc("SELECT t3.dt_name AS dsname, t3.id AS dsid, t1.id AS tplid, t3.sorting AS sorting, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'true' AS sup
 		FROM data_template AS t1
 		INNER JOIN data_template_data AS dtd ON t1.id = dtd.data_template_id AND dtd.local_data_id > 0
 		INNER JOIN plugin_topx_source AS t3 ON t1.hash = t3.hash
-		GROUP BY t1.id, t3.dt_name
+		GROUP BY t3.id, t3.dt_name, t1.id, t3.sorting
 		ORDER BY dsname");
 
 	$unsupported = db_fetch_assoc("SELECT CONCAT('unsupported - ', t1.name) AS dsname, t1.id AS dsid, COUNT(DISTINCT dtd.local_data_id) AS dscount, 'false' AS sup
@@ -278,6 +290,29 @@ function topx_combined_sum_average(string $table, int $id, string $base_rrd, str
 		LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
 		WHERE t1.data_template_id = ? AND rrd_name = ?",
 		array($base_rrd, $id, $where_rrd));
+
+	return topx_average_rows($rows);
+}
+
+/**
+ * Computes the mean of the two-field sum (A+B) across the instances of a data
+ * template, for the generic "A+B" ranking expression. The field names are bound,
+ * never concatenated.
+ *
+ * @param string $table   Whitelisted dsstats table name.
+ * @param int    $id      The data template id to aggregate.
+ * @param string $field_a The first rrd_name (the outer WHERE filter).
+ * @param string $field_b The second rrd_name (the correlated sub-select).
+ *
+ * @return float The mean of (A+B) across the matching data sources.
+ */
+function topx_combined_sum_mean(string $table, int $id, string $field_a, string $field_b): float {
+	$rows = db_fetch_assoc_prepared("SELECT t2.local_data_id AS ldid,
+		(average + (SELECT average FROM $table WHERE local_data_id = t2.local_data_id AND rrd_name = ?)) AS xvalue
+		FROM data_template_data AS t1
+		LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
+		WHERE t1.data_template_id = ? AND rrd_name = ?",
+		array($field_b, $id, $field_a));
 
 	return topx_average_rows($rows);
 }
@@ -410,6 +445,11 @@ function topx_overview_stats(): array {
 	$unsupported = 0;
 	$sources     = 0;
 
+	// A Data Template can carry several supported definitions, each its own list
+	// entry; count the template's data source instances only once so the total
+	// is not inflated by multi-definition templates.
+	$counted = [];
+
 	foreach ($list as $entry) {
 		if ($entry['supported'] === 'true') {
 			$supported++;
@@ -417,7 +457,12 @@ function topx_overview_stats(): array {
 			$unsupported++;
 		}
 
-		$sources += (int) $entry['count'];
+		$tpl = (int) ($entry['template_id'] ?? 0);
+
+		if (!isset($counted[$tpl])) {
+			$sources          += (int) $entry['count'];
+			$counted[$tpl]     = true;
+		}
 	}
 
 	return [
@@ -426,6 +471,30 @@ function topx_overview_stats(): array {
 		'total_types'       => $supported + $unsupported,
 		'total_sources'     => $sources,
 	];
+}
+
+/**
+ * Parses the optional trailing constant divisor from a single-field Metric
+ * Expression. A single-field source may be written "field/N" or
+ * "field=field/N" to scale the raw metric uniformly by N (for example SNMP
+ * uptime timeticks to days with /8640000), so the ranking, table and chart axis
+ * all use the scaled value rather than only the display formatter. Combined and
+ * percentage expressions carry no trailing /N and return 1. A zero or missing
+ * divisor is treated as 1 so values are never divided by zero. Kept free of
+ * database access so it can be unit tested directly.
+ *
+ * @param string $operation The Metric Expression.
+ *
+ * @return float The positive divisor, or 1.0 when none is specified.
+ */
+function topx_operation_divisor(string $operation): float {
+	if (preg_match('~/\s*([0-9]*\.?[0-9]+)\s*$~', $operation, $matches)) {
+		$divisor = (float) $matches[1];
+
+		return $divisor != 0.0 ? $divisor : 1.0;
+	}
+
+	return 1.0;
 }
 
 /**
@@ -451,13 +520,14 @@ function topx_overview_stats(): array {
  *               average.
  */
 function topx_compute_ranking(int $ds_key, bool $supported, string $table, string $order, string $dir, int $limit, string $computed_order): array {
-	$id           = $supported ? -1 * $ds_key : $ds_key;
 	$limit_clause = $limit > 0 ? " LIMIT $limit" : '';
 	$source       = [];
 	$result       = [];
 	$avg          = 0;
 
 	if (!$supported) {
+		$id = $ds_key;
+
 		$from = " FROM data_template_data AS t1
 			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
 			WHERE t1.data_template_id = ?";
@@ -470,50 +540,54 @@ function topx_compute_ranking(int $ds_key, bool $supported, string $table, strin
 		return ['source' => $source, 'rows' => $result, 'avg' => (float) $avg];
 	}
 
-	$source = db_fetch_row_prepared('SELECT plugin_topx_source.*
-		FROM plugin_topx_source
-		INNER JOIN data_template ON plugin_topx_source.hash = data_template.hash
-		WHERE data_template.id = ?',
-		array($id));
+	// A supported entry is keyed by the negative of its plugin_topx_source id, so
+	// a Data Template can carry several independent definitions. Resolve the
+	// definition by its own id, then derive the data template id (via the stored
+	// hash) that locates the data source instances to rank.
+	$source = db_fetch_row_prepared('SELECT * FROM plugin_topx_source WHERE id = ?', array(-1 * $ds_key));
 
 	if (!is_array($source)) {
 		$source = [];
 	}
 
+	$id = (int) db_fetch_cell_prepared('SELECT id FROM data_template WHERE hash = ?', array($source['hash'] ?? ''));
+
 	$operation = $source['operation'] ?? '';
+	$divisor   = topx_operation_divisor($operation);
 
-	if (strpos($operation, '=') !== false) {
+	// Single-field source: "field=field", or "field/N" / "field=field/N" with a
+	// trailing constant divisor N that scales the raw metric uniformly (e.g.
+	// timeticks to days), so the ranking, table and chart axis all use the
+	// scaled value. Combined and percentage sources fall through to the branches
+	// below.
+	$single = (strpos($operation, '=') !== false) || preg_match('~^[a-z0-9_]+/[0-9.]+$~i', $operation);
+
+	if ($single) {
 		$from = " FROM data_template_data AS t1
 			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
 			WHERE t1.data_template_id = ?";
 
-		$avg    = db_fetch_cell_prepared("SELECT AVG(average)$from", array($id));
-		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak
-			$from ORDER BY t2.$order $dir$limit_clause", array($id));
-	}
-
-	if (strpos($operation, '/') !== false) {
-		$from = " FROM data_template_data AS t1
-			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
-			WHERE t1.data_template_id = ?";
-
-		$avg    = db_fetch_cell_prepared("SELECT AVG(average)$from", array($id));
-		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak
-			$from ORDER BY t2.$order $dir$limit_clause", array($id));
+		$avg    = db_fetch_cell_prepared("SELECT AVG(average) / ?$from", array($divisor, $id));
+		$result = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid, CONCAT(t1.name_cache, ' - ', t2.rrd_name) AS name, t2.average / ? AS xvalue, t2.peak / ? AS xpeak
+			$from ORDER BY t2.$order $dir$limit_clause", array($divisor, $divisor, $id));
 	} elseif (strpos($operation, '%') !== false) {
+		// Percentage "A%B": rank each instance by 100 * B / A. The field names
+		// come from the saved expression, so they are bound, never concatenated.
+		list($denom_rrd, $numer_rrd) = array_pad(explode('%', $operation, 2), 2, '');
+
 		$columns = "name_cache AS name, t2.local_data_id AS ldid,
-			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xvalue,
-			100 * peak / (SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xpeak";
+			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = ?) AS xvalue,
+			100 * peak / (SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name = ?) AS xpeak";
 
 		$from = " FROM data_template_data AS t1
 			LEFT JOIN $table AS t2 ON t1.local_data_id = t2.local_data_id
-			WHERE t1.data_template_id = ? AND rrd_name = 'hdd_used'";
+			WHERE t1.data_template_id = ? AND rrd_name = ?";
 
-		$result = db_fetch_assoc_prepared("SELECT $columns $from ORDER BY $computed_order $dir$limit_clause", array($id));
+		$result = db_fetch_assoc_prepared("SELECT $columns $from ORDER BY $computed_order $dir$limit_clause", array($denom_rrd, $denom_rrd, $id, $numer_rrd));
 
 		$xavg = db_fetch_assoc_prepared("SELECT t1.local_data_id AS ldid,
-			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = 'hdd_total') AS xvalue
-			$from", array($id));
+			100 * average / (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name = ?) AS xvalue
+			$from", array($denom_rrd, $id, $numer_rrd));
 
 		$avg = topx_average_rows($xavg);
 	} elseif ($operation === 'discards_in+errors_in') {
@@ -525,6 +599,14 @@ function topx_compute_ranking(int $ds_key, bool $supported, string $table, strin
 	} elseif ($operation === 'traffic_in+traffic_out') {
 		$avg    = 8 * topx_combined_sum_average($table, $id, 'traffic_in', 'traffic_out');
 		$result = topx_combined_result($table, $id, 'traffic_in', 'traffic_out', 8, $computed_order, $dir, $limit_clause);
+	} elseif (strpos($operation, '+') !== false) {
+		// Generic two-field sum "A+B": rank by A+B and average the sums across
+		// the instances. Field names come from the saved expression and are
+		// bound inside the helpers, never concatenated.
+		list($field_a, $field_b) = array_pad(explode('+', $operation, 2), 2, '');
+
+		$avg    = topx_combined_sum_mean($table, $id, $field_a, $field_b);
+		$result = topx_combined_result($table, $id, $field_a, $field_b, 1, $computed_order, $dir, $limit_clause);
 	}
 
 	return ['source' => $source, 'rows' => $result, 'avg' => (float) $avg];

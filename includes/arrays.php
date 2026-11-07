@@ -1,6 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
+ | Copyright (C) 2004-2026 The Cacti Group, Inc.                           |
  | Copyright (C) 2015-2026 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
@@ -18,7 +19,6 @@
  | This code is designed, written, and maintained by the Cacti Group. See  |
  | about.php and/or the AUTHORS file for specific developer information.   |
  +-------------------------------------------------------------------------+
- | https://github.com/xmacan/plugin_topx                                   |
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
 */
@@ -62,15 +62,30 @@ function topx_filter_arrays(): array {
 /**
  * Config_arrays plugin hook. Publishes the TopX filter option arrays as
  * globals so they are available to any Cacti code that consumes plugin
- * configuration arrays. Called by Cacti's plugin architecture via the
- * 'config_arrays' hook.
+ * configuration arrays, and registers the plugin's Console > Management menu
+ * entry. Called by Cacti's plugin architecture via the 'config_arrays' hook.
  *
  * @return void
  *
  * @global array $topx_filter_arrays Populated with the TopX filter arrays.
+ * @global array $menu              Cacti's admin menu registry; appended with
+ *                                  the TopX Data Sources management entry.
  */
 function topx_config_arrays(): void {
-	global $topx_filter_arrays;
+	global $topx_filter_arrays, $menu;
+
+	// Keep the plugin's schema/realm registration current on every page load
+	// (not just at install/enable time), so upgrades apply promptly. Guarded so
+	// the pure arrays can still be unit tested without loading setup.php.
+	if (function_exists('plugin_topx_upgrade')) {
+		plugin_topx_upgrade();
+	}
 
 	$topx_filter_arrays = topx_filter_arrays();
+
+	if (is_realm_allowed(1) || api_user_realm_auth('topx_sources.php')) {
+		// 'Management' is a Cacti-core menu label, so it is intentionally left
+		// in the default domain to merge into the existing Management section.
+		$menu[__('Management')]['plugins/topx/topx_sources.php'] = __('TopX Data Sources', 'topx');
+	}
 }

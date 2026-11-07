@@ -61,3 +61,60 @@
 	max-width: 100%;
 }
 
+/* Supported-status pills on the Data Sources management grid. Mirrors Cacti's
+   deviceStatus pill (present only in some themes) so the column renders as a
+   rounded pill on every theme and Cacti version, while the deviceUp/deviceDown
+   classes supply the status colour. */
+span.deviceStatus {
+	display: inline-block;
+	padding: 1px 9px;
+	border: 1px solid transparent;
+	border-radius: 10px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 16px;
+	white-space: nowrap;
+}
+
+span.deviceStatus.deviceUp {
+	background-color: rgba(40, 180, 40, 0.15);
+	border-color: rgba(40, 180, 40, 0.55);
+	color: #1b7a1b !important;
+}
+
+span.deviceStatus.deviceDown {
+	background-color: rgba(211, 47, 47, 0.15);
+	border-color: rgba(211, 47, 47, 0.55);
+	color: #c62828 !important;
+}
+
+/* Clickable token helpers on the Data Source editor (append to the Metric
+   Expression / Chart Label Pattern on click). Theme-neutral: colour is
+   inherited via currentColor. */
+.topxTokens {
+	line-height: 1.8;
+}
+
+.topxTokenGroup strong {
+	margin-right: 4px;
+}
+
+a.topxToken {
+	display: inline-block;
+	padding: 0 6px;
+	border: 1px solid rgba(128, 128, 128, 0.45);
+	border-radius: 9px;
+	font-family: monospace;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+a.topxToken:hover,
+a.topxToken:focus {
+	background-color: rgba(128, 128, 128, 0.18);
+}
+
+.topxTokenHint {
+	opacity: 0.8;
+}
+

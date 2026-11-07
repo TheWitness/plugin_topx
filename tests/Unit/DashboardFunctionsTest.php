@@ -121,4 +121,152 @@ describe('topx_compute_ranking', function (): void {
 
 		unset($GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
 	});
+
+	it('resolves a supported definition by its own id, not the template id', function (): void {
+		$fetched_source_id = null;
+
+		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) use (&$fetched_source_id) {
+			if (strpos($sql, 'FROM plugin_topx_source WHERE id') !== false) {
+				$fetched_source_id = $p[0];
+
+				return ['id' => 8, 'hash' => 'abc', 'operation' => 'cpu=cpu', 'final_unit' => '%'];
+			}
+
+			return [];
+		};
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) {
+			// Hash -> data template id resolution, then the AVG() query.
+			return strpos($sql, 'FROM data_template WHERE hash') !== false ? 12 : 3;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) {
+			return [['ldid' => 1, 'name' => 'cpu', 'xvalue' => 10, 'xpeak' => 20]];
+		};
+
+		// ds_key -8 => plugin_topx_source id 8 (a specific definition).
+		$out = topx_compute_ranking(-8, true, 'data_source_stats_hourly', 'average', 'DESC', 5, 'xvalue');
+
+		expect($fetched_source_id)->toBe(8);
+		expect($out['source']['operation'])->toBe('cpu=cpu');
+		expect($out['rows'])->toHaveCount(1);
+
+		unset($GLOBALS['__test_db_fetch_row_prepared'], $GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
+
+	it('applies a trailing divisor from the metric expression to the value queries', function (): void {
+		$captured = [];
+
+		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
+			if (strpos($sql, 'FROM plugin_topx_source WHERE id') !== false) {
+				return ['id' => 8, 'hash' => 'abc', 'operation' => 'uptime=uptime/8640000'];
+			}
+
+			return [];
+		};
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) use (&$captured) {
+			if (strpos($sql, 'FROM data_template WHERE hash') !== false) {
+				return 12;
+			}
+
+			$captured['avg'] = ['sql' => $sql, 'params' => $p];
+
+			return 3;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) use (&$captured) {
+			$captured['rows'] = ['sql' => $sql, 'params' => $p];
+
+			return [['ldid' => 1, 'name' => 'uptime', 'xvalue' => 24, 'xpeak' => 25]];
+		};
+
+		$out = topx_compute_ranking(-8, true, 'data_source_stats_hourly', 'average', 'DESC', 5, 'xvalue');
+
+		// The divisor (8640000) is bound into the AVG and the per-row value/peak.
+		expect($captured['avg']['sql'])->toContain('AVG(average) / ?');
+		expect($captured['avg']['params'][0])->toBe(8640000.0);
+		expect($captured['rows']['sql'])->toContain('t2.average / ?');
+		expect($captured['rows']['sql'])->toContain('t2.peak / ?');
+		expect($captured['rows']['params'])->toBe([8640000.0, 8640000.0, 12]);
+		expect($out['rows'])->toHaveCount(1);
+
+		unset($GLOBALS['__test_db_fetch_row_prepared'], $GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
+
+	it('ranks a generic percentage expression A%B with bound field names', function (): void {
+		$captured = [];
+
+		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
+			if (strpos($sql, 'FROM plugin_topx_source WHERE id') !== false) {
+				return ['id' => 8, 'hash' => 'abc', 'operation' => 'total%used'];
+			}
+
+			return [];
+		};
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) {
+			return 12;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) use (&$captured) {
+			if (strpos($sql, 'ORDER BY') !== false) {
+				$captured['rows'] = ['sql' => $sql, 'params' => $p];
+
+				return [['ldid' => 1, 'name' => 'disk', 'xvalue' => 40, 'xpeak' => 55]];
+			}
+
+			$captured['avg'] = ['sql' => $sql, 'params' => $p];
+
+			return [['ldid' => 1, 'xvalue' => 40]];
+		};
+
+		$out = topx_compute_ranking(-8, true, 'data_source_stats_hourly', 'average', 'DESC', 5, 'xvalue');
+
+		// The denominator (total) and numerator (used) field names are bound.
+		expect($captured['rows']['sql'])->toContain('100 * average');
+		expect($captured['rows']['params'])->toBe(['total', 'total', 12, 'used']);
+		expect($out['avg'])->toBe(40.0);
+		expect($out['rows'])->toHaveCount(1);
+
+		unset($GLOBALS['__test_db_fetch_row_prepared'], $GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
+
+	it('ranks a generic two-field sum A+B via the mean of the sums', function (): void {
+		$captured = [];
+
+		$GLOBALS['__test_db_fetch_row_prepared'] = function ($sql, $p) {
+			if (strpos($sql, 'FROM plugin_topx_source WHERE id') !== false) {
+				return ['id' => 8, 'hash' => 'abc', 'operation' => 'reads+writes'];
+			}
+
+			return [];
+		};
+
+		$GLOBALS['__test_db_fetch_cell_prepared'] = function ($sql, $p) {
+			return 12;
+		};
+
+		$GLOBALS['__test_db_fetch_assoc_prepared'] = function ($sql, $p) use (&$captured) {
+			if (strpos($sql, 'ORDER BY') !== false) {
+				$captured['rows'] = ['sql' => $sql, 'params' => $p];
+
+				return [['ldid' => 1, 'name' => 'io', 'xvalue' => 30, 'xpeak' => 45]];
+			}
+
+			$captured['avg'] = ['sql' => $sql, 'params' => $p];
+
+			return [['ldid' => 1, 'xvalue' => 10], ['ldid' => 2, 'xvalue' => 30]];
+		};
+
+		$out = topx_compute_ranking(-8, true, 'data_source_stats_hourly', 'average', 'DESC', 5, 'xvalue');
+
+		// The sum mean binds field_b in the sub-select and field_a in the filter.
+		expect($captured['avg']['sql'])->toContain('average +');
+		expect($captured['avg']['params'])->toBe(['writes', 12, 'reads']);
+		expect($out['avg'])->toBe(20.0);
+		expect($out['rows'])->toHaveCount(1);
+
+		unset($GLOBALS['__test_db_fetch_row_prepared'], $GLOBALS['__test_db_fetch_cell_prepared'], $GLOBALS['__test_db_fetch_assoc_prepared']);
+	});
 });

@@ -2,75 +2,36 @@
 
 All notable changes to the TopX plugin are documented in this file.
 
-## 1.1
+## 1.2
 
-- Only list data sources that are actually in use: the data source dropdown and
-  the Overview tables/counts now exclude data source templates that no device
-  uses, and count real data source instances rather than the template master.
-- Renamed the drilldown "Value Distribution" card to "Values by % of Peak" and
-  added an explanatory caption describing the value bands.
-- The Overview "Data Sources" drilldown link now uses Cacti's ajax navigation
-  (class `pic`) instead of a full page reload.
-- Ranking Chart readability: short interface/alias axis labels (full data source
-  name on hover), the data source's own unit on the value axis (e.g. Bits,
-  Utilization), locale-formatted tooltip and axis values instead of long raw
-  floats, and a chart height that grows with the record count so Top 10/20/50
-  stay legible.
-- Chart colours: replaced the single flat grey bar fill (invisible on dark
-  themes) with theme-friendly, green-forward per-bar colours. The Ranking Chart
-  uses a readable categorical palette; the Uptime-by-Host chart uses an ordered
-  red -> green range so longer uptime reads as "good", matching Cacti's theme
-  severity conventions.
-- Reworked the UI into draggable card dashboards using the shared Cacti plugin
-  card engine (as in apcupsd/monitor/syslog): per-card tools (expand, maximize,
-  refresh, remove), an "Add card" catalogue, drag/keyboard reorder, a Cacti
-  timespan selector, an auto-refresh interval on the right and server-side
-  layout persistence per user.
-- Two dashboards: an all-data-source **Overview** (catalogue summary, source
-  distribution, an Uptime-by-Host bucketed bar chart and a sortable Data Sources
-  table with drilldown links) and a per-data-source **Drilldown** (rankings
-  table, billboard ranking chart, summary tiles, average/peak gauges and a value
-  distribution bar).
-- Replaced the fixed "age" filter with Cacti's standard timespan selector; kept
-  the data source, records, order and "what" filters.
-- Added `includes/dashboard.php` (card engine + cards), `js/topx_dashboard.js`
-  and `css/topx_dashboard.css`, all CSP-nonced and CSRF-protected; charts render
-  from JSON data islands via billboard.js so they survive in-place AJAX refresh.
-- Extracted the ranking computation into `topx_compute_ranking()` and added
-  timespan-to-bucket and uptime-bucketing helpers, with unit coverage.
-
-## 1.0
-
-Modernization for Cacti 1.2.32 standards:
-
-- Security: replaced every string-concatenated SQL query with prepared
-  statements, binding the data template id and whitelisting all dynamic
-  identifiers (dsstats table, order column, sort direction, record limit).
-- Security: all request input is now validated against an allowlist through
-  Cacti request helpers (`get_nfilter_request_var()`), and all output is run
-  through `html_escape()`/`__esc()`. The filter form uses Cacti's standard
-  `html_start_box()`/`get` form so it inherits Cacti's CSRF protection.
-- Restructured the plugin API into an `includes/` directory
-  (`includes/functions.php`, `includes/arrays.php`) with strongly typed,
-  PHPDoc-documented functions.
-- `setup.php` now registers the `config_arrays` hook, provisions its schema
-  idempotently through `api_plugin_db_table_create()`, seeds default sources
-  only when empty, and adds an install/upgrade/`check_config` lifecycle with
-  manifest-driven file pruning.
-- Internationalization: every user-facing string is wrapped in `__()`/`__esc()`
-  with the `topx` text domain. Added the `locales/` tree with
-  `build_gettext.sh`, `po/cacti.pot`, and the standard per-language catalogs.
-- CSS/JS organization: consolidated the per-theme `themes/*.css` into a single
-  theme-neutral `css/topx.css` (CSS custom properties + `currentColor`); moved
-  the inline chart initialization into `js/topx.js` fed by a JSON data island,
-  migrated the chart from the bundled Chart.js to Cacti's own billboard.js, and
-  dropped the vendored `js/chartjs-plugin-annotation.min.js`.
-- CSP: added the standard `plugin_topx_csp_nonce()` helper and applied the
-  per-request nonce to the inline chart data island; eliminated all other inline
-  executable JavaScript (the filter helper now lives in `js/topx.js`).
-- Added a `manifest.json` (with a `themes/` tombstone) plus a Pest test suite
-  and the shared CI tooling, GitHub workflows, Copilot instructions, and issue
-  and pull request templates used across the Cacti plugin fleet.
+* feature: Add a **Console → Management → TopX Data Sources** interface to manage supported definitions (Search / Supported / Has-Data-Sources filters, add, edit, delete, and XML import/export keyed on the Data Template hash) with no PHP editing.
+* feature: Show each template's support state as a **Supported / Not Supported** pill, and open the editor pre-pointed at a template when you click an unconfigured one.
+* feature: Flag definitions whose stored hash matches no installed template as "(template not installed)" instead of showing a blank template.
+* feature: Allow a single Data Template to carry multiple independent definitions, each its own grid row and dashboard entry.
+* feature: Give the Data Source editor clickable token helpers for the Metric Expression fields and the Chart Label Pattern (host and `|query_<field>|` tokens).
+* feature: Add an **Edit Rule / Add Rule** link on the drilldown toolbar and a live preview of the definition's cards in the editor.
+* feature: Extend the `plugin_topx_source` schema with `range_type`, `range_normal`/`warning`/`alert` thresholds, a declarative `chart_label`, and an `id` primary key, all added idempotently on upgrade.
+* feature: Name chart items with Cacti "suggested value" `|token|` substitution (e.g. `|host_description| - |query_ifName|`), falling back to a derived short label.
+* feature: Apply a trailing `/N` divisor in the Metric Expression (e.g. `uptime=uptime/8640000`) to the average, ranking and chart axis.
+* feature: Default the Metric Expression to `field=field` for single-field templates and validate range threshold ordering on save.
+* feature: Clarify the editor's display formatting with **Display Format** (Static Unit / Division by Unit Ladder), a dedicated **Decimal Places** dropdown, and a **Display Unit Ladder** shown only for the Division format.
+* feature: Compose the **Overview** tab from individual supported Data Source cards via the Add card dropdown, with a shared **TopX** record-limit selector that governs only the data-source cards.
+* feature: Rework the UI into draggable card dashboards (Overview + per-source Drilldown) on the shared Cacti card engine, with per-card tools, a timespan selector, auto-refresh and per-user layout persistence.
+* feature: Show the Ranking Chart average and peak on each bar as a bullet-style bar with vivid, theme-appropriate health colours, a green band that runs up to the Warning threshold, and a Peak/Avg legend.
+* feature: Render a plain, theme-legible Peak/Average bullet for sources with no health range instead of painting every bar as an alert.
+* feature: Improve Ranking Chart readability with short axis labels (full name on hover), the source's own unit on the axis, locale-formatted values, and a height that grows with the record count.
+* feature: Use an ordered red→green range for the Uptime-by-Host chart and theme-friendly categorical colours elsewhere.
+* feature: Only list and count data sources that are actually in use, excluding unused templates.
+* feature: Replace the fixed "age" filter with Cacti's standard timespan selector while keeping the data source, records, order and "what" filters.
+* feature: Extract the ranking computation into `topx_compute_ranking()` with timespan-to-bucket and uptime-bucketing helpers and unit coverage.
+* feature: Render the TopX tab pages with `general_header()` so they show as a tab without the Console left-hand menu.
+* feature: Replace every string-concatenated SQL query with prepared statements and allowlisted dynamic identifiers.
+* feature: Validate all request input through Cacti request helpers, escape all output, and CSRF-protect every save, bulk-action and import.
+* feature: Restructure the plugin API into a strongly typed, PHPDoc-documented `includes/` directory.
+* feature: Make `setup.php` register the `config_arrays` hook, provision its schema idempotently, seed defaults only when empty, and grant the management realm on upgrade so in-place upgrades avoid a 401.
+* feature: Internationalize every user-facing string with the `topx` text domain and add the `locales/` gettext tree.
+* feature: Consolidate per-theme CSS into a single theme-neutral `css/topx.css` and migrate charts from the bundled Chart.js to Cacti's billboard.js, rendered from CSP-nonced JSON data islands.
+* feature: Add a `manifest.json` with upgrade-time file pruning, a Pest test suite, and the shared CI tooling, workflows and templates.
 
 ## 0.7
 

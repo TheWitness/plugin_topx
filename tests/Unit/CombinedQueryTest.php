@@ -7,7 +7,7 @@ describe('topx_get_ds_list', function (): void {
 	it('merges the supported and unsupported template queries', function (): void {
 		$GLOBALS['__test_db_fetch_assoc'] = function ($sql) {
 			if (strpos($sql, 'plugin_topx_source') !== false) {
-				return [['dsname' => 'CPU', 'dsid' => '3', 'dscount' => '2', 'sup' => 'true']];
+				return [['dsname' => 'CPU', 'dsid' => '3', 'tplid' => '11', 'dscount' => '2', 'sup' => 'true']];
 			}
 
 			return [['dsname' => 'unsupported - RAM', 'dsid' => '9', 'dscount' => '1', 'sup' => 'false']];
@@ -17,6 +17,32 @@ describe('topx_get_ds_list', function (): void {
 
 		expect($list)->toHaveKey(-3);
 		expect($list)->toHaveKey(9);
+		expect($list[-3]['template_id'])->toBe(11);
+
+		unset($GLOBALS['__test_db_fetch_assoc']);
+	});
+});
+
+describe('topx_overview_stats', function (): void {
+	it('counts a multi-definition template\'s data sources only once', function (): void {
+		$GLOBALS['__test_db_fetch_assoc'] = function ($sql) {
+			if (strpos($sql, 'plugin_topx_source') !== false) {
+				// Two definitions on the same template (id 11), 4 instances.
+				return [
+					['dsname' => 'Traffic In',  'dsid' => '3', 'tplid' => '11', 'dscount' => '4', 'sup' => 'true'],
+					['dsname' => 'Traffic Out', 'dsid' => '4', 'tplid' => '11', 'dscount' => '4', 'sup' => 'true'],
+				];
+			}
+
+			return [['dsname' => 'unsupported - RAM', 'dsid' => '9', 'dscount' => '1', 'sup' => 'false']];
+		};
+
+		$stats = topx_overview_stats();
+
+		expect($stats['supported_types'])->toBe(2);
+		expect($stats['unsupported_types'])->toBe(1);
+		// 4 (template 11, counted once) + 1 (template 9) = 5, not 4 + 4 + 1.
+		expect($stats['total_sources'])->toBe(5);
 
 		unset($GLOBALS['__test_db_fetch_assoc']);
 	});
