@@ -4,6 +4,16 @@ All notable changes to the TopX plugin are documented in this file.
 
 ## 1.2
 
+- The **Overview** tab can again be composed from individual Data Source cards,
+  restoring the original plugin's multi-source dashboard. The **Add card**
+  dropdown now lists, for every *supported* Data Source, each of its cards
+  (e.g. "Device - Uptime : Rankings", "Device - Uptime : Ranking Chart"); adding
+  one places that source's drilldown card straight onto the Overview. Unsupported
+  Data Sources stay off the list. A shared **TopX** (record-limit) selector is
+  added to the Overview toolbar; it governs only the Data Source cards (the
+  aggregate cards such as *Uptime by Host* ignore it), and each card still ranks
+  by its own Default Sort. The **Uptime by Host** and **Data Sources** aggregate
+  cards now default to half width so they pair up two-per-row.
 - Clearer display-formatting fields on the Data Source editor: **Display Format**
   (renamed from "Display Scaling") with the options **Static Unit** (default) and
   **Division by Unit Ladder**; a dedicated **Decimal Places** dropdown (Auto, 0-4)

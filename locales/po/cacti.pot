@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cacti \n"
 "Report-Msgid-Bugs-To: developers@cacti.net\n"
-"POT-Creation-Date: 2026-11-07 09:40-0500\n"
+"POT-Creation-Date: 2026-11-07 10:08-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Cacti Developers <developers@cacti.net>>\n"
 "Language-Team: Cacti Developers <developers@cacti.net>\n"
@@ -167,6 +167,10 @@ msgstr ""
 msgid "Add a card…"
 msgstr ""
 
+#: includes/dashboard.php setup.php
+msgid "TopX"
+msgstr ""
+
 #: includes/dashboard.php
 msgid "Edit Rule"
 msgstr ""
@@ -253,6 +257,10 @@ msgstr ""
 
 #: includes/dashboard.php
 msgid "Open drilldown"
+msgstr ""
+
+#: includes/dashboard.php
+msgid "This data source is no longer available."
 msgstr ""
 
 #: includes/dashboard.php
@@ -433,10 +441,6 @@ msgstr ""
 #: includes/sources.php
 #, php-format
 msgid "For a decreasing range, the %1$s threshold must be greater than the %2$s threshold."
-msgstr ""
-
-#: setup.php
-msgid "TopX"
 msgstr ""
 
 #: setup.php
