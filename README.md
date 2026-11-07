@@ -19,11 +19,6 @@ for details.
 - Cacti 1.2.32 or later
 - DS Stats enabled and configured (Console → Settings → Data)
 
-## Author
-
-Originally written by Petr Macek (petr.macek@kostax.cz). Maintained by the
-Cacti Group.
-
 ## Screenshots
 
 The all-source **Overview** tab — a composable dashboard of catalogue stats,
@@ -65,6 +60,11 @@ field-by-field description of the `plugin_topx_source` definition.
 
 Please open an issue on GitHub, or post to
 https://forums.cacti.net/viewtopic.php?f=5&t=56129
+
+## Author
+
+Originally written by Petr Macek (petr.macek@kostax.cz). Maintained by the
+Cacti Group.
 
 ## Changelog
 
